@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Easy Time Tracking</string>
+    <string name="content_description_nav_icon">Navigation Icon</string>
+    <string name="content_description_icon">Icon</string>
+
+    <!-- MonitorScreen -->
+    <string name="title_monitor_screen">Activities Monitor</string>
+
+    <!-- ActivityFormScreen -->
+    <string name="title_activity_form_screen">Add Activity</string>
+    <string name="label_button_save">Save</string>
+    <string name="label_name">Activity name</string>
+    <string-array name="colors_array">
+        <item name="blue">Blue</item>
+        <item name="yellow">Yellow</item>
+        <item name="red">Red</item>
+        <item name="green">Green</item>
+        <item name="purple">Purple</item>
+        <item name="pink">Pink</item>
+    </string-array>
+
+</resources>
