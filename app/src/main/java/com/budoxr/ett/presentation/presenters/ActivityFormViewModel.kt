@@ -1,6 +1,7 @@
 package com.budoxr.ett.presentation.presenters
 
 import androidx.compose.ui.graphics.toColorLong
+import androidx.compose.ui.text.toUpperCase
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.toColor
 import com.budoxr.ett.data.database.entities.ActivityEntity
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.component.inject
 import timber.log.Timber
+import java.util.Locale
+import java.util.Locale.getDefault
 
 class ActivityFormViewModel : KoinViewModel() {
     private val activityInsertUseCase: ActivityInsertUseCase by inject()
@@ -72,8 +75,8 @@ class ActivityFormViewModel : KoinViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             val activityEntity = ActivityEntity(
-                name = form.name,
-                color = form.color.toColor().toColorLong()
+                name = form.name.uppercase(getDefault()),
+                color = form.color.toColor()
             )
             Timber.tag(TAG).i("Saving new activity in the database")
             activityInsertUseCase(activityEntity)

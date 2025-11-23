@@ -23,7 +23,7 @@ object Modules {
         Room.databaseBuilder(
             context.applicationContext,
             AppDatabase::class.java,
-            "tt.db"
+            "ett.db"
         ).fallbackToDestructiveMigration(false).build()
 
     fun provideActivityDao(db: AppDatabase) = db.activityDao()

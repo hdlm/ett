@@ -14,9 +14,12 @@
     <string name="label_hint_name">Activity name</string>
     <string name="label_color">Color</string>
     <string name="label_hint_color">Activity color</string>
+    <string name="msg_new_activity_save">New activity saved</string>
     <string-array name="colors_array">
         <item name="blue">Blue</item>
+        <item name="brown">Brown</item>
         <item name="yellow">Yellow</item>
+        <item name="Orange">Orange</item>
         <item name="red">Red</item>
         <item name="green">Green</item>
         <item name="purple">Purple</item>

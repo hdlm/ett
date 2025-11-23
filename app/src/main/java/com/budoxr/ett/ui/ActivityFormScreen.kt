@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,8 +16,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
@@ -33,6 +40,7 @@ import com.budoxr.ett.ui.components.FieldFormCombo
 import com.budoxr.ett.ui.components.FieldFormText
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
@@ -50,9 +58,19 @@ fun ActivityFormScreen(
     val marginHorizontal = dimensionResource(R.dimen.margin_horizontal)
 
     val formState by viewModel.formState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
+    val resultMessage = stringResource(R.string.msg_new_activity_save)
     val onConfirmClick: onDismissType = {
         viewModel.onSaveClick()
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                message = resultMessage,
+                actionLabel = "x",
+                duration = SnackbarDuration.Short
+            )
+        }
     }
 
     Scaffold(
@@ -66,14 +84,33 @@ fun ActivityFormScreen(
                 actionIcon = null,
                 onActionButtonClick = {},
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState,
+                modifier = Modifier.imePadding()
+            )
+        },
+        bottomBar = {
+            ButtonConfirm(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = marginHorizontal)
+                    .navigationBarsPadding()
+                    .imePadding(),
+                label = stringResource(R.string.label_button_save),
+                isEnabled = formState.isValid,
+                showTopBorderLine = true,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = onConfirmClick,
+            )
         }
     ) { innerPadding ->
         Column( modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(innerPadding)
-            .padding(horizontal = marginHorizontal)
-            .imePadding(), // Save Bottom always on Top
-            verticalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = marginHorizontal),
         ) {
 
             Column {
@@ -85,20 +122,6 @@ fun ActivityFormScreen(
                     onColorChange = viewModel::onColorChanged,
                 )
                 Spacer(modifier = Modifier.padding(vertical = lineSpacing3x))
-            }
-
-            Column {
-                ButtonConfirm(
-                    modifier = Modifier,
-                    label = stringResource(R.string.label_button_save),
-                    isEnabled = formState.isValid,
-                    showTopBorderLine = true,
-                    buttonIcon = null,
-                    buttonVector = null,
-                    buttonImg = null,
-                    onConfirmClick = onConfirmClick,
-                )
-
             }
 
         }
