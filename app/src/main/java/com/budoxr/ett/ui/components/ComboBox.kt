@@ -6,7 +6,9 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -100,10 +102,17 @@ private fun ComboBoxText(
     val iconSize = dimensionResource(id = R.dimen.icon_tiny_size)
     var anyPoint by remember { mutableStateOf<Long?>(null) }
 
+    val lineSpacing = dimensionResource(R.dimen.line_spacing_1)
+
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall
+    )
+    Spacer(modifier = Modifier.height(lineSpacing))
+
     Surface(
         shape = MaterialTheme.shapes.medium,
         shadowElevation = 4.dp,
-        color = grayDark,
         modifier = modifier
             .fillMaxWidth()
     ) {
@@ -128,7 +137,6 @@ private fun ComboBoxText(
                             }
                         }
                     }
-                    .background(MaterialTheme.colorScheme.background)
                     .padding(start = separation, top = 17.dp, bottom = 17.dp)
             )
             Icon(
@@ -137,7 +145,7 @@ private fun ComboBoxText(
                     .size(iconSize),
                 imageVector = Icons.Filled.ArrowDropDown,
                 contentDescription = stringResource(id = R.string.content_description_trailing_icon),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant // Use a standard icon color
+                tint = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant /* Use a standard icon color */ else MaterialTheme.colorScheme.surface
             )
 
         }

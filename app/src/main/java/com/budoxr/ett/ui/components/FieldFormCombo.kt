@@ -1,17 +1,11 @@
 package com.budoxr.ett.ui.components
 
-import com.budoxr.ett.R
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,13 +22,6 @@ fun FieldFormCombo(
 ) {
     val value = remember { mutableStateOf(TextFieldValue(field)) }
 
-    val lineSpacing = dimensionResource(R.dimen.line_spacing_1)
-
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelSmall
-    )
-    Spacer(modifier = Modifier.height(lineSpacing))
     ComboBox(
         items = items,
         label = label,
@@ -51,12 +38,12 @@ fun FieldFormCombo(
 @Preview(showBackground = true)
 private fun FieldFormComboPreview() {
     val items = arrayOf("Item 1", "Item 2", "Item 3")
-    val label = ""
+    val label = "Color"
     val field = "Item 2"
 
-    EasyTimeTrackingTheme(darkTheme = false, dynamicColor = false) {
+    EasyTimeTrackingTheme(darkTheme = true, dynamicColor = false) {
 
-        Surface(modifier = Modifier.padding(4.dp)) {
+        Surface(modifier = Modifier.padding(8.dp)) {
             FieldFormCombo(
                 items = items,
                 label = label,

@@ -74,11 +74,9 @@ fun ActivityFormScreen(
         ) {
             Column {
                 ActivityFormBodyScreen(
-                    isDarkTheme = isDarkTheme,
                     formState = formState,
                     onNameChanged = viewModel::onNameChanged,
                     onColorChange = viewModel::onColorChanged,
-                    onBackButtonClick = onBackButtonClick
                 )
             }
 
@@ -87,7 +85,6 @@ fun ActivityFormScreen(
                     modifier = Modifier,
                     label = stringResource(R.string.label_button_save),
                     isEnabled = formState.isValid,
-                    isDarkTheme = isDarkTheme,
                     showTopBorderLine = true,
                     buttonIcon = null,
                     buttonVector = null,
@@ -105,11 +102,9 @@ fun ActivityFormScreen(
 
 @Composable
 fun ActivityFormBodyScreen(
-    isDarkTheme: Boolean,
     formState: ActivityFormState,
     onNameChanged: onStringType,
     onColorChange: onStringType,
-    onBackButtonClick: onDismissType,
 ) {
     val lineSpacing2x = dimensionResource(R.dimen.line_spacing_2)
 
@@ -131,7 +126,7 @@ fun ActivityFormBodyScreen(
 
     FieldFormCombo(
         items = colorsArray,
-        label = "",
+        label = stringResource(R.string.label_color),
         field = formState.color,
         onSelectedItem = onColorItemSelected,
         enabled = true
@@ -152,7 +147,7 @@ fun ActivityFormScreenPreview() {
     val marginHorizontal = dimensionResource(R.dimen.margin_horizontal)
     val scrollState = rememberScrollState()
 
-    EasyTimeTrackingTheme(darkTheme = false, dynamicColor = false) {
+    EasyTimeTrackingTheme(darkTheme = true, dynamicColor = false) {
         Column( modifier = Modifier
             .verticalScroll(scrollState)
             .fillMaxSize()
@@ -162,11 +157,9 @@ fun ActivityFormScreenPreview() {
         ) {
             Column {
                 ActivityFormBodyScreen(
-                    isDarkTheme = false,
                     formState = formState,
                     onNameChanged = {},
                     onColorChange = {},
-                    onBackButtonClick = {},
                 )
             }
 
@@ -174,8 +167,7 @@ fun ActivityFormScreenPreview() {
                 ButtonConfirm(
                     modifier = Modifier,
                     label = stringResource(R.string.label_button_save),
-                    isEnabled = formState.isValid,
-                    isDarkTheme = false,
+                    isEnabled = true,
                     showTopBorderLine = true,
                     buttonIcon = null,
                     buttonVector = null,

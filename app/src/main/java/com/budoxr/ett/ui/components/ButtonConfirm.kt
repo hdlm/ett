@@ -1,6 +1,5 @@
 package com.budoxr.ett.ui.components
 
-import com.budoxr.ett.R
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -8,15 +7,16 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,16 +24,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import com.budoxr.ett.ui.theme.bright
+import com.budoxr.ett.ui.theme.dark
+import com.budoxr.ett.ui.theme.gray
+import com.budoxr.ett.ui.theme.grayDark
 import com.budoxr.ett.ui.theme.grayLight
 
 @Composable
@@ -41,7 +44,6 @@ fun ButtonConfirm(
     modifier: Modifier = Modifier,
     label: String,
     isEnabled: Boolean,
-    isDarkTheme: Boolean,
     iconSize: Dp = dimensionResource(id = R.dimen.icon_large_size),
     showTopBorderLine: Boolean,
     @DrawableRes
@@ -54,14 +56,6 @@ fun ButtonConfirm(
     val lineSpacing = dimensionResource(id = R.dimen.line_spacing_1)
     val lineSpacing2x = dimensionResource(id = R.dimen.line_spacing_2)
     val separation2x = dimensionResource(id = R.dimen.side_separation_2x)
-
-    val btnForeColor : Color
-    if(isEnabled)
-    {
-        btnForeColor = if(isDarkTheme) MaterialTheme.colorScheme.tertiary else bright
-    } else {
-        btnForeColor = MaterialTheme.colorScheme.secondary
-    }
 
     if (showTopBorderLine) {
         HorizontalDivider(
@@ -83,7 +77,7 @@ fun ButtonConfirm(
         border = BorderStroke(width = 1.dp, MaterialTheme.colorScheme.background),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
-            disabledContentColor = MaterialTheme.colorScheme.secondary,
+            disabledContentColor = MaterialTheme.colorScheme.onSurface,
             disabledContainerColor = MaterialTheme.colorScheme.tertiary),
 
         ) {
@@ -92,7 +86,7 @@ fun ButtonConfirm(
                 .size(iconSize),
                 painter = painterResource(id = it),
                 contentDescription = stringResource(id = R.string.content_description_icon),
-                tint = btnForeColor
+                tint = MaterialTheme.colorScheme.onSurfaceVariant // Use a standard icon color
             )
         }
         buttonVector?.let {
@@ -100,7 +94,7 @@ fun ButtonConfirm(
                 .size(iconSize),
                 imageVector = buttonVector,
                 contentDescription = stringResource(id = R.string.content_description_icon),
-                tint = btnForeColor
+                tint = MaterialTheme.colorScheme.onSurfaceVariant // Use a standard icon color
             )
         }
         buttonImg?.let {
@@ -116,7 +110,6 @@ fun ButtonConfirm(
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            color = btnForeColor
         )
     }
     Spacer(modifier = Modifier.height(lineSpacing))
@@ -129,21 +122,23 @@ fun ButtonConfirmPreview() {
     val iconSize = dimensionResource(id = R.dimen.icon_large_size)
 
     EasyTimeTrackingTheme(
-        darkTheme = false,
+        darkTheme = true,
         dynamicColor = false
     ) {
-        ButtonConfirm(
-            modifier = Modifier,
-            label = "Confirm",
-            isEnabled = true,
-            isDarkTheme = isSystemInDarkTheme(),
-            iconSize = iconSize,
-            showTopBorderLine = false,
-            buttonIcon = null,
-            buttonVector = null,
-            buttonImg = null,
-            onConfirmClick = {}
-        )
-
+        Surface(modifier = Modifier
+            .padding(8.dp),
+        ) {
+            ButtonConfirm(
+                modifier = Modifier,
+                label = "Confirm",
+                isEnabled = false,
+                iconSize = iconSize,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = {}
+            )
+        }
     }
 }

@@ -11,25 +11,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = darkPrimaryBase,
+    onPrimary = darkOnPrimaryBase,
+    secondary = darkSecondaryBase,
+    onSecondary = darkOnSecondaryBase,
+    tertiary = darkTertiaryBase,
+    background = darkBackground,
+    surface = darkSurfaceBase,
+    onSurface = darkOnSurfaceBase,
+    onSurfaceVariant = grayLight,  //standard icon color
+    error = darkError
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = primaryBase,
+    onPrimary = onPrimaryBase,
+    secondary = secondaryBase,
+    onSecondary = onSecondaryBase,
+    tertiary = tertiaryBase,
+    background = background,
+    surface = surfaceBase,
+    onSurface = onSurfaceBase,
+    onSurfaceVariant = gray,  //standard icon color
+    error = error
 )
 
 @Composable
