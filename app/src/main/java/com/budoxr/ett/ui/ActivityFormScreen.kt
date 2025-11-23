@@ -122,6 +122,7 @@ fun ActivityFormBodyScreen(
 
     FieldFormText(
         label = stringResource(R.string.label_name),
+        hintLabel = stringResource(R.string.label_hint_name),
         field = formState.name,
         onValueChange = onNameChanged,
     )
@@ -130,7 +131,7 @@ fun ActivityFormBodyScreen(
 
     FieldFormCombo(
         items = colorsArray,
-        label = stringResource(R.string.label_name),
+        label = "",
         field = formState.color,
         onSelectedItem = onColorItemSelected,
         enabled = true

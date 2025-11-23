@@ -22,6 +22,7 @@ import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 @Composable
 fun FieldFormText(
     label: String,
+    hintLabel: String,
     field: String,
     onValueChange: (String) -> Unit,
 ) {
@@ -36,7 +37,7 @@ fun FieldFormText(
     Spacer(modifier = Modifier.height(lineSpacing))
     Textfield(
         value = field,
-        textLabel = label,
+        textLabel = hintLabel,
         onValueChange = onValueChange,
         keyboardType = KeyboardType.Text,
         keyboardActions = KeyboardActions(
@@ -56,7 +57,8 @@ private fun FieldFormTextPreview() {
         Column {
             FieldFormText(
                 label = "Name",
-                field = "Henry",
+                hintLabel = "Input your activity name",
+                field = "My activity",
                 onValueChange = {}
             )
 

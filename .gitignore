@@ -17,6 +17,7 @@
 bin/
 gen/
 out/
+app/schemas/
 
 # Ignore gradle files
 .gradle/
@@ -38,7 +39,7 @@ proguard-project.txt
 
 # Android Studio/IDEA
 *.iml
-.idea
+.idea/
 
 # Android Studio Navigation editor temp files
 .navigation/
@@ -49,20 +50,13 @@ captures/
 
 # IntelliJ
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
+.idea/
 
 # Android Studio 3 in .gitignore file.
 .idea/caches
 .idea/modules.xml
 
 # Comment next line if keeping position of elements in Navigation Editor is relevant for you
-.idea/navEditor.xml
-
 
 # Log Files
 *.log
@@ -120,6 +114,11 @@ release/
 # Google Services (e.g. APIs or Firebase)
 # google-services.json
 
+# ROOM Schema auto-generate gile
+app/schemas/io.dynamiteapps.peimi.data.database.AppDatabase/1.json
+
 # Custom files
 LEERME.txt
-
+app/cipher_key.txt
+app/signin_release.txt
+app/java_processes.csv

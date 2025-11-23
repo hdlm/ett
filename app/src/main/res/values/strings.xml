@@ -2,6 +2,7 @@
     <string name="app_name">Easy Time Tracking</string>
     <string name="content_description_nav_icon">Navigation Icon</string>
     <string name="content_description_icon">Icon</string>
+    <string name="content_description_trailing_icon">Trailing icon</string>
 
     <!-- MonitorScreen -->
     <string name="title_monitor_screen">Activities Monitor</string>
@@ -9,7 +10,10 @@
     <!-- ActivityFormScreen -->
     <string name="title_activity_form_screen">Add Activity</string>
     <string name="label_button_save">Save</string>
-    <string name="label_name">Activity name</string>
+    <string name="label_name">Name</string>
+    <string name="label_hint_name">Activity name</string>
+    <string name="label_color">Color</string>
+    <string name="label_hint_color">Activity color</string>
     <string-array name="colors_array">
         <item name="blue">Blue</item>
         <item name="yellow">Yellow</item>
