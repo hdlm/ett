@@ -1,5 +1,7 @@
 package com.budoxr.ett.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,12 +23,14 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
+import com.budoxr.ett.ui.theme.grayLight
 import com.budoxr.ett.ui.theme.placeholder
 
 
 @Composable
 fun Textfield(
     modifier: Modifier = Modifier,
+    isDarkTheme: Boolean,
     value: String,
     onValueChange: (String) -> Unit,
     textLabel: String,
@@ -36,9 +40,20 @@ fun Textfield(
     trailingIcon: @Composable() (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
+
+    val surfaceBorder = if (isDarkTheme) {
+        BorderStroke(
+            width = 1.dp,
+            color = grayLight
+        )
+    } else {
+        null  // no border in light mode
+    }
+
     Surface(
         shape = MaterialTheme.shapes.medium,
         shadowElevation = 4.dp,
+        border = surfaceBorder
     ) {
         TextField(
             modifier = modifier.fillMaxWidth(),
@@ -84,6 +99,7 @@ private fun TextfieldPreview() {
             .padding(8.dp)
         ) {
             Textfield(
+                isDarkTheme = false,
                 value = "My activity",
                 onValueChange = { _ ->},
                 textLabel = "Name",

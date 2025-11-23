@@ -1,15 +1,18 @@
 package com.budoxr.ett.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,8 +45,9 @@ fun ActivityFormScreen(
 ) {
     Timber.tag(TAG).i("Compose / Recompose -> id: $id")
 
+    val lineSpacing1x = dimensionResource(R.dimen.line_spacing_1)
+    val lineSpacing3x = dimensionResource(R.dimen.line_spacing_3)
     val marginHorizontal = dimensionResource(R.dimen.margin_horizontal)
-    val scrollState = rememberScrollState()
 
     val formState by viewModel.formState.collectAsStateWithLifecycle()
 
@@ -65,19 +69,22 @@ fun ActivityFormScreen(
         }
     ) { innerPadding ->
         Column( modifier = Modifier
-            .verticalScroll(scrollState)
             .fillMaxSize()
             .padding(innerPadding)
             .padding(horizontal = marginHorizontal)
             .imePadding(), // Save Bottom always on Top
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+
             Column {
+                Spacer(modifier = Modifier.padding(vertical = lineSpacing1x))
                 ActivityFormBodyScreen(
+                    isDarkTheme = isDarkTheme,
                     formState = formState,
                     onNameChanged = viewModel::onNameChanged,
                     onColorChange = viewModel::onColorChanged,
                 )
+                Spacer(modifier = Modifier.padding(vertical = lineSpacing3x))
             }
 
             Column {
@@ -102,6 +109,7 @@ fun ActivityFormScreen(
 
 @Composable
 fun ActivityFormBodyScreen(
+    isDarkTheme: Boolean,
     formState: ActivityFormState,
     onNameChanged: onStringType,
     onColorChange: onStringType,
@@ -116,6 +124,7 @@ fun ActivityFormBodyScreen(
     }
 
     FieldFormText(
+        isDarkTheme = isDarkTheme,
         label = stringResource(R.string.label_name),
         hintLabel = stringResource(R.string.label_hint_name),
         field = formState.name,
@@ -125,6 +134,8 @@ fun ActivityFormBodyScreen(
     Spacer(modifier = Modifier.padding(vertical = lineSpacing2x))
 
     FieldFormCombo(
+        modifier = Modifier,
+        isDarkTheme = isDarkTheme,
         items = colorsArray,
         label = stringResource(R.string.label_color),
         field = formState.color,
@@ -147,16 +158,20 @@ fun ActivityFormScreenPreview() {
     val marginHorizontal = dimensionResource(R.dimen.margin_horizontal)
     val scrollState = rememberScrollState()
 
-    EasyTimeTrackingTheme(darkTheme = true, dynamicColor = false) {
+    val isDarkTheme = true
+
+    EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
         Column( modifier = Modifier
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
             .fillMaxSize()
             .padding(marginHorizontal)
             .imePadding(), // Save Bottom always on Top
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
+            Column(Modifier.fillMaxWidth()) {
                 ActivityFormBodyScreen(
+                    isDarkTheme = isDarkTheme,
                     formState = formState,
                     onNameChanged = {},
                     onColorChange = {},

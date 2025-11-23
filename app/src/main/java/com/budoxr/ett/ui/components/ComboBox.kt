@@ -1,5 +1,6 @@
 package com.budoxr.ett.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -42,9 +43,11 @@ import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import com.budoxr.ett.ui.theme.grayDark
+import com.budoxr.ett.ui.theme.grayLight
 
 @Composable
 fun ComboBox(
+    isDarkTheme: Boolean,
     items: Array<String>,
     label: String,
     field: MutableState<TextFieldValue>,
@@ -57,6 +60,7 @@ fun ComboBox(
     val selectedIndex = remember { mutableStateOf( 0 ) }
 
     ComboBoxText(
+        isDarkTheme = isDarkTheme,
         modifier = modifier,
         field = field,
         items = items,
@@ -90,19 +94,29 @@ fun ComboBoxIcon(
 @Composable
 private fun ComboBoxText(
     modifier: Modifier,
-     field: MutableState<TextFieldValue>,
-     items: Array<String>,
-     label: String,
-     selectedIndex: MutableState<Int>,
-     expanded: MutableState<Boolean>,
-     enabled: Boolean = true,
-     onSelectedItem: onIntType,
+    isDarkTheme: Boolean,
+    field: MutableState<TextFieldValue>,
+    items: Array<String>,
+    label: String,
+    selectedIndex: MutableState<Int>,
+    expanded: MutableState<Boolean>,
+    enabled: Boolean = true,
+    onSelectedItem: onIntType,
 ) {
     val separation = dimensionResource(id = R.dimen.side_separation_2x)
     val iconSize = dimensionResource(id = R.dimen.icon_tiny_size)
     var anyPoint by remember { mutableStateOf<Long?>(null) }
 
     val lineSpacing = dimensionResource(R.dimen.line_spacing_1)
+
+    val surfaceBorder = if (isDarkTheme) {
+        BorderStroke(
+            width = 1.dp,
+            color = grayLight
+        )
+    } else {
+        null  // no border in light mode
+    }
 
     Text(
         text = label,
@@ -113,6 +127,7 @@ private fun ComboBoxText(
     Surface(
         shape = MaterialTheme.shapes.medium,
         shadowElevation = 4.dp,
+        border = surfaceBorder,
         modifier = modifier
             .fillMaxWidth()
     ) {
@@ -219,14 +234,19 @@ private fun ComboBoxPreview() {
 
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
 
+    val isDarkTheme = true
+
     EasyTimeTrackingTheme(
-        darkTheme = false,
+        darkTheme = isDarkTheme,
         dynamicColor = false)
     {
         Column(
-            modifier = Modifier.padding(horizontalMargin)
+            modifier = Modifier
+                .padding(horizontalMargin)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             ComboBox(
+                isDarkTheme = isDarkTheme,
                 items = items,
                 label = label,
                 field = field,

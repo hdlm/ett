@@ -23,6 +23,7 @@ import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 
 @Composable
 fun FieldFormText(
+    isDarkTheme: Boolean,
     label: String,
     hintLabel: String,
     field: String,
@@ -38,6 +39,7 @@ fun FieldFormText(
     )
     Spacer(modifier = Modifier.height(lineSpacing))
     Textfield(
+        isDarkTheme = isDarkTheme,
         value = field,
         textLabel = hintLabel,
         onValueChange = onValueChange,
@@ -58,6 +60,7 @@ private fun FieldFormTextPreview() {
     EasyTimeTrackingTheme(darkTheme = true, dynamicColor = false) {
         Surface(modifier = Modifier.padding(8.dp)) {
             FieldFormText(
+                isDarkTheme = false,
                 label = "Name",
                 hintLabel = "Input your activity name",
                 field = "My activity",

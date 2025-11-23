@@ -3,7 +3,6 @@ package com.budoxr.ett.ui.components
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,7 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -33,10 +31,6 @@ import androidx.compose.ui.unit.dp
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
-import com.budoxr.ett.ui.theme.bright
-import com.budoxr.ett.ui.theme.dark
-import com.budoxr.ett.ui.theme.gray
-import com.budoxr.ett.ui.theme.grayDark
 import com.budoxr.ett.ui.theme.grayLight
 
 @Composable

@@ -14,6 +14,8 @@ import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 
 @Composable
 fun FieldFormCombo(
+    modifier: Modifier,
+    isDarkTheme: Boolean,
     items: Array<String>,
     label: String,
     field: String,
@@ -23,6 +25,7 @@ fun FieldFormCombo(
     val value = remember { mutableStateOf(TextFieldValue(field)) }
 
     ComboBox(
+        isDarkTheme = isDarkTheme,
         items = items,
         label = label,
         field = value,
@@ -41,10 +44,13 @@ private fun FieldFormComboPreview() {
     val label = "Color"
     val field = "Item 2"
 
-    EasyTimeTrackingTheme(darkTheme = true, dynamicColor = false) {
+    val isDarkTheme = true
+    EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
 
         Surface(modifier = Modifier.padding(8.dp)) {
             FieldFormCombo(
+                modifier = Modifier,
+                isDarkTheme = isDarkTheme,
                 items = items,
                 label = label,
                 field = field,
