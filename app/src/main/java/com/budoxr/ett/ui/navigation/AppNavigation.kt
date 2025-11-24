@@ -8,9 +8,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.budoxr.ett.commons.onDismissType
+import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.ui.ActivityFormScreen
+import com.budoxr.ett.ui.ActivityScreen
 import com.budoxr.ett.ui.MonitorScreen
 import timber.log.Timber
+
 
 @Composable
 fun AppNavigation(
@@ -18,6 +21,16 @@ fun AppNavigation(
     isDarkTheme: Boolean,
     startDest: Screens,
 ) {
+    val navigateToActivity: onDismissType = {
+        val destination = Screens.ActivityScreen.baseRoute
+        navController.navigate(destination)
+    }
+    val navigateToActivityForm: onIntType = {
+        val screenName = Screens.ActivityFormScreen.baseRoute
+        val destination = "${screenName}/0"
+        navController.navigate(destination)
+    }
+
 
     NavHost(navController = navController, startDestination = startDest.route ) {
         composable(
@@ -37,6 +50,27 @@ fun AppNavigation(
                 isDarkTheme = isDarkTheme,
                 navController = navController,
                 onBackButtonClick = onBackButtonClick,
+                navigateToActivity = navigateToActivity,
+            )
+        }
+
+        composable(
+            route = Screens.MonitorScreen.route
+        ) { _ ->
+            val onBackButtonClick: onDismissType = {
+                Timber.tag(TAG).d("onBackButtonClick() -> clicked")
+                navController.navigate(Screens.ActivityScreen.baseRoute) {
+                    // Limpia la pila de retroceso para que MonitorScreen sea la única pantalla
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true // Evita múltiples instancias de la misma pantalla
+                }
+            }
+            ActivityScreen(
+                isDarkTheme = isDarkTheme,
+                onBackButtonClick = onBackButtonClick,
+                navigateToActivityForm = navigateToActivityForm,
             )
         }
 

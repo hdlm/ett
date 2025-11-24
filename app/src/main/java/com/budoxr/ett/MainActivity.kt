@@ -76,7 +76,7 @@ fun MainScreen(isDarkTheme: Boolean ) {
     AppNavigation(
         navController = navController,
         isDarkTheme = isDarkTheme,
-        startDest = Screens.ActivityFormScreen
+        startDest = Screens.MonitorScreen
     )
 
 }

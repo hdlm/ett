@@ -67,6 +67,10 @@ fun BottomNavigationBar(
                         val destination = Screens.MonitorScreen.baseRoute
                         navController.navigate(destination)
                     }
+                    else if(screen.route == Screens.ActivityScreen.route) {
+                        val destination = Screens.ActivityScreen.baseRoute
+                        navController.navigate(destination)
+                    }
                     else if(screen.route == Screens.ActivityFormScreen.route) {
                         val screenName = Screens.ActivityFormScreen.baseRoute
                         val destination = "${screenName}/0"

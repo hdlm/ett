@@ -16,3 +16,4 @@ data class ActivityEntity(
     val name: String,
     val color: Color? = null,
 )
+

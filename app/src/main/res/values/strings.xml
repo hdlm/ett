@@ -2,10 +2,23 @@
     <string name="app_name">Easy Time Tracking</string>
     <string name="content_description_nav_icon">Navigation Icon</string>
     <string name="content_description_icon">Icon</string>
+    <string name="content_description_ett_logo">Easy Time Tracking Logo</string>
     <string name="content_description_trailing_icon">Trailing icon</string>
 
     <!-- MonitorScreen -->
     <string name="title_monitor_screen">Activities Monitor</string>
+    <string name="msg_an_error_has_occurred">An error has occurred</string>
+    <string name="label_retry">Retry</string>
+    <string name="msg_no_records">No records found</string>
+    <string-array name="monitor_views_array">
+        <item name="current">Currents</item>
+        <item name="historical">Hitoricals</item>
+    </string-array>
+
+    <!-- ActivityScreen -->
+    <string name="title_activity_screen">Activities</string>
+
+
 
     <!-- ActivityFormScreen -->
     <string name="title_activity_form_screen">Add Activity</string>

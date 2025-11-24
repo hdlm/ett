@@ -16,5 +16,6 @@ sealed class Screens (
         get() = route.substringBefore('/')
 
     object MonitorScreen: Screens(route = "MonitorScreen", titleResId = R.string.title_monitor_screen, Icons.Filled.Home)
+    object ActivityScreen: Screens(route = "ActivityScreen", titleResId = R.string.title_monitor_screen, Icons.Filled.Home)
     object ActivityFormScreen: Screens(route = "ActivityFormScreen/{id}", titleResId = R.string.title_activity_form_screen , Icons.Filled.Home)
 }

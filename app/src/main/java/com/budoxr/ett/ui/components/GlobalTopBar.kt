@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.budoxr.ett.R
@@ -18,6 +19,7 @@ import com.budoxr.ett.commons.onDismissType
 fun GlobalTopBar(
     isDarkTheme: Boolean,
     navIcon: ImageVector?,
+    navIconPainter: Painter? = null,
     onBackButtonClick: onDismissType,
     titleIcon: ImageVector?,
     title: String,
@@ -33,6 +35,16 @@ fun GlobalTopBar(
                         contentDescription = stringResource(R.string.content_description_nav_icon),
 //                        tint = MaterialTheme.colorScheme.onSurface // Use themed color
                     )
+                }
+            } else {
+                if (navIconPainter != null) {
+                    IconButton(onClick = onBackButtonClick) {
+                        Icon(
+                            painter = navIconPainter,
+                            contentDescription = stringResource(R.string.content_description_nav_icon),
+//                        tint = MaterialTheme.colorScheme.onSurface // Use themed color
+                        )
+                    }
                 }
             }
         },
