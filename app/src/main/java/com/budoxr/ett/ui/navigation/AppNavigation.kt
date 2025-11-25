@@ -26,6 +26,7 @@ fun AppNavigation(
         navController.navigate(destination)
     }
     val navigateToActivityForm: onIntType = {
+        Timber.tag(TAG).i("navigateToActivityForm() -> called, id: $it")
         val screenName = Screens.ActivityFormScreen.baseRoute
         val destination = "${screenName}/0"
         navController.navigate(destination)
@@ -55,7 +56,7 @@ fun AppNavigation(
         }
 
         composable(
-            route = Screens.MonitorScreen.route
+            route = Screens.ActivityScreen.route
         ) { _ ->
             val onBackButtonClick: onDismissType = {
                 Timber.tag(TAG).d("onBackButtonClick() -> clicked")
@@ -68,6 +69,7 @@ fun AppNavigation(
                 }
             }
             ActivityScreen(
+                navController = navController,
                 isDarkTheme = isDarkTheme,
                 onBackButtonClick = onBackButtonClick,
                 navigateToActivityForm = navigateToActivityForm,

@@ -10,6 +10,7 @@ import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepositoryImp
 import com.budoxr.ett.presentation.presenters.ActivityFormViewModel
 import com.budoxr.ett.presentation.presenters.ActivityViewModel
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
+import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingActiveInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
@@ -41,6 +42,8 @@ object Modules {
 
         factory<ActivityLocalRepository> { ActivityLocalRepositoryImpl() }
         factory { ActivityInsertUseCase() }
+        factory { ActivityInfoUseCase() }
+
         factory<TimerTrackingLocalRepository> { TimerTrackingLocalRepositoryImpl() }
         factory { TimerTrackingActiveInfoUseCase() }
         factory { TimerTrackingInsertUseCase() }

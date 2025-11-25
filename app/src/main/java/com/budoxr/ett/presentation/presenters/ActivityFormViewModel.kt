@@ -1,7 +1,5 @@
 package com.budoxr.ett.presentation.presenters
 
-import androidx.compose.ui.graphics.toColorLong
-import androidx.compose.ui.text.toUpperCase
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.toColor
 import com.budoxr.ett.data.database.entities.ActivityEntity
@@ -14,19 +12,19 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.component.inject
 import timber.log.Timber
-import java.util.Locale
 import java.util.Locale.getDefault
 
 class ActivityFormViewModel : KoinViewModel() {
     private val activityInsertUseCase: ActivityInsertUseCase by inject()
 
+    private val _formState = MutableStateFlow(ActivityFormState())
+    val formState : StateFlow<ActivityFormState>
+        get() = _formState.asStateFlow()
+
     private val _uiState = MutableStateFlow<ActivityFormUiState>(ActivityFormUiState.Form())
     val uiState: StateFlow<ActivityFormUiState>
         get() = _uiState.asStateFlow()
 
-    private val _formState = MutableStateFlow(ActivityFormState())
-    val formState : StateFlow<ActivityFormState>
-        get() = _formState.asStateFlow()
 
     fun onNameChanged(name: String) {
         _formState.update {

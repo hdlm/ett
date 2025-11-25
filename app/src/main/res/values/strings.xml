@@ -6,7 +6,7 @@
     <string name="content_description_trailing_icon">Trailing icon</string>
 
     <!-- MonitorScreen -->
-    <string name="title_monitor_screen">Activities Monitor</string>
+    <string name="title_monitor_screen">Task Tracking</string>
     <string name="msg_an_error_has_occurred">An error has occurred</string>
     <string name="label_retry">Retry</string>
     <string name="msg_no_records">No records found</string>
@@ -15,9 +15,10 @@
         <item name="historical">Hitoricals</item>
     </string-array>
 
+
     <!-- ActivityScreen -->
     <string name="title_activity_screen">Activities</string>
-
+    <string name="label_search_field_placeholder">Search</string>
 
 
     <!-- ActivityFormScreen -->

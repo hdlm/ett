@@ -65,9 +65,9 @@ android {
 }
 
 dependencies {
-    implementation(libs.bundles.androidx.compose.base)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.bundles.androidx.compose.base)
+
     implementation(libs.androidx.navigation.compose)
 
     implementation(libs.bundles.koin)

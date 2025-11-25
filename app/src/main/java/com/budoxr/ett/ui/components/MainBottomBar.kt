@@ -27,20 +27,12 @@ fun MainBottomBar(navController: NavHostController) {
 
     val navigationItems = listOf(
         Screens.MonitorScreen,
-        Screens.ActivityFormScreen,
+        Screens.ActivityScreen,
     )
 
     currentRoute?.let {
-        val baseRoute = getBaseRoute(it)
-        if ( baseRoute == Screens.MonitorScreen.baseRoute ||
-            baseRoute == Screens.ActivityFormScreen.baseRoute
-        ) {
-            BottomAppBar(
-                containerColor = grayLight,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                BottomNavigationBar(navController = navController, items = navigationItems)
-            }
+        BottomAppBar {
+            BottomNavigationBar(navController = navController, items = navigationItems)
         }
     }
 }
@@ -54,8 +46,8 @@ fun BottomNavigationBar(
     val currentRoute = currentRoute(navController)
 
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.background,
-        contentColor = Color.LightGray,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
     ) {
         items.forEach { screen ->
             NavigationBarItem(
@@ -63,35 +55,23 @@ fun BottomNavigationBar(
                 label = { BottomNavigationBarText(selected = currentRoute == screen.route, label = stringResource(screen.titleResId) ) },
                 selected = currentRoute == screen.route,
                 onClick = {
-                    if (screen.route == Screens.MonitorScreen.route) {
-                        val destination = Screens.MonitorScreen.baseRoute
-                        navController.navigate(destination)
+                    val destination = when (screen) {
+                        // Special case: ActivityFormScreen requires an initial '0' argument
+                        Screens.ActivityFormScreen -> "${Screens.ActivityFormScreen.baseRoute}/0"
+                        // Default case: Use the defined route for all others
+                        else -> screen.route
                     }
-                    else if(screen.route == Screens.ActivityScreen.route) {
-                        val destination = Screens.ActivityScreen.baseRoute
-                        navController.navigate(destination)
-                    }
-                    else if(screen.route == Screens.ActivityFormScreen.route) {
-                        val screenName = Screens.ActivityFormScreen.baseRoute
-                        val destination = "${screenName}/0"
-                        navController.navigate(destination)
-                    }
-                    else {
-                        navController.navigate(screen.route) {
-                            popUpTo(navController.graph.findStartDestination().id){
-                                saveState = true
-                            }
-                            launchSingleTop = true
+
+                    navController.navigate(destination) {
+                        // Apply the robust popUpTo logic for consistent back-stack behavior
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
                         }
+                        // Avoid creating multiple copies of the same destination on the stack
+                        launchSingleTop = true
                     }
                 },
                 alwaysShowLabel = true,
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = gray,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedTextColor = gray
-                )
             )
         }
     }

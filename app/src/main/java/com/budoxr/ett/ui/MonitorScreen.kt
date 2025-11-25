@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -84,8 +83,8 @@ fun MonitorScreen(
 
     //TODO save the current screen into the session object
 
-    val monitoryScreenUiState by viewModel.uiState.collectAsStateWithLifecycle()
-    when (val uiState = monitoryScreenUiState) {
+    val monitorScreenUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    when (val uiState = monitorScreenUiState) {
         is MonitorScreenUiState.Loading -> {
             MonitorScreenLoading()
         }
@@ -212,7 +211,7 @@ fun MonitorScreenContent(
 
     Scaffold (
         floatingActionButtonPosition = FabPosition.End,
-        floatingActionButton =  { monitorState.onNewTimer },
+        floatingActionButton =  { /* monitorState.onNewTimer.invoke() */ },
         topBar = {
             GlobalTopBar(
                 isDarkTheme = monitorState.isDarkTheme,
