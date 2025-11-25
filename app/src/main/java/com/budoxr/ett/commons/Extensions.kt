@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.ui.graphics.Color
 import com.budoxr.ett.ui.theme.alert
 import com.budoxr.ett.ui.theme.blue
+import com.budoxr.ett.ui.theme.bright
 import com.budoxr.ett.ui.theme.earth
 import com.budoxr.ett.ui.theme.gold
 import com.budoxr.ett.ui.theme.gray
@@ -198,6 +199,7 @@ fun String.toDecimalUI(): String {
 
 fun String.toColor(): Color {
     return when(this) {
+        "none" -> bright
         "blue" -> blue
         "brown" -> earth
         "yellow" -> gold

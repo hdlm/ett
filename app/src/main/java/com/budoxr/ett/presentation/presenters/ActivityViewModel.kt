@@ -6,6 +6,7 @@ import com.budoxr.ett.commons.utils.combine
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ import org.koin.core.component.inject
 import timber.log.Timber
 
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ActivityViewModel : KoinViewModel() {
     private val activityInfoUseCase: ActivityInfoUseCase by inject()
 
@@ -56,7 +58,7 @@ class ActivityViewModel : KoinViewModel() {
                 }
 
                 ActivityScreenUiState.Ready(
-                    activities = activities,
+                    activities = filteredActivities.ifEmpty { activities },
                     activityState = formState,
                 )
 

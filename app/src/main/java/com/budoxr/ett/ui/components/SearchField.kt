@@ -64,6 +64,7 @@ fun SearchField(
                 )
             ) {
                 BasicTextField(
+                    singleLine = true,
                     value = value,
                     onValueChange = onValueChange,
                     textStyle = MaterialTheme.typography.bodyMedium.copy(

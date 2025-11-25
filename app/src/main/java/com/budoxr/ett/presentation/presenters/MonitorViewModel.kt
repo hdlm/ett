@@ -34,6 +34,7 @@ class MonitorViewModel : KoinViewModel() {
 
 
     private val refreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = refreshing.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -91,6 +92,11 @@ class MonitorViewModel : KoinViewModel() {
         activityId = activityId,
     )
 
+    fun newTimer(activityId: Int) {
+        Timber.tag(TAG).d("newTimer() -> called, activityId: $activityId")
+        //TODO create the new timer
+
+    }
     fun startTimer(timeTrackingId: Long) {
         Timber.tag(TAG).d("startTimer() -> called")
         viewModelScope.launch(Dispatchers.IO) {

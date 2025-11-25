@@ -82,6 +82,18 @@ class ActivityFormViewModel : KoinViewModel() {
 
     }
 
+    fun onCleanForm() {
+        _formState.update {
+            it.copy(
+                name = "",
+                color = "",
+                nameError = null,
+                colorError = null,
+                isValid = false,
+            )
+        }
+    }
+
     companion object {
         private const val TAG = "che.ActivityFormViewModel"
     }

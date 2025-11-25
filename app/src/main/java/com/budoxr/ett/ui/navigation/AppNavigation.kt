@@ -51,7 +51,6 @@ fun AppNavigation(
                 isDarkTheme = isDarkTheme,
                 navController = navController,
                 onBackButtonClick = onBackButtonClick,
-                navigateToActivity = navigateToActivity,
             )
         }
 

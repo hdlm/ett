@@ -10,6 +10,8 @@
     <string name="msg_an_error_has_occurred">An error has occurred</string>
     <string name="label_retry">Retry</string>
     <string name="msg_no_records">No records found</string>
+    <string name="label_select_activity">Select an activity</string>
+    <string name="content_description_start_timer">Start Timer</string>
     <string-array name="monitor_views_array">
         <item name="current">Currents</item>
         <item name="historical">Hitoricals</item>
@@ -30,6 +32,7 @@
     <string name="label_hint_color">Activity color</string>
     <string name="msg_new_activity_save">New activity saved</string>
     <string-array name="colors_array">
+        <item name="none">None</item>
         <item name="blue">Blue</item>
         <item name="brown">Brown</item>
         <item name="yellow">Yellow</item>

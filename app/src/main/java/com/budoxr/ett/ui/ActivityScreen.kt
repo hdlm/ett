@@ -3,6 +3,7 @@ package com.budoxr.ett.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -183,8 +184,7 @@ fun ActivityScreenReady(
         topBar = {
             GlobalTopBar(
                 isDarkTheme = activityDataState.isDarkTheme,
-                navIcon = null,
-                navIconPainter = painterResource(id = R.drawable.ett_logo),
+                navIcon = Screens.ActivityScreen.icon,
                 onBackButtonClick = activityDataState.onBackButtonClick,
                 titleIcon = null,
                 title = stringResource(Screens.ActivityScreen.titleResId),
@@ -229,6 +229,7 @@ fun ActivityScreenContent(
     activityDataState: ActivityDataState,
 ) {
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
+    val lineSpacing1x = dimensionResource(id = R.dimen.line_spacing_1)
 
     val pullToRefreshState = rememberPullToRefreshState()
 
@@ -237,7 +238,6 @@ fun ActivityScreenContent(
         isRefreshing = activityDataState.isRefreshing,         // Estado actual (determina si el indicador está visible)
         onRefresh = activityDataState.onRefresh,               // Función a llamar cuando el refresh es activado
         modifier = modifier
-            .padding(horizontalMargin)
     ) {
         LazyColumn(
             modifier = Modifier
@@ -252,6 +252,7 @@ fun ActivityScreenContent(
                     placeholder = stringResource(R.string.label_search_field_placeholder),
                     modifier = Modifier
                 )
+                Spacer(modifier = Modifier.padding(vertical = lineSpacing1x))
             }
 
             items(activityDataState.activities) { item ->

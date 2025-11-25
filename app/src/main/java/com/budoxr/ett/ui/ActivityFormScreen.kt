@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -65,11 +66,21 @@ fun ActivityFormScreen(
     val onConfirmClick: onDismissType = {
         viewModel.onSaveClick()
         scope.launch {
-            snackbarHostState.showSnackbar(
+            val snackbarResult = snackbarHostState.showSnackbar(
                 message = resultMessage,
                 actionLabel = "x",
                 duration = SnackbarDuration.Short
             )
+            when (snackbarResult) {
+                SnackbarResult.Dismissed -> {
+                    Timber.tag(TAG).i("Snackbar dismissed, clean form")
+                    viewModel.onCleanForm()
+                }
+                SnackbarResult.ActionPerformed -> {
+                    Timber.tag(TAG).i("Snackbar action performed, go back")
+                    onBackButtonClick.invoke()
+                }
+            }
         }
     }
 
@@ -113,16 +124,14 @@ fun ActivityFormScreen(
             .padding(horizontal = marginHorizontal),
         ) {
 
-            Column {
-                Spacer(modifier = Modifier.padding(vertical = lineSpacing1x))
-                ActivityFormBodyScreen(
-                    isDarkTheme = isDarkTheme,
-                    formState = formState,
-                    onNameChanged = viewModel::onNameChanged,
-                    onColorChange = viewModel::onColorChanged,
-                )
-                Spacer(modifier = Modifier.padding(vertical = lineSpacing3x))
-            }
+            Spacer(modifier = Modifier.padding(vertical = lineSpacing1x))
+            ActivityFormBodyScreen(
+                isDarkTheme = isDarkTheme,
+                formState = formState,
+                onNameChanged = viewModel::onNameChanged,
+                onColorChange = viewModel::onColorChanged,
+            )
+            Spacer(modifier = Modifier.padding(vertical = lineSpacing3x))
 
         }
     }
