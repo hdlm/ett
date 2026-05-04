@@ -9,7 +9,7 @@ class TimerTrackingInsertUseCase : KoinComponent {
     private val repository: TimerTrackingLocalRepository
         get() = get()
 
-    suspend operator fun invoke(timerTracking: TimerTrackingEntity) : Unit =
+    suspend operator fun invoke(timerTracking: TimerTrackingEntity) : Long =
         repository.insert(timerTracking)
 
 }

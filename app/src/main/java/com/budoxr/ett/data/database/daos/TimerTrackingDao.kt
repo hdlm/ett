@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TimerTrackingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(timeTracking: TimerTrackingEntity)
+    suspend fun insert(timeTracking: TimerTrackingEntity): Long
 
     @Delete
     suspend fun delete(timeTracking: TimerTrackingEntity)

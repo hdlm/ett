@@ -14,7 +14,7 @@
     <string name="content_description_start_timer">Start Timer</string>
     <string-array name="monitor_views_array">
         <item name="current">Currents</item>
-        <item name="historical">Hitoricals</item>
+        <item name="historical">Historicals</item>
     </string-array>
 
 

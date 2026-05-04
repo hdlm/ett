@@ -44,7 +44,7 @@ class ActivityViewModel : KoinViewModel() {
                 },
                 _formState,
                 refreshing
-            ) { activities,
+            ) { setActivities,
                 formState,
                 refreshing ->
 
@@ -52,6 +52,8 @@ class ActivityViewModel : KoinViewModel() {
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine ActivityScreenUiState.Loading
                 }
+
+                val activities = setActivities.toList()
 
                 val filteredActivities = activities.filter {
                     it.name.contains(formState.search, ignoreCase = true)

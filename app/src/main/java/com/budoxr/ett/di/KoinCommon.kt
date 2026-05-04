@@ -21,7 +21,7 @@ import org.koin.dsl.module
 object Modules {
     val appModule = module {
         viewModel { ActivityFormViewModel() }
-        viewModel { MonitorViewModel() }
+        viewModel { MonitorViewModel(get(), get(), get()) }
         viewModel { ActivityViewModel() }
     }
 

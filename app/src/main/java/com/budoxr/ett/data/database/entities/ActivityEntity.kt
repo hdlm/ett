@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 )
 data class ActivityEntity(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "activity_id") val activityId: Int? = null,
+    @ColumnInfo(name = "activity_id") val activityId: Long? = null,
     val name: String,
     val color: Color? = null,
 )

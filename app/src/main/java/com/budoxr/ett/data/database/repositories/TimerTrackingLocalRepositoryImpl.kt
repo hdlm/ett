@@ -10,8 +10,8 @@ import org.koin.core.component.inject
 class TimerTrackingLocalRepositoryImpl : TimerTrackingLocalRepository, KoinComponent {
     private val timerTrackingDao by inject<TimerTrackingDao>()
 
-    override suspend fun insert(timeTracking: TimerTrackingEntity) {
-        timerTrackingDao.insert(timeTracking)
+    override suspend fun insert(timeTracking: TimerTrackingEntity) : Long {
+        return timerTrackingDao.insert(timeTracking)
     }
 
     override suspend fun delete(timeTracking: TimerTrackingEntity) {

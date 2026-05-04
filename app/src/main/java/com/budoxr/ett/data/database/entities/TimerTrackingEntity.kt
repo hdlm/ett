@@ -30,6 +30,6 @@ data class TimerTrackingEntity(
     val visible: Boolean = true,
     val done: Boolean = false,
     /** foreign key */
-    @ColumnInfo(name = "activity_id") val activityId: Int,
+    @ColumnInfo(name = "activity_id") val activityId: Long,
 
 )

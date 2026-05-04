@@ -31,8 +31,8 @@ class ActivityFormViewModel : KoinViewModel() {
             it.copy(
                 name = name,
                 nameError = when {
-                    name.isBlank() -> ErrorCode.FIELD_REQUIRED.code
-                    name.length < 3 -> ErrorCode.NAME_MIN_LENGTH.code
+                    name.isBlank() -> ErrorCode.FieldRequired.code
+                    name.length < 3 -> ErrorCode.NameMinLength.code
                     else -> null
                 },
             )
@@ -54,7 +54,7 @@ class ActivityFormViewModel : KoinViewModel() {
     private fun validateForm() {
         _uiState.value = ActivityFormUiState.Form(
             errorType = if (_formState.value.name.isBlank()) {
-                ErrorCode.FIELD_REQUIRED.code
+                ErrorCode.FieldRequired.code
             } else {
                 null
             }
@@ -114,8 +114,8 @@ data class ActivityFormState(
 )
 
 enum class ErrorCode(val code: Int) {
-    FIELD_REQUIRED(100),
-    NAME_MIN_LENGTH(101);
+    FieldRequired(100),
+    NameMinLength(101);
 
     /**
      * Optional utility function to look up an ErrorCode by its raw integer value.

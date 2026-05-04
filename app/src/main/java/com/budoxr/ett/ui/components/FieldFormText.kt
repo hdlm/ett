@@ -57,7 +57,8 @@ fun FieldFormText(
 @Composable
 @Preview(showBackground = true)
 private fun FieldFormTextPreview() {
-    EasyTimeTrackingTheme(darkTheme = true, dynamicColor = false) {
+    val isDarkTheme = false
+    EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
         Surface(modifier = Modifier.padding(8.dp)) {
             FieldFormText(
                 isDarkTheme = false,

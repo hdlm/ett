@@ -76,7 +76,7 @@ data class MonitorState(
     val isRefreshing: Boolean,
     val onRefresh: onDismissType,
     val timers: List<TimersWithActivity>,
-    val onNewTimerClick: onIntType,
+    val onNewTimerClick: onLongType,
     val onStartClick: onLongType,
     val onStopClick: onLongType,
     val onDoneTimer: onLongType,
@@ -196,7 +196,7 @@ fun MonitorScreenReady(
     isDarkTheme: Boolean,
     isRefreshing: Boolean,
     onRefresh: onDismissType,
-    onNewTimerClick: onIntType,
+    onNewTimerClick: onLongType,
     onStartClick: onLongType,
     onStopClick: onLongType,
     onDoneTimer: onLongType,
@@ -271,17 +271,16 @@ fun MonitorScreenReady(
                         }
                     }
                 },
-                onActivitySelected = { activityId ->
-                    // 4. Handle selection, then dismiss
+                placeholderActivities = uiState.activities,
+                onActivitySelected = { index ->
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
                             showBottomSheet = false
                         }
                     }
-                    // TODO: Replace with logic to start timer with the selected Activity ID.
-                    // For now, we call the existing FAB action:
-//                    monitorState.onNewTimerClick.invoke()
+                    monitorState.onNewTimerClick.invoke(index-1)
                 }
+
             )
         }
          

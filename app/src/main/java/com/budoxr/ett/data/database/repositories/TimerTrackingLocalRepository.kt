@@ -5,7 +5,7 @@ import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import kotlinx.coroutines.flow.Flow
 
 interface TimerTrackingLocalRepository {
-    suspend fun insert(timeTracking: TimerTrackingEntity)
+    suspend fun insert(timeTracking: TimerTrackingEntity) : Long
     suspend fun delete(timeTracking: TimerTrackingEntity)
     suspend fun getById(id: Long): TimerTrackingEntity?
     fun observeById(id: Long): Flow<TimerTrackingEntity?>

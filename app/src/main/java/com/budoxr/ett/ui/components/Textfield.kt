@@ -96,7 +96,7 @@ private fun TextfieldPreview() {
 
     EasyTimeTrackingTheme(darkTheme = true, dynamicColor = false) {
         Surface(modifier = Modifier
-            .padding(8.dp)
+            .padding(2.dp)
         ) {
             Textfield(
                 isDarkTheme = false,
