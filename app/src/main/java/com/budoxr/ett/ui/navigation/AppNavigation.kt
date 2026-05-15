@@ -14,10 +14,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
+import com.budoxr.ett.ui.AboutScreen
 import com.budoxr.ett.ui.ActivityFormScreen
 import com.budoxr.ett.ui.ActivityScreen
 import com.budoxr.ett.ui.MonitorScreen
 import timber.log.Timber
+import java.util.Locale
 
 
 @Composable
@@ -102,6 +104,27 @@ fun AppNavigation(
                 onBackButtonClick = onBackButtonClick,
             )
         }
+
+        composable(
+            route = Screens.AboutScreen.route
+        ) { _ ->
+            val onBackButtonClick: onDismissType = {
+                Timber.tag(TAG).d("onBackButtonClick() -> clicked")
+                navController.navigate(Screens.AboutScreen.baseRoute) {
+                    // Limpia la pila de retroceso para que MonitorScreen sea la única pantalla
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true // Evita múltiples instancias de la misma pantalla
+                }
+            }
+            AboutScreen(
+                language = Locale.getDefault().language,
+                isDarkTheme = isDarkTheme,
+                onBackButtonClick = onBackButtonClick,
+            )
+        }
+
     }
 
 }

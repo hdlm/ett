@@ -33,6 +33,7 @@ fun MainBottomBar(navController: NavHostController) {
     val navigationItems = listOf(
         Screens.MonitorScreen,
         Screens.ActivityScreen,
+        Screens.AboutScreen
     )
 
     currentRoute?.let {

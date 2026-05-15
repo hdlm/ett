@@ -43,4 +43,17 @@
         <item name="pink">Pink</item>
     </string-array>
 
+    <!-- AboutScreen -->
+    <string name="title_about_screen">About</string>
+    <string name="label_version">Version: %1$s</string>
+    <string name="label_developer">Developer: %1$s</string>
+    <string name="label_contact">Contact/Support: %1$s</string>
+    <string name="label_legal">Legal</string>
+    <string name="label_privacy_policy">Privacy Policy</string>
+    <string name="url_privacy_policy">www.budoxr.com/ett/privacy-policy.html</string>
+    <string name="label_terms_of_service">Terms of Service</string>
+    <string name="url_terms_of_service">www.budoxr.com/ett/term-service.html</string>
+    <string name="label_software_licenses">Software Licenses</string>
+    <string name="label_mit_license">MIT license</string>
+
 </resources>
