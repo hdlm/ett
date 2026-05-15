@@ -3,9 +3,5 @@
  * Licensed under the MIT License.
  * See LICENSE file in the project root for full license information.
  */
-package com.budoxr.ett.commons
+package com.budoxr.ett.ui
 
-object CommonValues {
-    const val MIN_WAIT = 50L   // 50 milliseconds
-    const val WHILE_SUBSCRIBED = 5_000L
-}

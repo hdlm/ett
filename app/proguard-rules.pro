@@ -4,7 +4,7 @@
 
 # 1. Conservar los Modelos de Datos (entidades, DTOs, etc)
 -keep class com.budoxr.ett.data.dtos.** { <fields>; }
--keep class com.budoxr.ett.presentation.domain.** { <fields>; }
+#-keep class com.budoxr.ett.presentation.domain.** { <fields>; }
 
 # 2. Conservar Atributos para Librerías de Reflexión
 # Permite que librerías como Gson puedan leer metadatos (genéricos, anotaciones)
@@ -31,5 +31,9 @@
 # Al igual que Koin, el procesador de anotaciones de Room  debería manejar esto,
 # pero no está de más ser explícito.
 -keep class androidx.room.RoomDatabase** { *; }
+# Es MUY recomendable añadir reglas explícitas para tus entidades y DAOs de Room
+# para evitar problemas de ofuscación que puedan romper las consultas o la inserción/actualización.
+-keep class com.budoxr.ett.data.database.entities.** { <fields>; }
+-keep class com.budoxr.ett.data.database.daos.** { <fields>; }
 
 # --- FIN DE LAS REGLAS ---

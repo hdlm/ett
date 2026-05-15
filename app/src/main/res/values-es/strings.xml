@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name">Easy Time Tracking</string>
+    <string name="content_description_nav_icon">Icono de Navegación</string>
+    <string name="content_description_icon">Icono</string>
+    <string name="content_description_ett_logo">Easy Time Tracking Logo</string>
+    <string name="content_description_trailing_icon">Trailing icon</string>
+
+    <!-- MonitorScreen -->
+    <string name="title_monitor_screen">Seguimiento de Tareas</string>
+    <string name="msg_an_error_has_occurred">Se ha producido un error</string>
+    <string name="label_retry">Reintentar</string>
+    <string name="msg_no_records">No se encontraron registros</string>
+    <string name="label_select_activity">Seleccione una actividad</string>
+    <string name="content_description_start_timer">Iniciar Temporizador</string>
+    <string-array name="monitor_views_array">
+        <item name="actual">Currents</item>
+        <item name="histórico">Historicals</item>
+    </string-array>
+
+
+    <!-- ActivityScreen -->
+    <string name="title_activity_screen">Actividades</string>
+    <string name="label_search_field_placeholder">Buscar</string>
+
+
+    <!-- ActivityFormScreen -->
+    <string name="title_activity_form_screen">Agregar Actividad</string>
+    <string name="label_button_save">Guardar</string>
+    <string name="label_name">Nombre</string>
+    <string name="label_hint_name">Nombre de la actividad</string>
+    <string name="label_color">Color</string>
+    <string name="label_hint_color">Color de la actividad</string>
+    <string name="msg_new_activity_save">Nueva actividad guardada</string>
+    <string-array name="colors_array">
+        <item name="none">Ninguno</item>
+        <item name="blue">Azul</item>
+        <item name="brown">Marrón</item>
+        <item name="yellow">Amarillo</item>
+        <item name="Orange">Naranja</item>
+        <item name="red">Rojo</item>
+        <item name="green">Verde</item>
+        <item name="purple">Morado</item>
+        <item name="pink">Rosado</item>
+    </string-array>
+
+</resources>

@@ -17,7 +17,7 @@ android {
         minSdk = AndroidSdk.MIN
         targetSdk = AndroidSdk.TARGET
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -33,13 +33,41 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            val signingCredentialsFile = project.file("signin_release.txt")
+
+            if (!signingCredentialsFile.exists()) {
+                throw GradleException(
+                    "Error: El archivo de credenciales 'signin_release.txt' no se encontró en:\n" +
+                            signingCredentialsFile.absolutePath + "\n" +
+                            "Asegúrate de que el archivo existe y está en la ubicación correcta."
+                )
+            }
+
+            val credentials = signingCredentialsFile.readLines()
+
+            if (credentials.size < 3) {
+                throw GradleException(
+                    "Error: El archivo 'signin_release.txt' debe contener al menos 3 líneas " +
+                            "(storePassword, keyAlias, keyPassword) en ese orden."
+                )
+            }
+
+            storeFile = file("D:/mydata/working/Documents/digital_certif/upload-keystore.jks")
+            storePassword = credentials[0] // storePassword
+            keyAlias = credentials[1]      // keyAlias
+            keyPassword = credentials[2]   // keyPassword
+        }
+    }
+
     buildTypes {
         debug {
             isDebuggable = true
             buildConfigField("boolean", "SAVE_DATA_TO_JSON", "true")
         }
         release {
-            isMinifyEnabled = false
+            isDebuggable = false
             buildConfigField("boolean", "SAVE_DATA_TO_JSON", "false")
             isMinifyEnabled = true
             isShrinkResources = true
@@ -47,6 +75,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -112,4 +141,19 @@ dependencies {
     // --- Debug Tools ---
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+
+tasks.register("pipelineRelease") {
+    group = "build"
+    description = "Assemble, Generates and signs the release App Bundle."
+    dependsOn("assembleRelease", "bundleRelease")
+
+    println("Bundle Path: .\\app\\build\\outputs\\bundle\\release")
+}
+
+tasks.register("generateAndSignAppBundleRelease") {
+    group = "build"
+    description = "Generates and signs the release App Bundle."
+    dependsOn("bundleRelease")
 }
