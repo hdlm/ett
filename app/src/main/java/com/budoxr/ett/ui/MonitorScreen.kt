@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,17 +15,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -62,6 +59,7 @@ import com.budoxr.ett.presentation.presenters.MonitorViewModel
 import com.budoxr.ett.ui.components.ActivitySelectionBottomSheet
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
+import com.budoxr.ett.ui.components.MonitorScreenRowItem
 import com.budoxr.ett.ui.components.SingleChoiceSegmentedButton
 import com.budoxr.ett.ui.navigation.Screens
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
@@ -79,7 +77,7 @@ data class MonitorState(
     val onNewTimerClick: onLongType,
     val onStartClick: onLongType,
     val onStopClick: onLongType,
-    val onDoneTimer: onLongType,
+    val onHideTimer: onLongType,
     val onBackButtonClick: onDismissType,
     val onSelectedFilter: onIntType,
 )
@@ -117,7 +115,7 @@ fun MonitorScreen(
                 onNewTimerClick = viewModel::newTimer,
                 onStartClick = viewModel::startTimer,
                 onStopClick = viewModel::stopTimer,
-                onDoneTimer = viewModel::doneTimer,
+                onHideTimer = viewModel::hideTimer,
                 onBackButtonClick = onBackButtonClick,
                 onSelectedFilter = viewModel::onChangeFilter,
             )
@@ -199,7 +197,7 @@ fun MonitorScreenReady(
     onNewTimerClick: onLongType,
     onStartClick: onLongType,
     onStopClick: onLongType,
-    onDoneTimer: onLongType,
+    onHideTimer: onLongType,
     onBackButtonClick: onDismissType,
     onSelectedFilter: onIntType,
 ) {
@@ -213,7 +211,7 @@ fun MonitorScreenReady(
         onNewTimerClick = onNewTimerClick,
         onStartClick = onStartClick,
         onStopClick = onStopClick,
-        onDoneTimer = onDoneTimer,
+        onHideTimer = onHideTimer,
         onBackButtonClick = onBackButtonClick,
         onSelectedFilter = onSelectedFilter,
     )
@@ -272,13 +270,13 @@ fun MonitorScreenReady(
                     }
                 },
                 placeholderActivities = uiState.activities,
-                onActivitySelected = { index ->
+                onActivitySelected = { id ->
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
                             showBottomSheet = false
                         }
                     }
-                    monitorState.onNewTimerClick.invoke(index-1)
+                    monitorState.onNewTimerClick.invoke(id)
                 }
 
             )
@@ -327,28 +325,28 @@ fun MonitorScreenContent(
             items(monitorState.timers) { timers ->
                 MonitorScreenRowItem(
                     monitorState = monitorState,
+                    nameActivity = timers.activity.name,
                     item = timers.timerTracking,
-                    modifier = Modifier
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
             item {
+                if (monitorState.timers.isEmpty()) {
+                    Row(modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                            contentDescription = stringResource(R.string.content_description_icon),
+                            tint = MaterialTheme.colorScheme.primary, //standard icon color (onSurfaceVariant)
+                            modifier = Modifier.size(iconSize)
+                        )
+                    }
 
-                Row(modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
-                        contentDescription = stringResource(R.string.content_description_icon),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant, //standard icon color
-                        modifier = Modifier.size(iconSize)
-                    )
-                }
-
-                Row(modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    if (monitorState.timers.isEmpty()) {
+                    Row(modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
                         Text(text = stringResource(R.string.msg_no_records), style = MaterialTheme.typography.titleMedium)
                     }
                 }
@@ -358,66 +356,6 @@ fun MonitorScreenContent(
         }
     }
     
-}
-
-
-@Composable
-fun MonitorScreenRowItem(
-    monitorState: MonitorState,
-    item: TimerTrackingEntity,
-    modifier: Modifier
-) {
-
-    val iconSize = dimensionResource(id = R.dimen.icon_tiny_size)
-    val playIcon = Icons.Filled.PlayCircle
-    val stopIcon = Icons.Filled.StopCircle
-
-    var checked by remember { mutableStateOf(item.done) }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-    ) {
-        Text(text = "(nro)", style = MaterialTheme.typography.bodySmall)
-        Text(text = "name actv", style = MaterialTheme.typography.bodySmall)
-        Text(text = "${item.elapsedTime}", style = MaterialTheme.typography.bodySmall)
-
-        if (!item.done) {
-            IconButton(
-                onClick = { monitorState.onStartClick.invoke(item.timerTrackingId!!)},
-                enabled = true
-            ) {
-                Icon(
-                    modifier = Modifier.size(iconSize),
-                    imageVector = playIcon,
-                    contentDescription = stringResource(id = R.string.content_description_icon),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant, //standard icon color
-                )
-            }
-        } else {
-            IconButton(
-                onClick = { monitorState.onStopClick.invoke(item.timerTrackingId!!)},
-                enabled = true
-            ) {
-                Icon(
-                    modifier = Modifier.size(iconSize),
-                    imageVector = stopIcon,
-                    contentDescription = stringResource(id = R.string.content_description_icon),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant, //standard icon color
-                )
-            }
-        }
-
-        Checkbox(
-            checked = checked,
-            onCheckedChange = {
-                checked = it
-                monitorState.onDoneTimer.invoke(item.timerTrackingId!!)
-            }
-        )
-
-    }
-
 }
 
 
@@ -456,7 +394,7 @@ fun MonitorScreenContentPreview() {
         timers = emptyList(),
         onStartClick = {_ ->},
         onStopClick = {_ ->},
-        onDoneTimer = {_ ->},
+        onHideTimer = { _ ->},
         onBackButtonClick = {},
         onSelectedFilter = {_ ->},
     )

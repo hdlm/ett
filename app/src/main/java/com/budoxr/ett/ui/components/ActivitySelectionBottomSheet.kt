@@ -3,10 +3,11 @@ package com.budoxr.ett.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.BottomSheetDefaults
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onLongType
 import com.budoxr.ett.data.database.entities.ActivityEntity
+import timber.log.Timber
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +42,8 @@ fun ActivitySelectionBottomSheet(
 ) {
     val lineSpacing1 = dimensionResource(id = R.dimen.line_spacing_1)
     val lineSpacing3 = dimensionResource(id = R.dimen.line_spacing_3)
+
+    Timber.tag(TAG).i("compose / recompose")
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -57,19 +61,19 @@ fun ActivitySelectionBottomSheet(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            LazyColumn {
-                itemsIndexed(placeholderActivities) { index, activityEntity ->
-                    ListItem(
-                        headlineContent = { Text(activityEntity.name) },
-                        trailingContent = {
-                            Icon(Icons.Filled.PlayCircle, contentDescription = stringResource(R.string.content_description_start_timer)) // Define this string resource
-                        },
-                        modifier = Modifier.clickable {
-                            onActivitySelected(index.toLong() + 1)
-                        }
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(
+                    items = placeholderActivities,
+                    key = { it.activityId!! }
+                ) { activity ->
+                    ActivityListItem(
+                        activity = activity,
+                        onItemClick = { id -> onActivitySelected(id) }
                     )
                     HorizontalDivider(
-                        color = Color.LightGray.copy(0.3f),
+                        color = Color.LightGray.copy(alpha = 0.3f),
                         thickness = 1.dp,
                         modifier = Modifier.padding(vertical = lineSpacing1)
                     )
@@ -79,3 +83,32 @@ fun ActivitySelectionBottomSheet(
         }
     }
 }
+
+
+@Composable
+fun ActivityListItem(
+    activity: ActivityEntity,
+    onItemClick: (Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ListItem(
+        headlineContent = {
+            Text(
+                text = activity.name,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        },
+        trailingContent = {
+            Icon(
+                imageVector = Icons.Filled.PlayCircle,
+                contentDescription = stringResource(R.string.content_description_start_timer),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onItemClick(activity.activityId!!) }
+    )
+}
+
+private const val TAG = "che.ActivitySelectionBottomSheet"

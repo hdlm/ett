@@ -30,11 +30,11 @@ class TimerTrackingLocalRepositoryImpl : TimerTrackingLocalRepository, KoinCompo
     override fun observeAllTimers(): Flow<List<TimersWithActivity>> =
         timerTrackingDao.observeTimersWithActivities()
 
-    override suspend fun getAllActiveTimers(): List<TimersWithActivity> =
-        timerTrackingDao.getActiveTimersWithActivities()
+    override suspend fun getAllVisibleTimers(): List<TimersWithActivity> =
+        timerTrackingDao.getVisibleTimersWithActivities()
 
-    override fun observeAllActiveTimers(): Flow<List<TimersWithActivity>> =
-        timerTrackingDao.observeActiveTimersWithActivities()
+    override fun observeAllVisibleTimers(): Flow<List<TimersWithActivity>> =
+        timerTrackingDao.observeVisibleTimersWithActivities()
 
 
 }

@@ -12,7 +12,7 @@ import com.budoxr.ett.presentation.presenters.ActivityViewModel
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
-import com.budoxr.ett.presentation.usecase.TimerTrackingActiveInfoUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -45,7 +45,7 @@ object Modules {
         factory { ActivityInfoUseCase() }
 
         factory<TimerTrackingLocalRepository> { TimerTrackingLocalRepositoryImpl() }
-        factory { TimerTrackingActiveInfoUseCase() }
+        factory { TimerTrackingVisibleInfoUseCase() }
         factory { TimerTrackingInsertUseCase() }
 
     }

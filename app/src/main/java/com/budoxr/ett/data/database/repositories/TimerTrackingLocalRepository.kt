@@ -12,7 +12,7 @@ interface TimerTrackingLocalRepository {
     suspend fun getAllTimers(): List<TimersWithActivity>
     fun observeAllTimers(): Flow<List<TimersWithActivity>>
 
-    suspend fun getAllActiveTimers(): List<TimersWithActivity>
-    fun observeAllActiveTimers(): Flow<List<TimersWithActivity>>
+    suspend fun getAllVisibleTimers(): List<TimersWithActivity>
+    fun observeAllVisibleTimers(): Flow<List<TimersWithActivity>>
 
 }

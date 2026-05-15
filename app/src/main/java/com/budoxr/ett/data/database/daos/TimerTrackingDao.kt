@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import kotlinx.coroutines.flow.Flow
@@ -23,17 +24,21 @@ interface TimerTrackingDao {
     @Query("SELECT * FROM timer_tracking_activities WHERE timer_tracking_id = :id")
     fun observeById(id: Long): Flow<TimerTrackingEntity?>
 
+    @Transaction
     @Query("SELECT * FROM timer_tracking_activities")
     suspend fun getTimersWithActivities(): List<TimersWithActivity>
 
+    @Transaction
     @Query("SELECT * FROM timer_tracking_activities")
     fun observeTimersWithActivities(): Flow<List<TimersWithActivity>>
 
-    @Query("SELECT * FROM timer_tracking_activities WHERE done = 1")
-    suspend fun getActiveTimersWithActivities(): List<TimersWithActivity>
+    @Transaction
+    @Query("SELECT * FROM timer_tracking_activities WHERE visible = 1")
+    suspend fun getVisibleTimersWithActivities(): List<TimersWithActivity>
 
-    @Query("SELECT * FROM timer_tracking_activities WHERE done = 1")
-    fun observeActiveTimersWithActivities(): Flow<List<TimersWithActivity>>
+    @Transaction
+    @Query("SELECT * FROM timer_tracking_activities WHERE visible = 1")
+    fun observeVisibleTimersWithActivities(): Flow<List<TimersWithActivity>>
 
 
 }

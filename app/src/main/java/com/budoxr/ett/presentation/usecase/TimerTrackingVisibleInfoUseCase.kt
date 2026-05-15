@@ -6,11 +6,11 @@ import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
-class TimerTrackingActiveInfoUseCase : KoinComponent {
+class TimerTrackingVisibleInfoUseCase : KoinComponent {
     val localRepository: TimerTrackingLocalRepository
         get() = get()
 
     operator fun invoke(): Flow<List<TimersWithActivity>> {
-        return localRepository.observeAllActiveTimers()
+        return localRepository.observeAllVisibleTimers()
     }
 }

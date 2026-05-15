@@ -1,5 +1,6 @@
 package com.budoxr.ett.presentation.presenters
 
+import android.database.sqlite.SQLiteException
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
 import com.budoxr.ett.commons.toFechaTimeDb
@@ -10,7 +11,7 @@ import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
-import com.budoxr.ett.presentation.usecase.TimerTrackingActiveInfoUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +30,7 @@ import java.util.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MonitorViewModel(
-    private val timerTrackingActiveInfoUseCase: TimerTrackingActiveInfoUseCase,
+    private val timerTrackingVisibleInfoUseCase: TimerTrackingVisibleInfoUseCase,
     private val timerTrackingInsertUseCase: TimerTrackingInsertUseCase,
     private val activityInfoUseCase: ActivityInfoUseCase,
 ) : KoinViewModel() {
@@ -57,7 +58,7 @@ class MonitorViewModel(
             combine(
                 _activities,
                 _timers.flatMapLatest { _ ->
-                    timerTrackingActiveInfoUseCase.invoke()
+                    timerTrackingVisibleInfoUseCase.invoke()
                 },
                 _selectedFilter,
                 refreshing,
@@ -72,6 +73,8 @@ class MonitorViewModel(
                 }
 
                 //TODO apply the filter to the list of timers
+
+                _timers.value = timers
 
                 MonitorScreenUiState.Ready(
                     activities = activities.toList(),
@@ -112,47 +115,78 @@ class MonitorViewModel(
         activityId = activityId,
     )
 
-    fun newTimer(index: Long) {
+    fun newTimer(activityId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            Timber.tag(TAG).d("newTimer() -> called, index: $index")
+            Timber.tag(TAG).d("newTimer() -> called, index: $activityId")
             try  {
-                val activity = _activities.value.elementAt(index.toInt())
+                val activity = _activities.value.find { it.activityId == activityId }
+                activity?.let {
+                    val timerTracking = TimerTrackingEntity(
+                        startTime = TimeUtils.toTimestamp(),
+                        visible = true,
+                        done = false,
+                        activityId = it.activityId!!
+                    )
 
-                val timerTracking = TimerTrackingEntity(
-                    startTime = TimeUtils.toTimestamp(),
-                    visible = true,
-                    done = false,
-                    activityId = activity.activityId!!
-                )
+                    val id = timerTrackingInsertUseCase.invoke(timerTracking)
+                    Timber.tag(TAG).d("newTimer() -> new register added with id: $id")
+                    startTimer(id)
+                }
 
-                val id = timerTrackingInsertUseCase.invoke(timerTracking)
-                Timber.tag(TAG).d("newTimer() -> new register added with id: $id")
-
-            } catch (e: IndexOutOfBoundsException) {
-                //TODO pausa temporal para identificar la causa de esta exception
-                var pausa = 0
-                pausa++
+            } catch (e: SQLiteException) {
+                Timber.tag(TAG).e(e, "Error creating new timer")
+                _uiState.update { MonitorScreenUiState.Error( errorMessage = "error: ${e.message}" ) }
             }
         }
 
     }
     fun startTimer(timeTrackingId: Long) {
         Timber.tag(TAG).d("startTimer() -> called")
-        viewModelScope.launch(Dispatchers.IO) {
-            //TODO save the time tracking to the database
-        }
+        // By default when it is created a new timer, it is start the timer
 
     }
 
     fun stopTimer(timeTrackingId: Long) {
         Timber.tag(TAG).d("stopTimer() -> called")
-        //TODO implement the stop click
+
+        val timerTracking = _timers.value.find { it.timerTracking.timerTrackingId == timeTrackingId }
+        timerTracking?.let {
+            val startTimestamp = it.timerTracking.startTime
+            val endTimestamp = TimeUtils.toTimestamp()
+            val timerTrackingUpdated = TimerTrackingEntity(
+                timerTrackingId = it.timerTracking.timerTrackingId,
+                startTime = startTimestamp,
+                endTime = endTimestamp,
+                elapsedTime = TimeUtils.calculateTimestampDifference(
+                    startTimestamp = startTimestamp,
+                    endTimestamp = endTimestamp
+                ),
+                visible = true,
+                done = true,
+                activityId = it.activity.activityId!!
+            )
+            viewModelScope.launch(Dispatchers.IO) {
+                timerTrackingInsertUseCase.invoke(timerTrackingUpdated)
+                Timber.tag(TAG).i("Timer updated with id: $timeTrackingId")
+            }
+        }
 
     }
 
-    fun doneTimer(timeTrackingId: Long) {
-        Timber.tag(TAG).d("doneTimer() -> called")
-        //TODO not implemented yet
+    fun hideTimer(timeTrackingId: Long) {
+        Timber.tag(TAG).d("hideTimer() -> called")
+
+        val timerTracking = _timers.value.find { it.timerTracking.timerTrackingId == timeTrackingId }
+        timerTracking?.let {
+            val timerTrackingUpdated = it.timerTracking.copy(
+                visible = false
+            )
+            viewModelScope.launch(Dispatchers.IO) {
+                timerTrackingInsertUseCase.invoke(timerTrackingUpdated)
+                Timber.tag(TAG).i("Hide the timer with id: $timeTrackingId")
+            }
+        }
+
     }
 
     fun onChangeFilter(index: Int) {
