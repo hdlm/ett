@@ -6,17 +6,17 @@
 package com.budoxr.ett.data.database.converters
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toColorLong
+import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
 
 class ColorConverters {
     @TypeConverter
-    fun fromColor(color: Color): Long? {
-        return color.toColorLong()
+    fun fromColor(color: Color?): Int? {
+        return color?.toArgb()
     }
 
     @TypeConverter
-    fun toColor(colorValue: Long?): Color? {
+    fun toColor(colorValue: Int?): Color? {
         return colorValue?.let { Color(it) }
     }
 }

@@ -22,10 +22,10 @@ class ActivityLocalRepositoryImpl : ActivityLocalRepository, KoinComponent {
         activityDao.delete(activity)
     }
 
-    override suspend fun getById(id: Int): ActivityEntity? =
+    override suspend fun getById(id: Long): ActivityEntity? =
         activityDao.getById(id)
 
-    override fun observeById(id: Int): Flow<ActivityEntity?> =
+    override fun observeById(id: Long): Flow<ActivityEntity?> =
         activityDao.observeById(id)
 
     override suspend fun getAll(): List<ActivityEntity> =

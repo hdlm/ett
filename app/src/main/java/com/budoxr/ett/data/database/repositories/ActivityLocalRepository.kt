@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.Flow
 interface ActivityLocalRepository {
     suspend fun insert(activity: ActivityEntity)
     suspend fun delete(activity: ActivityEntity)
-    suspend fun getById(id: Int): ActivityEntity?
-    fun observeById(id: Int): Flow<ActivityEntity?>
+    suspend fun getById(id: Long): ActivityEntity?
+    fun observeById(id: Long): Flow<ActivityEntity?>
     suspend fun getAll(): List<ActivityEntity>
     fun observeAll(): Flow<List<ActivityEntity>>
 }

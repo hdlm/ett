@@ -66,7 +66,7 @@ class MonitorViewModel(
                     timerTrackingVisibleInfoUseCase.invoke()
                 },
                 _selectedFilter,
-                refreshing,
+                refreshing
             ) { activities,
                 timers,
                 selectedFilter,

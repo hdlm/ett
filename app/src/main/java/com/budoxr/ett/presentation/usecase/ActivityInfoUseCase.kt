@@ -23,6 +23,6 @@ class ActivityInfoUseCase : KoinComponent {
 
         }
 
-    operator fun invoke(activityId: Int) = localRepository.observeById(activityId)
+    operator fun invoke(activityId: Long) = localRepository.observeById(activityId)
 
 }

@@ -22,10 +22,10 @@ interface ActivityDao {
     suspend fun delete(activity: ActivityEntity)
 
     @Query("SELECT * FROM activities WHERE activity_id = :id")
-    suspend fun getById(id: Int): ActivityEntity?
+    suspend fun getById(id: Long): ActivityEntity?
 
     @Query("SELECT * FROM activities WHERE activity_id = :id")
-    fun observeById(id: Int): Flow<ActivityEntity?>
+    fun observeById(id: Long): Flow<ActivityEntity?>
 
     @Query("SELECT * FROM activities")
     suspend fun getAll(): List<ActivityEntity>

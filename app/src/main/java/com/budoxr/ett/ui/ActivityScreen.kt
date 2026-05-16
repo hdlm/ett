@@ -5,17 +5,21 @@
  */
 package com.budoxr.ett.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -23,7 +27,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -34,26 +37,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
-import com.budoxr.ett.commons.onIntType
+import com.budoxr.ett.commons.onLongType
 import com.budoxr.ett.commons.onStringType
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.presentation.presenters.ActivityScreenUiState
-import com.budoxr.ett.presentation.presenters.ActivityState
 import com.budoxr.ett.presentation.presenters.ActivityViewModel
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.components.SearchField
 import com.budoxr.ett.ui.navigation.Screens
+import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
@@ -66,7 +69,7 @@ data class ActivityDataState(
     val onRefresh: onDismissType,
     val onSearchChange: onStringType,
     val onNewActivityClick: onDismissType,
-    val onActivityClick: onIntType,
+    val onEditActivityClick: onLongType,
     val onBackButtonClick: onDismissType,
 )
 
@@ -76,7 +79,7 @@ fun ActivityScreen(
     navController: NavHostController,
     isDarkTheme: Boolean,
     onBackButtonClick: onDismissType,
-    navigateToActivityForm: onIntType,
+    navigateToActivityForm: onLongType,
     viewModel: ActivityViewModel = koinViewModel()
 ) {
     Timber.tag(TAG).i("compose / recompose")
@@ -101,8 +104,8 @@ fun ActivityScreen(
                 isRefreshing = isRefreshing,
                 onRefresh = viewModel::refresh,
                 onSearchChange = viewModel::onSearchChange,
-                onNewActivityClick = { navigateToActivityForm.invoke(0) },
-                onActivityClick =  viewModel::onActivityClick,
+                onNewActivityClick = { navigateToActivityForm.invoke(0L) },
+                onEditActivityClick = navigateToActivityForm,
                 onBackButtonClick = onBackButtonClick,
             )
         }
@@ -168,7 +171,7 @@ fun ActivityScreenReady(
     onRefresh: onDismissType,
     onSearchChange: onStringType,
     onNewActivityClick: onDismissType,
-    onActivityClick: onIntType,
+    onEditActivityClick: onLongType,
     onBackButtonClick: onDismissType,
 ) {
 
@@ -181,7 +184,7 @@ fun ActivityScreenReady(
         onRefresh = onRefresh,
         onSearchChange = onSearchChange,
         onNewActivityClick = onNewActivityClick,
-        onActivityClick = onActivityClick,
+        onEditActivityClick = onEditActivityClick,
         onBackButtonClick = onBackButtonClick,
     )
 
@@ -235,6 +238,7 @@ fun ActivityScreenContent(
 ) {
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
     val lineSpacing1x = dimensionResource(id = R.dimen.line_spacing_1)
+    val iconSize = dimensionResource(id = R.dimen.icon_huge_size)
 
     val pullToRefreshState = rememberPullToRefreshState()
 
@@ -261,11 +265,28 @@ fun ActivityScreenContent(
             }
 
             items(activityDataState.activities) { item ->
-                Text(text = item.name)
+                Text(
+                    text = item.name,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { activityDataState.onEditActivityClick(item.activityId!!) }
+                        .padding(16.dp)
+                )
             }
 
             item {
                 if (activityDataState.activities.isEmpty()) {
+                    Row(modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                            contentDescription = stringResource(R.string.content_description_icon),
+                            tint = MaterialTheme.colorScheme.primary, //standard icon color (onSurfaceVariant)
+                            modifier = Modifier.size(iconSize)
+                        )
+                    }
+
                     Text(text = stringResource(R.string.msg_no_records), style = MaterialTheme.typography.titleMedium)
                 }
             }
@@ -273,6 +294,55 @@ fun ActivityScreenContent(
 
     }
 
+}
+
+
+
+@Composable
+@Preview(showBackground = true)
+fun ActivityScreenPreview() {
+    val navController = rememberNavController()
+    val isDarkTheme = false
+    
+    val actv1 = ActivityEntity(
+        activityId = 1,
+        name = "Activity One",
+        color = Color(-34757177461702656L)
+    )
+    val actv2 = ActivityEntity(
+        activityId = 2,
+        name = "Activity Two",
+        color = Color(-34757177461702656L)
+    )
+    val actv3 = ActivityEntity(
+        activityId = 3,
+        name = "Activity Three",
+        color = Color(-34757177461702656L)
+    )
+    val activities = listOf(actv1, actv2, actv3)
+
+    val activityDataState = ActivityDataState(
+        navController = navController,
+        isDarkTheme = isDarkTheme,
+        activities = activities,
+        search = "",
+        isRefreshing = false,
+        onRefresh = {},
+        onSearchChange = { _ -> },
+        onNewActivityClick = {},
+        onEditActivityClick = { _ ->},
+        onBackButtonClick = {}
+    )
+
+    EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            ActivityScreenContent(
+                modifier = Modifier,
+                activityDataState = activityDataState
+            )
+        }
+    }
+    
 }
 
 

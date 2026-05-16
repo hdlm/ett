@@ -5,30 +5,99 @@
  */
 package com.budoxr.ett.presentation.presenters
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
+import com.budoxr.ett.commons.CommonValues
 import com.budoxr.ett.commons.toColor
+import com.budoxr.ett.commons.toColorName
 import com.budoxr.ett.data.database.entities.ActivityEntity
+import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.component.inject
 import timber.log.Timber
 import java.util.Locale.getDefault
 
-class ActivityFormViewModel : KoinViewModel() {
-    private val activityInsertUseCase: ActivityInsertUseCase by inject()
+@OptIn(ExperimentalCoroutinesApi::class)
+class ActivityFormViewModel(
+    private val activityId: Long,
+    private val activityInfo: ActivityInfoUseCase,
+    private val activityInsertUseCase: ActivityInsertUseCase
+) : KoinViewModel() {
 
     private val _formState = MutableStateFlow(ActivityFormState())
     val formState : StateFlow<ActivityFormState>
         get() = _formState.asStateFlow()
 
-    private val _uiState = MutableStateFlow<ActivityFormUiState>(ActivityFormUiState.Form())
+    private val _uiState = MutableStateFlow<ActivityFormUiState>(ActivityFormUiState.Loading)
     val uiState: StateFlow<ActivityFormUiState>
         get() = _uiState.asStateFlow()
+
+
+    private val refreshing = MutableStateFlow(false)
+
+    init {
+        viewModelScope.launch {
+            if (activityId > 0) {
+                activityInfo.invoke(activityId)
+                    .filterNotNull()
+                    .collectLatest { activity ->
+                        _formState.update {
+                            it.copy(
+                                name = activity.name,
+                                color = activity.color!!.toColorName(),
+                                isValid = activity.name.isNotBlank()
+                            )
+                        }
+                    }
+            }
+        }
+
+        viewModelScope.launch {
+            combine(
+                refreshing,
+                _formState
+            ) { refreshing, _ ->
+                if (refreshing) {
+                    ActivityFormUiState.Loading
+                } else {
+                    ActivityFormUiState.Form(errorCode = null)
+                }
+            }.catch { throwable ->
+                throwable.printStackTrace()
+                _uiState.value = ActivityFormUiState.Form( errorCode = ErrorCode.DatabaseError.code )
+                Timber.tag(TAG).e( throwable,"error: ${throwable.localizedMessage}")
+            }.collect {
+                _uiState.value = it
+            }
+        }
+        refresh(force = true)
+
+    }
+
+
+    fun refresh(force: Boolean = true ) {
+        Timber.tag(TAG).i("refresh() -> invoked, force: $force")
+        viewModelScope.launch {
+            runCatching {
+                refreshing.update { force }
+                if(force) {
+                    delay(CommonValues.MIN_WAIT)
+                    refreshing.update { false }
+                }
+            }
+        }
+    }
 
 
     fun onNameChanged(name: String) {
@@ -40,10 +109,9 @@ class ActivityFormViewModel : KoinViewModel() {
                     name.length < 3 -> ErrorCode.NameMinLength.code
                     else -> null
                 },
+                isValid = name.isNotBlank() && name.length >= 3
             )
         }
-        validateForm()
-
     }
 
     fun onColorChanged(color: String) {
@@ -55,22 +123,6 @@ class ActivityFormViewModel : KoinViewModel() {
         }
     }
 
-
-    private fun validateForm() {
-        _uiState.value = ActivityFormUiState.Form(
-            errorType = if (_formState.value.name.isBlank()) {
-                ErrorCode.FieldRequired.code
-            } else {
-                null
-            }
-        )
-        _formState.update {
-            it.copy(
-                isValid = it.name.isNotBlank()
-            )
-        }
-    }
-
     fun onSaveClick() {
         Timber.tag(TAG).d("onSaveClick() -> called.")
 
@@ -78,11 +130,12 @@ class ActivityFormViewModel : KoinViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             val activityEntity = ActivityEntity(
+                activityId = if (activityId > 0) activityId else null,
                 name = form.name.uppercase(getDefault()),
                 color = form.color.toColor()
             )
-            Timber.tag(TAG).i("Saving new activity in the database")
-            activityInsertUseCase(activityEntity)
+            Timber.tag(TAG).i("Saving activity in the database")
+            activityInsertUseCase.invoke(activityEntity)
         }
 
     }
@@ -107,7 +160,8 @@ class ActivityFormViewModel : KoinViewModel() {
 
 
 sealed interface ActivityFormUiState {
-    data class Form(val errorType: Int? = null) : ActivityFormUiState
+    data object Loading : ActivityFormUiState
+    data class Form(val errorCode: Int? = null) : ActivityFormUiState
 }
 
 data class ActivityFormState(
@@ -120,7 +174,8 @@ data class ActivityFormState(
 
 enum class ErrorCode(val code: Int) {
     FieldRequired(100),
-    NameMinLength(101);
+    NameMinLength(101),
+    DatabaseError(103);
 
     /**
      * Optional utility function to look up an ErrorCode by its raw integer value.

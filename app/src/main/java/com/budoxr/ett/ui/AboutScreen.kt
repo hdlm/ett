@@ -37,6 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.budoxr.ett.BuildConfig
 import com.budoxr.ett.R
+import com.budoxr.ett.ui.components.GlobalTopBar
+import com.budoxr.ett.ui.navigation.Screens
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import timber.log.Timber
 
@@ -51,23 +53,22 @@ fun AboutScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.title_about_screen)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackButtonClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.content_description_nav_icon)
-                        )
-                    }
-                }
+            GlobalTopBar(
+                isDarkTheme = isDarkTheme,
+                navIcon = Screens.AboutScreen.icon,
+                onBackButtonClick = onBackButtonClick,
+                titleIcon = null,
+                title = stringResource(Screens.AboutScreen.titleResId),
+                actionIcon = null,
+                onActionButtonClick = {},
             )
         }
-    ) { paddingValues ->
+    ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(innerPadding)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally

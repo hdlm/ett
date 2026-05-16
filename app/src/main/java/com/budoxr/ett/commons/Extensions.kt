@@ -8,8 +8,9 @@ package com.budoxr.ett.commons
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.budoxr.ett.ui.theme.alert
-import com.budoxr.ett.ui.theme.blue
+import com.budoxr.ett.ui.theme.blue as bblue
 import com.budoxr.ett.ui.theme.bright
 import com.budoxr.ett.ui.theme.earth
 import com.budoxr.ett.ui.theme.gold
@@ -205,7 +206,7 @@ fun String.toDecimalUI(): String {
 fun String.toColor(): Color {
     return when(this) {
         "none" -> bright
-        "blue" -> blue
+        "blue" -> bblue
         "brown" -> earth
         "yellow" -> gold
         "orange" -> orange
@@ -214,6 +215,22 @@ fun String.toColor(): Color {
         "purple" -> purple
         "pink" -> pink
         else -> gray
+    }
+}
+
+fun Color.toColorName(): String {
+    val argb = this.toArgb()
+    return when (argb) {
+        bright.toArgb() -> "none"
+        bblue.toArgb() -> "blue"
+        earth.toArgb() -> "brown"
+        gold.toArgb() -> "yellow"
+        orange.toArgb() -> "orange"
+        alert.toArgb() -> "red"
+        money.toArgb() -> "green"
+        purple.toArgb() -> "purple"
+        pink.toArgb() -> "pink"
+        else -> "gray"
     }
 }
 

@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.inject
 import timber.log.Timber
 
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActivityViewModel : KoinViewModel() {
     private val activityInfoUseCase: ActivityInfoUseCase by inject()
@@ -101,10 +100,6 @@ class ActivityViewModel : KoinViewModel() {
         }
     }
 
-    fun onActivityClick(activityId: Int) {
-        Timber.tag(TAG).i("onActivityClick() -> called, activityId: $activityId")
-        //TODO not implemented yet
-    }
 
     companion object {
         private const val TAG = "che.ActivityViewModel"
