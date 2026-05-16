@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.budoxr.ett.presentation.domain.BarChartItemModel
+import java.util.Locale
 
 @Composable
 fun PureBarChart(
@@ -52,7 +53,7 @@ fun PureBarChart(
         val canvasHeight = size.height
 
         // Reserved space for labels and titles
-        val yAxisWidth = 80f
+        val yAxisWidth = 100f // Increased to accommodate hh:mm
         val xAxisHeight = 60f
         val titleSpace = 40f
         
@@ -76,13 +77,24 @@ fun PureBarChart(
             strokeWidth = 2f
         )
 
-        // 2. Draw Y-axis (Seconds)
+        // 2. Draw Y-axis (Time hh:mm) and Grid
         val ySteps = 5
+        val gridColor = onBackground.copy(alpha = 0.1f)
         for (i in 0..ySteps) {
             val ratio = i / ySteps.toFloat()
-            val yValue = maxVal * ratio
+            val yValue = maxVal * ratio // yValue is in seconds
             val yPos = chartHeight * (1f - ratio)
             
+            // Horizontal grid line
+            if (i > 0) {
+                drawLine(
+                    color = gridColor,
+                    start = Offset(leftOffset, yPos),
+                    end = Offset(canvasWidth, yPos),
+                    strokeWidth = 1f
+                )
+            }
+
             // Ticks
             drawLine(
                 color = onBackground,
@@ -91,10 +103,15 @@ fun PureBarChart(
                 strokeWidth = 2f
             )
 
-            // Value labels
+            // Value labels (Formatted as hh:mm)
             drawIntoCanvas { canvas ->
+                val totalSeconds = yValue.toInt()
+                val hours = totalSeconds / 3600
+                val minutes = (totalSeconds % 3600) / 60
+                val timeLabel = String.format(Locale.getDefault(), "%02d:%02d", hours, minutes)
+
                 canvas.nativeCanvas.drawText(
-                    yValue.toInt().toString(),
+                    timeLabel,
                     leftOffset - 20f,
                     yPos + 10f,
                     textPaint.apply { textAlign = Paint.Align.RIGHT }
@@ -102,7 +119,7 @@ fun PureBarChart(
             }
         }
 
-        // Y-axis Title: "Seconds"
+        // Y-axis Title
         drawIntoCanvas { canvas ->
             canvas.nativeCanvas.save()
             canvas.nativeCanvas.rotate(-90f, 25f, chartHeight / 2f)

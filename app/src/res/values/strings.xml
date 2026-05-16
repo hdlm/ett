@@ -46,8 +46,7 @@
     <!-- WeeklyBarChartScreen -->
     <string name="title_weekly_bar_chart_screen">Progress</string>
     <string name="title_long_weekly_bar_chart_screen">Weekly Progress</string>
-    <string name="label_y_axis">Time (hh:mm)</string>
-    <string name="title_date_period_format">Week of %1$s - %2$s</string>
+    <string name="label_y_axis">Duration (hh:mm)</string>
 
     <!-- AboutScreen -->
     <string name="title_about_screen">About</string>

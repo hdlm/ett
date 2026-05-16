@@ -9,7 +9,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -31,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -168,16 +171,31 @@ fun WeeklyBarChartScreenReady(
         bottomBar = { MainBottomBar(navController) }
     ) { innerPadding ->
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentAlignment = Alignment.Center
+        Column(modifier = Modifier.fillMaxSize()
+            .padding(innerPadding)
         ) {
-            PureBarChart(
-                items = uiState.items,
-                modifier = Modifier.padding(horizontalMargin)
-            )
+            Row( modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontalMargin),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.title_date_period_format, uiState.period!!.first, uiState.period.second),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                PureBarChart(
+                    items = uiState.items,
+                    modifier = Modifier.padding(horizontalMargin)
+                )
+            }
         }
 
     }
@@ -195,11 +213,19 @@ fun WeeklyBarChartScreenPreview() {
             .fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            WeeklyBarChartScreen(
-                navController = navController,
-                isDarkTheme = isDarkTheme,
-                onBackButtonClick = {},
-            )
+            Column {
+                Text(
+                    text = stringResource(R.string.title_date_period_format),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                WeeklyBarChartScreen(
+                    navController = navController,
+                    isDarkTheme = isDarkTheme,
+                    onBackButtonClick = {},
+                )
+            }
         }
 
     }

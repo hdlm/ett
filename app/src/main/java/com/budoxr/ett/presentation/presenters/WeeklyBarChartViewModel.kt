@@ -7,6 +7,7 @@ package com.budoxr.ett.presentation.presenters
 
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
+import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.commons.utils.combine
 import com.budoxr.ett.presentation.domain.BarChartItemModel
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeWeeklyInfoUseCase
@@ -63,6 +64,7 @@ class WeeklyBarChartViewModel(
                 }
 
                 WeeklyBarChartScreenUiState.Ready(
+                    period = TimeUtils.getWeekPeriod(),
                     items = items.toList()
                 )
 
@@ -105,6 +107,7 @@ sealed interface WeeklyBarChartScreenUiState {
     ) : WeeklyBarChartScreenUiState
 
     data class Ready(
+        val period: Pair<String,String>? = null,
         val items: List<BarChartItemModel> = emptyList(),
     ) : WeeklyBarChartScreenUiState
 
