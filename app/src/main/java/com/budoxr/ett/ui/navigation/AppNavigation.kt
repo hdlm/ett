@@ -20,6 +20,7 @@ import com.budoxr.ett.ui.AboutScreen
 import com.budoxr.ett.ui.ActivityFormScreen
 import com.budoxr.ett.ui.ActivityScreen
 import com.budoxr.ett.ui.MonitorScreen
+import com.budoxr.ett.ui.WeeklyBarChartScreen
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import timber.log.Timber
@@ -115,6 +116,28 @@ fun AppNavigation(
                 viewModel = viewModel
             )
         }
+
+
+        composable(
+            route = Screens.WeeklyBarChartScreen.route
+        ) { _ ->
+            val onBackButtonClick: onDismissType = {
+                Timber.tag(TAG).d("onBackButtonClick() -> clicked")
+                navController.navigate(Screens.WeeklyBarChartScreen.baseRoute) {
+                    // Limpia la pila de retroceso para que MonitorScreen sea la única pantalla
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true // Evita múltiples instancias de la misma pantalla
+                }
+            }
+            WeeklyBarChartScreen(
+                navController = navController,
+                isDarkTheme = isDarkTheme,
+                onBackButtonClick = onBackButtonClick,
+            )
+        }
+
 
         composable(
             route = Screens.AboutScreen.route

@@ -43,6 +43,10 @@
         <item name="pink">Pink</item>
     </string-array>
 
+    <!-- WeeklyBarChartScreen -->
+    <string name="title_weekly_bar_chart_screen">Progress</string>
+    <string name="title_long_weekly_bar_chart_screen">Weekly Progress</string>
+
     <!-- AboutScreen -->
     <string name="title_about_screen">About</string>
     <string name="label_version">Version: %1$s</string>

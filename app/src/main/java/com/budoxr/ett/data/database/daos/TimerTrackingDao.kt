@@ -12,6 +12,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
+import com.budoxr.ett.data.database.entities.relations.ActivityTotalTimeQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import kotlinx.coroutines.flow.Flow
 
@@ -44,6 +45,26 @@ interface TimerTrackingDao {
     @Transaction
     @Query("SELECT * FROM timer_tracking_activities WHERE visible = 1")
     fun observeVisibleTimersWithActivities(): Flow<List<TimersWithActivity>>
+
+    @Transaction
+    @Query("""
+        SELECT * FROM timer_tracking_activities 
+        WHERE date(start_time) BETWEEN date(:startDate) AND date(:endDate) AND
+        done = 1
+        ORDER BY start_time ASC
+    """)
+    fun observeTimersByDateRangeWithActivities(startDate: String, endDate: String): Flow<List<TimersWithActivity>>
+
+    @Transaction
+    @Query("""
+        SELECT a.*, SUM(t.elapsed_time) AS total_elapsed_time
+        FROM activities a
+        INNER JOIN timer_tracking_activities t ON a.activity_id = t.activity_id
+        AND date(t.start_time) BETWEEN date(:startDate) AND date(:endDate)
+        GROUP BY a.activity_id
+    """)
+    fun observeActivitiesTotalTime(startDate: String, endDate: String): Flow<List<ActivityTotalTimeQuery>>
+
 
 
 }

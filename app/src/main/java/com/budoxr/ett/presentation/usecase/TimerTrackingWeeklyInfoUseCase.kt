@@ -5,18 +5,24 @@
  */
 package com.budoxr.ett.presentation.usecase
 
+import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepository
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
-class TimerTrackingVisibleInfoUseCase : KoinComponent {
+class TimerTrackingWeeklyInfoUseCase : KoinComponent {
     val localRepository: TimerTrackingLocalRepository
         get() = get()
 
     operator fun invoke(): Flow<List<TimersWithActivity>> {
-        return localRepository.observeAllVisibleTimers()
+        val weekPeriod = TimeUtils.getWeekPeriod()
+
+        return localRepository.observeByDateRangeTimers(
+            sundayDate = weekPeriod.first,
+            saturdayDate = weekPeriod.second
+        )
     }
 
 }

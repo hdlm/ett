@@ -15,10 +15,13 @@ import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepositoryImp
 import com.budoxr.ett.presentation.presenters.ActivityFormViewModel
 import com.budoxr.ett.presentation.presenters.ActivityViewModel
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
+import com.budoxr.ett.presentation.presenters.WeeklyBarChartViewModel
+import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeWeeklyInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingWeeklyInfoUseCase
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -28,6 +31,7 @@ object Modules {
         viewModel { (activityId: Long) -> ActivityFormViewModel(activityId, get(), get()) }
         viewModel { MonitorViewModel(get(), get(), get()) }
         viewModel { ActivityViewModel() }
+        viewModel { WeeklyBarChartViewModel(get()) }
     }
 
     fun provideDataBase(context: Context): AppDatabase =
@@ -48,10 +52,12 @@ object Modules {
         factory<ActivityLocalRepository> { ActivityLocalRepositoryImpl() }
         factory { ActivityInsertUseCase() }
         factory { ActivityInfoUseCase() }
+        factory { ActivityElapsedTimeWeeklyInfoUseCase() }
 
         factory<TimerTrackingLocalRepository> { TimerTrackingLocalRepositoryImpl() }
         factory { TimerTrackingVisibleInfoUseCase() }
         factory { TimerTrackingInsertUseCase() }
+        factory { TimerTrackingWeeklyInfoUseCase() }
 
     }
 

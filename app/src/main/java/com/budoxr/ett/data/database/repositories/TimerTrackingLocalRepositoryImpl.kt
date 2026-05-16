@@ -7,6 +7,7 @@ package com.budoxr.ett.data.database.repositories
 
 import com.budoxr.ett.data.database.daos.TimerTrackingDao
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
+import com.budoxr.ett.data.database.entities.relations.ActivityTotalTimeQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
@@ -40,6 +41,12 @@ class TimerTrackingLocalRepositoryImpl : TimerTrackingLocalRepository, KoinCompo
 
     override fun observeAllVisibleTimers(): Flow<List<TimersWithActivity>> =
         timerTrackingDao.observeVisibleTimersWithActivities()
+
+    override fun observeByDateRangeTimers(sundayDate: String, saturdayDate: String): Flow<List<TimersWithActivity>> =
+        timerTrackingDao.observeTimersByDateRangeWithActivities(sundayDate, saturdayDate)
+
+    override fun observeActivityTotalTimeQuery(startDate: String, endDate: String): Flow<List<ActivityTotalTimeQuery>> =
+        timerTrackingDao.observeActivitiesTotalTime(startDate, endDate)
 
 
 }

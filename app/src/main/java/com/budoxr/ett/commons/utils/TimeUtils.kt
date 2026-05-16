@@ -10,6 +10,9 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import java.time.DayOfWeek
+import java.time.LocalDate
+
 
 /**
  * The object permits to get the current time system and return a String
@@ -64,6 +67,38 @@ object TimeUtils {
         val hours = (elapsedMillis / (1000 * 60 * 60))
 
         return "%02d:%02d:%02d".format(hours, minutes, seconds)
+    }
+
+    /**
+     * Calculates the dates corresponding to last Sunday and Saturday based on the current date.
+     * Returns a [Pair] of strings formatted in ISO-8601 layout (YYYY-MM-DD).
+     *
+     * @param today The reference date to calculate from. Defaults to [LocalDate.now].
+     */
+    fun getWeekPeriod(today: LocalDate = LocalDate.now()): Pair<String, String> {
+        // 1. Get the current day of the week (e.g., FRIDAY)
+        val currentDayOfWeek = today.dayOfWeek
+
+        // 2. Calculate last Sunday
+        // In java.time, DayOfWeek.SUNDAY value is 7.
+        // We determine the offset to step backward to the most recent Sunday.
+        val daysSinceSunday = if (currentDayOfWeek == DayOfWeek.SUNDAY) 0 else currentDayOfWeek.value
+        val sundayDate = today.minusDays(daysSinceSunday.toLong())
+
+        // 3. Calculate the upcoming Saturday
+        // DayOfWeek.SATURDAY value is 6.
+        // We compute the remaining days to reach Saturday.
+        val daysUntilSaturday = DayOfWeek.SATURDAY.value - currentDayOfWeek.value
+        val saturdayDate = if (currentDayOfWeek == DayOfWeek.SUNDAY) {
+            today.minusDays(1) // If today is Sunday, Saturday was yesterday
+        } else {
+            today.plusDays(daysUntilSaturday.toLong())
+        }
+
+        // 4. Format dates to "YYYY-MM-DD"
+        val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+
+        return Pair(sundayDate.format(formatter), saturdayDate.format(formatter))
     }
 }
 
