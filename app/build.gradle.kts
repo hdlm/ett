@@ -99,6 +99,9 @@ android {
 }
 
 dependencies {
+    // --- app startup ---
+    implementation(libs.appstartup)
+
     // --- UI & Jetpack Compose Stack ---
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.androidx.compose.full)
