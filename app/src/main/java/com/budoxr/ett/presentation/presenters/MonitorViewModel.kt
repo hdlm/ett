@@ -46,7 +46,6 @@ class MonitorViewModel(
         initialValue = emptyList()
     )
 
-
     private val _timers = MutableStateFlow<List<TimersWithActivity>>(emptyList())
     private val _selectedFilter = MutableStateFlow(0)
 

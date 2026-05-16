@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -96,7 +97,7 @@ fun MonitorScreen(
 ) {
     Timber.tag(TAG).i("compose / recompose")
 
-    //TODO save the current screen into the session object
+
 
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val monitorScreenUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -310,10 +311,9 @@ fun MonitorScreenContent(
         modifier = modifier
     ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = horizontalMargin),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = horizontalMargin, end = horizontalMargin, top = 12.dp, bottom = 56.dp ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
                 Row(modifier = Modifier.fillMaxSize(),
