@@ -1,23 +1,23 @@
 [versions]
 # Build Tools & Core
 agp = "9.0.1"
-kotlin = "2.3.0"
+kotlin = "2.3.21"
 ksp = "2.3.4"
-coreKtx = "1.17.0"
+coreKtx = "1.18.0"
 lifecycleVersion = "2.10.0"
-activityCompose = "1.12.2"
-composeBom = "2026.01.00"
-navigationCompose = "2.9.6"
+activityCompose = "1.13.0"
+composeBom = "2026.05.00"
+navigationCompose = "2.9.8"
 constraintLayoutCompose = "1.1.1"
 
 # DI & Persistence
-koinVersion = "4.1.1"
+koinVersion = "4.2.1"
 roomVersion = "2.8.4"
 
 # Background & Media
-workVersion = "2.11.1"
+workVersion = "2.11.2"
 coilVersion = "2.7.0"
-pagingVersion = "3.3.6"
+pagingVersion = "3.5.0"
 
 # UI Extra & Utils
 timberVersion = "5.0.1"
@@ -28,13 +28,13 @@ numberpickerCompose = "1.0.3"
 easycropVersion = "0.1.1"
 
 # Async
-coroutinesVersion = "1.10.2"
+coroutinesVersion = "1.11.0"
 
 # Testing
 junit = "4.13.2"
 junitX = "1.3.0"
 espressoCore = "3.7.0"
-mockkVersion = "1.14.7"
+mockkVersion = "1.14.9"
 testRunnerVersion = "1.7.0"
 testRulesVersion = "1.7.0"
 robolectricVersion = "4.16.1"

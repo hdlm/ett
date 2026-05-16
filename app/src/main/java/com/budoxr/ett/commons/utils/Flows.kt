@@ -3,6 +3,8 @@
  * Licensed under the MIT License.
  * See LICENSE file in the project root for full license information.
  */
+@file:Suppress("UNCHECKED_CAST")
+
 package com.budoxr.ett.commons.utils
 
 import kotlinx.coroutines.flow.Flow

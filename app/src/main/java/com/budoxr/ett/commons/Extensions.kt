@@ -80,7 +80,7 @@ fun String.fromFechaTimeDb(): Date {
     val patternIn: String  = "yyyy-MM-dd kk:mm:ss"
     val sDate = this.substring(0,19).replace('T',' ')
     Log.d(TAG, "fromFechaTimeDb() -> \'$this\', to: \'$sDate\'")
-    val sdf = SimpleDateFormat(patternIn, Locale("en", "US"))
+    val sdf = SimpleDateFormat(patternIn, Locale.getDefault())
     val date = sdf.parse(sDate)
     return date!!
 
@@ -98,7 +98,7 @@ fun Date.toFechaTimeDb(): String {
 // el formato: 20240315172407208
 fun Date.toFechaTimeSms(): String {
     val patternOut: String  = "yyyyMMddkkmmssSSS"
-    val sdf = SimpleDateFormat(patternOut, Locale("en", "US"))
+    val sdf = SimpleDateFormat(patternOut, Locale.getDefault())
     val fecha = sdf.format(this)
     return fecha
 }
@@ -106,7 +106,7 @@ fun Date.toFechaTimeSms(): String {
 fun Date.toFechaUi(): String {
     //12 noviembre 2023
     val patternOut: String  = "dd MMMM yyyy"
-    val sdf = SimpleDateFormat(patternOut, Locale("en", "US"))
+    val sdf = SimpleDateFormat(patternOut, Locale.getDefault())
     val fecha = sdf.format(this)
     return fecha
 }
@@ -114,34 +114,34 @@ fun Date.toFechaUi(): String {
 fun Date.toFechaShortUi(): String {
     //     31/12/2023
     val patternOut: String  = "dd/MM/yyyy"
-    val sdf = SimpleDateFormat(patternOut, Locale("en", "US"))
+    val sdf = SimpleDateFormat(patternOut, Locale.getDefault())
     val fecha = sdf.format(this)
     return fecha
 }
 
 fun Date.toTimeUi(): String {
     val patternOut: String  = "hh:mm:ss"
-    val sdf = SimpleDateFormat(patternOut, Locale("en", "US"))
+    val sdf = SimpleDateFormat(patternOut, Locale.getDefault())
     val fecha = sdf.format(this)
     return fecha
 }
 
 fun Date.toShortTimeUi(): String {
     val patternOut: String  = "hh:mm a"
-    val sdf = SimpleDateFormat(patternOut, Locale("en", "US"))
+    val sdf = SimpleDateFormat(patternOut, Locale.getDefault())
     val fecha = sdf.format(this)
     return fecha
 }
 
 fun Date.toFechaTimeUi(): String {
     val patternOut: String  = "dd-MM-yyyy : hh:mm:ss a"
-    val sdf = SimpleDateFormat(patternOut, Locale("en", "US"))
+    val sdf = SimpleDateFormat(patternOut, Locale.getDefault())
     val fecha = sdf.format(this).replace("PM", "p.m.").replace("AM", "a.m.")
     return fecha
 }
 
 /**
- * Convert:
+ * Convert::
  * 04141112233 to (0414)111-2233
  * 4141112233 to (0414)111-2233
  */
