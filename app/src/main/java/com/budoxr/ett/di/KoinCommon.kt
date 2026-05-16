@@ -12,6 +12,7 @@ import com.budoxr.ett.data.database.repositories.ActivityLocalRepository
 import com.budoxr.ett.data.database.repositories.ActivityLocalRepositoryImpl
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepository
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepositoryImpl
+import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.presenters.ActivityFormViewModel
 import com.budoxr.ett.presentation.presenters.ActivityViewModel
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
@@ -45,6 +46,7 @@ object Modules {
     fun provideTimeTrackingDao(db: AppDatabase) = db.timeTrackingDao()
 
     val databaseModule = module {
+        single { UserPreferencesRepository(androidContext()) }
         single { provideDataBase(androidContext()) }
         single { provideActivityDao(get()) }
         single { provideTimeTrackingDao(get()) }

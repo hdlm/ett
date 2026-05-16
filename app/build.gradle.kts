@@ -106,10 +106,11 @@ dependencies {
     // --- Dependency Injection (Koin) ---
     implementation(libs.bundles.koin)
 
-    // --- Persistence (Room) ---
+    // --- Persistence (Room, Datastore Preferences) ---
     implementation(libs.room.runtime)
     api(libs.room.ktx) // Permite que las corrutinas de Room se propaguen a otros módulos si fuera necesario
     ksp(libs.room.compiler.ksp)
+    implementation(libs.datastore.preferences)
 
     // --- Media & Pagination ---
     implementation(libs.bundles.coil)
