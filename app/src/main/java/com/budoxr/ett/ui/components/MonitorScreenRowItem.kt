@@ -40,13 +40,11 @@ import com.budoxr.ett.commons.utils.TimeUtils.formatElapsedTime
 import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.commons.utils.Utility.formatLastThreeDigits
 import com.budoxr.ett.commons.utils.toEpochMillis
-import com.budoxr.ett.commons.utils.toTimestamp
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.ui.MonitorState
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import kotlinx.coroutines.delay
-import timber.log.Timber
 
 @Composable
 fun MonitorScreenRowItem(
@@ -157,12 +155,14 @@ fun MonitorScreenRowItemPreview() {
         isRefreshing = false,
         onRefresh = {},
         onNewTimerClick = {},
-        timers = emptyList(),
+        activeTimers = emptyList(),
+        historicalTimers = emptyList(),
         onStartClick = {_ ->},
         onStopClick = {_ ->},
+        onDeleteClick = {_ ->},
         onHideTimer = { _ ->},
         onBackButtonClick = {},
-        onSelectedFilter = {_ ->},
+        onSelectedView = { _ ->},
     )
 
     val activity = ActivityEntity(

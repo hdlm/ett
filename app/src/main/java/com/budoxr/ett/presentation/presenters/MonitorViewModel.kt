@@ -14,9 +14,12 @@ import com.budoxr.ett.commons.utils.combine
 import com.budoxr.ett.commons.utils.toTimestamp
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
+import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingDeleteUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
 import com.budoxr.ett.ui.navigation.Screens
@@ -37,8 +40,10 @@ import java.util.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MonitorViewModel(
+    private val timerTrackingInfoUseCase: TimerTrackingInfoUseCase,
     private val timerTrackingVisibleInfoUseCase: TimerTrackingVisibleInfoUseCase,
     private val timerTrackingInsertUseCase: TimerTrackingInsertUseCase,
+    private val timerTrackingDeleteUseCase: TimerTrackingDeleteUseCase,
     private val activityInfoUseCase: ActivityInfoUseCase,
     private val userPreferencesRepository: UserPreferencesRepository
 ) : KoinViewModel() {
@@ -50,7 +55,8 @@ class MonitorViewModel(
     )
 
     private val _timers = MutableStateFlow<List<TimersWithActivity>>(emptyList())
-    private val _selectedFilter = MutableStateFlow(0)
+    private val _historical = MutableStateFlow<List<TimerTrackingQuery>>(emptyList())
+    private val _selectedView = MutableStateFlow(0)
 
     private val _uiState = MutableStateFlow<MonitorScreenUiState>(MonitorScreenUiState.Loading)
     val uiState: StateFlow<MonitorScreenUiState>
@@ -67,11 +73,15 @@ class MonitorViewModel(
                 _timers.flatMapLatest { _ ->
                     timerTrackingVisibleInfoUseCase.invoke()
                 },
-                _selectedFilter,
+                _historical.flatMapLatest { _ ->
+                    timerTrackingInfoUseCase.invoke()
+                },
+                _selectedView,
                 refreshing
             ) { activities,
                 timers,
-                selectedFilter,
+                historical,
+                selectedView,
                 refreshing ->
 
                 if (refreshing) {
@@ -81,14 +91,14 @@ class MonitorViewModel(
 
                 saveLastScreen()
 
-                //TODO apply the filter to the list of timers
-
                 _timers.value = timers
+                _historical.value = historical
 
                 MonitorScreenUiState.Ready(
                     activities = activities.toList(),
                     activeTimers = timers,
-                    selectedFilter = selectedFilter,
+                    historicalTimers = historical,
+                    selectedView = selectedView,
                 )
 
             }.catch { throwable ->
@@ -182,6 +192,21 @@ class MonitorViewModel(
 
     }
 
+
+    fun deleteTimer(timeTrackingId: Long) {
+        Timber.tag(TAG).d("deleteTimer() -> called")
+
+        val timerTracking = _historical.value.find { it.timerTracking.timerTrackingId == timeTrackingId }
+        timerTracking?.let {
+            viewModelScope.launch(Dispatchers.IO) {
+                timerTrackingDeleteUseCase.invoke(it.timerTracking)
+                Timber.tag(TAG).i("Timer deleted with id: $timeTrackingId")
+            }
+        }
+
+    }
+
+
     fun hideTimer(timeTrackingId: Long) {
         Timber.tag(TAG).d("hideTimer() -> called")
 
@@ -200,7 +225,7 @@ class MonitorViewModel(
 
     fun onChangeFilter(index: Int) {
         Timber.tag(TAG).d("onChangeFilter() -> called, index: $index")
-        //TODO not implemented yet
+        _selectedView.update { index }
     }
 
     private fun saveLastScreen() {
@@ -227,7 +252,8 @@ sealed interface MonitorScreenUiState {
     data class Ready(
         val activities: List<ActivityEntity> = emptyList(),
         val activeTimers: List<TimersWithActivity> = emptyList(),
-        val selectedFilter: Int = 0,
+        val historicalTimers: List<TimerTrackingQuery> = emptyList(),
+        val selectedView: Int = 0,
     ) : MonitorScreenUiState
 
 }

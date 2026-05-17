@@ -20,6 +20,8 @@ import com.budoxr.ett.presentation.presenters.WeeklyBarChartViewModel
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeWeeklyInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingDeleteUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingWeeklyInfoUseCase
@@ -30,7 +32,7 @@ import org.koin.dsl.module
 object Modules {
     val appModule = module {
         viewModel { (activityId: Long) -> ActivityFormViewModel(activityId, get(), get()) }
-        viewModel { MonitorViewModel(get(), get(), get(), get()) }
+        viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
         viewModel { WeeklyBarChartViewModel(get(), get()) }
     }
@@ -60,6 +62,8 @@ object Modules {
         factory { TimerTrackingVisibleInfoUseCase() }
         factory { TimerTrackingInsertUseCase() }
         factory { TimerTrackingWeeklyInfoUseCase() }
+        factory { TimerTrackingInfoUseCase() }
+        factory { TimerTrackingDeleteUseCase() }
 
     }
 

@@ -59,12 +59,14 @@ import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.commons.onLongType
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
+import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import com.budoxr.ett.presentation.presenters.MonitorScreenUiState
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
 import com.budoxr.ett.ui.components.ActivitySelectionBottomSheet
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
+import com.budoxr.ett.ui.components.MonitorScreenRowHistoricalItem
 import com.budoxr.ett.ui.components.MonitorScreenRowItem
 import com.budoxr.ett.ui.components.SingleChoiceSegmentedButton
 import com.budoxr.ett.ui.navigation.Screens
@@ -79,13 +81,15 @@ data class MonitorState(
     val isDarkTheme: Boolean,
     val isRefreshing: Boolean,
     val onRefresh: onDismissType,
-    val timers: List<TimersWithActivity>,
+    val activeTimers: List<TimersWithActivity>,
+    val historicalTimers: List<TimerTrackingQuery>,
     val onNewTimerClick: onLongType,
     val onStartClick: onLongType,
     val onStopClick: onLongType,
+    val onDeleteClick: onLongType,
     val onHideTimer: onLongType,
     val onBackButtonClick: onDismissType,
-    val onSelectedFilter: onIntType,
+    val onSelectedView: onIntType,
 )
 
 @Composable
@@ -96,8 +100,6 @@ fun MonitorScreen(
     viewModel: MonitorViewModel = koinViewModel()
 ) {
     Timber.tag(TAG).i("compose / recompose")
-
-
 
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val monitorScreenUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -121,9 +123,10 @@ fun MonitorScreen(
                 onNewTimerClick = viewModel::newTimer,
                 onStartClick = viewModel::startTimer,
                 onStopClick = viewModel::stopTimer,
+                onDeleteClick = viewModel::deleteTimer,
                 onHideTimer = viewModel::hideTimer,
                 onBackButtonClick = onBackButtonClick,
-                onSelectedFilter = viewModel::onChangeFilter,
+                onSelectedView = viewModel::onChangeFilter,
             )
 
         }
@@ -203,9 +206,10 @@ fun MonitorScreenReady(
     onNewTimerClick: onLongType,
     onStartClick: onLongType,
     onStopClick: onLongType,
+    onDeleteClick: onLongType,
     onHideTimer: onLongType,
     onBackButtonClick: onDismissType,
-    onSelectedFilter: onIntType,
+    onSelectedView: onIntType,
 ) {
 
     val monitorState = MonitorState(
@@ -213,18 +217,22 @@ fun MonitorScreenReady(
         isDarkTheme = isDarkTheme,
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-        timers = uiState.activeTimers,
+        activeTimers = uiState.activeTimers,
+        historicalTimers = uiState.historicalTimers,
         onNewTimerClick = onNewTimerClick,
         onStartClick = onStartClick,
         onStopClick = onStopClick,
+        onDeleteClick = onDeleteClick,
         onHideTimer = onHideTimer,
         onBackButtonClick = onBackButtonClick,
-        onSelectedFilter = onSelectedFilter,
+        onSelectedView = onSelectedView,
     )
 
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
+
+    val viewOptions: Array<String> = stringArrayResource(id = R.array.monitor_views_array)
 
     Scaffold (
         topBar = {
@@ -256,38 +264,48 @@ fun MonitorScreenReady(
             }
         },
     ) { innerPadding ->
-        
-        MonitorScreenContent(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            monitorState = monitorState,
-        )
 
-        if (showBottomSheet) {
-            ActivitySelectionBottomSheet(
-                sheetState = sheetState,
-                // Function to handle dismissal (swipes, back button, or manual)
-                onDismiss = {
-                    scope.launch { sheetState.hide() }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
-                            showBottomSheet = false
-                        }
-                    }
-                },
-                placeholderActivities = uiState.activities,
-                onActivitySelected = { id ->
-                    scope.launch { sheetState.hide() }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
-                            showBottomSheet = false
-                        }
-                    }
-                    monitorState.onNewTimerClick.invoke(id)
-                }
+        if (uiState.selectedView == 0) {
+            MonitorScreenContent(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                monitorState = monitorState,
+                viewOptions = viewOptions
+            )
 
+            if (showBottomSheet) {
+                ActivitySelectionBottomSheet(
+                    sheetState = sheetState,
+                    // Function to handle dismissal (swipes, back button, or manual)
+                    onDismiss = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
+                            }
+                        }
+                    },
+                    placeholderActivities = uiState.activities,
+                    onActivitySelected = { id ->
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
+                            }
+                        }
+                        monitorState.onNewTimerClick.invoke(id)
+                    }
+
+                )
+            }
+        } else {
+            MonitorScreenHistoricalContent(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                monitorState = monitorState,
+                viewOptions = viewOptions
             )
         }
-         
     }
     
 }
@@ -296,14 +314,13 @@ fun MonitorScreenReady(
 fun MonitorScreenContent(
     modifier: Modifier,
     monitorState: MonitorState,
+    viewOptions: Array<String>
 ) {
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
     val iconSize = dimensionResource(id = R.dimen.icon_huge_size)
 
     val pullToRefreshState = rememberPullToRefreshState()
     
-    val viewsArray: Array<String> = stringArrayResource(id = R.array.monitor_views_array)
-
     PullToRefreshBox(
         state = pullToRefreshState,          // Le pasa el estado del gesto
         isRefreshing = monitorState.isRefreshing,         // Estado actual (determina si el indicador está visible)
@@ -316,28 +333,29 @@ fun MonitorScreenContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
-                Row(modifier = Modifier.fillMaxSize(),
+                Row(modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     SingleChoiceSegmentedButton(
                         modifier = Modifier,
-                        options = viewsArray.toList(),
-                        onChangeSelection =  monitorState.onSelectedFilter,
+                        options = viewOptions.toList(),
+                        onChangeSelection =  monitorState.onSelectedView,
+                        indexSelected = 0
                     )
                 }
             }
 
-            items(monitorState.timers) { timers ->
+            items(monitorState.activeTimers) { timer ->
                 MonitorScreenRowItem(
                     monitorState = monitorState,
-                    nameActivity = timers.activity.name,
-                    item = timers.timerTracking,
+                    nameActivity = timer.activity.name,
+                    item = timer.timerTracking,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
             item {
-                if (monitorState.timers.isEmpty()) {
+                if (monitorState.activeTimers.isEmpty()) {
                     Row(modifier = Modifier.fillMaxSize(),
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -365,10 +383,91 @@ fun MonitorScreenContent(
 
 
 @Composable
+fun MonitorScreenHistoricalContent(
+    modifier: Modifier,
+    monitorState: MonitorState,
+    viewOptions: Array<String>
+) {
+    val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
+    val iconSize = dimensionResource(id = R.dimen.icon_huge_size)
+
+    val pullToRefreshState = rememberPullToRefreshState()
+
+    val grouped = monitorState.historicalTimers.groupBy { it.nameActivity  }
+
+    PullToRefreshBox(
+        state = pullToRefreshState,          // Le pasa el estado del gesto
+        isRefreshing = monitorState.isRefreshing,         // Estado actual (determina si el indicador está visible)
+        onRefresh = monitorState.onRefresh,               // Función a llamar cuando el refresh es activado
+        modifier = modifier
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = horizontalMargin, end = horizontalMargin, top = 12.dp, bottom = 56.dp ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item {
+                Row(modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    SingleChoiceSegmentedButton(
+                        modifier = Modifier,
+                        options = viewOptions.toList(),
+                        onChangeSelection =  monitorState.onSelectedView,
+                        indexSelected = 1
+                    )
+                }
+            }
+
+            grouped.forEach { (nameActivity, timers) ->
+                stickyHeader {
+                    Text(text = nameActivity, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = horizontalMargin))
+                }
+
+                items(timers) { timer ->
+                    MonitorScreenRowHistoricalItem(
+                        monitorState = monitorState,
+                        item = timer,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            item {
+                if (monitorState.activeTimers.isEmpty()) {
+                    Row(modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                            contentDescription = stringResource(R.string.content_description_icon),
+                            tint = MaterialTheme.colorScheme.primary, //standard icon color (onSurfaceVariant)
+                            modifier = Modifier.size(iconSize)
+                        )
+                    }
+
+                    Row(modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = stringResource(R.string.msg_no_records), style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+
+            }
+
+        }
+    }
+
+}
+
+
+@Composable
 @Preview(showBackground = true)
 fun MonitorScreenContentPreview() {
     val navController = rememberNavController()
     val isDarkTheme = false
+
+    val viewOptions: Array<String> = stringArrayResource(id = R.array.monitor_views_array)
 
     val timer1 = TimerTrackingEntity(
         timerTrackingId = 1,
@@ -396,18 +495,21 @@ fun MonitorScreenContentPreview() {
         isRefreshing = false,
         onRefresh = {},
         onNewTimerClick = {},
-        timers = emptyList(), // This should be 'timers' to avoid the unused variable warning
+        activeTimers = emptyList(),
+        historicalTimers = emptyList(),
         onStartClick = {_ ->},
         onStopClick = {_ ->},
+        onDeleteClick = {_ ->},
         onHideTimer = { _ ->},
         onBackButtonClick = {},
-        onSelectedFilter = {_ ->},
+        onSelectedView = { _ ->},
     )
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
         MonitorScreenContent(
             modifier = Modifier.fillMaxSize(),
             monitorState = monitorState,
+            viewOptions = viewOptions
         )
     }
 

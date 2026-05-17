@@ -13,6 +13,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.ActivityTotalTimeQuery
+import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import kotlinx.coroutines.flow.Flow
 
@@ -64,6 +65,16 @@ interface TimerTrackingDao {
         GROUP BY a.activity_id
     """)
     fun observeActivitiesTotalTime(startDate: String, endDate: String): Flow<List<ActivityTotalTimeQuery>>
+
+    @Transaction
+    @Query("""
+       SELECT t.*, a.name AS name_activity
+        FROM timer_tracking_activities t
+        INNER JOIN activities a ON t.activity_id = a.activity_id
+        WHERE t.done = 1
+        ORDER BY a.name, date(t.start_time)
+    """)
+    fun observeAllTimersTracking(): Flow<List<TimerTrackingQuery>>
 
 
 

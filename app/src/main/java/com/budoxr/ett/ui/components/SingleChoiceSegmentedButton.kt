@@ -25,8 +25,9 @@ fun SingleChoiceSegmentedButton(
     modifier: Modifier = Modifier,
     options: List<String>,
     onChangeSelection: onIntType,
+    indexSelected: Int = 0
 ) {
-    var selectedIndex by remember { mutableIntStateOf(0) }
+    var selectedIndex by remember { mutableIntStateOf(indexSelected) }
 
     val segmentedButtonColors = SegmentedButtonDefaults.colors(
         activeContainerColor = MaterialTheme.colorScheme.primary,
