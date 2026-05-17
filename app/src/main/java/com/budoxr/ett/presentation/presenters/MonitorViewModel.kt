@@ -57,6 +57,7 @@ class MonitorViewModel(
     private val _timers = MutableStateFlow<List<TimersWithActivity>>(emptyList())
     private val _historical = MutableStateFlow<List<TimerTrackingQuery>>(emptyList())
     private val _selectedView = MutableStateFlow(0)
+    private val _showBottomSheet = MutableStateFlow(false)
 
     private val _uiState = MutableStateFlow<MonitorScreenUiState>(MonitorScreenUiState.Loading)
     val uiState: StateFlow<MonitorScreenUiState>
@@ -77,11 +78,13 @@ class MonitorViewModel(
                     timerTrackingInfoUseCase.invoke()
                 },
                 _selectedView,
+                _showBottomSheet,
                 refreshing
             ) { activities,
                 timers,
                 historical,
                 selectedView,
+                showBottomSheet,
                 refreshing ->
 
                 if (refreshing) {
@@ -94,11 +97,19 @@ class MonitorViewModel(
                 _timers.value = timers
                 _historical.value = historical
 
+                // get only the activities that are not active
+                val activeActivityIds = timers
+                    .filter { !it.timerTracking.done }
+                    .map { it.activity.activityId }
+                    .toSet()
+                val availableActivities = activities.filter { it.activityId !in activeActivityIds }
+
                 MonitorScreenUiState.Ready(
-                    activities = activities.toList(),
+                    activities = availableActivities,
                     activeTimers = timers,
                     historicalTimers = historical,
                     selectedView = selectedView,
+                    showBottomSheet = showBottomSheet
                 )
 
             }.catch { throwable ->
@@ -223,9 +234,19 @@ class MonitorViewModel(
 
     }
 
-    fun onChangeFilter(index: Int) {
+    fun onChangeView(index: Int) {
         Timber.tag(TAG).d("onChangeFilter() -> called, index: $index")
         _selectedView.update { index }
+    }
+
+    fun onShowBottomSheet() {
+        Timber.tag(TAG).d("onShowBottomSheet() -> called")
+        _showBottomSheet.update { true }
+    }
+
+    fun onDismissBottomSheet() {
+        Timber.tag(TAG).d("onDismissBottomSheet() -> called")
+        _showBottomSheet.update { false }
     }
 
     private fun saveLastScreen() {
@@ -254,6 +275,7 @@ sealed interface MonitorScreenUiState {
         val activeTimers: List<TimersWithActivity> = emptyList(),
         val historicalTimers: List<TimerTrackingQuery> = emptyList(),
         val selectedView: Int = 0,
+        val showBottomSheet: Boolean = false,
     ) : MonitorScreenUiState
 
 }

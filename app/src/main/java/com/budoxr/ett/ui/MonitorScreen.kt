@@ -55,6 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
+import com.budoxr.ett.commons.onDismissComposableType
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.commons.onLongType
@@ -114,6 +115,21 @@ fun MonitorScreen(
             )
         }
         is MonitorScreenUiState.Ready -> {
+            val floatingActionButton: onDismissComposableType = {
+                FloatingActionButton(
+                    onClick = viewModel::onShowBottomSheet,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = CircleShape
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.content_description_icon)
+                    )
+                }
+            }
+            val noneFloatingActionButton: onDismissComposableType = {}
+
             MonitorScreenReady(
                 navController = navController,
                 uiState = uiState,
@@ -126,7 +142,9 @@ fun MonitorScreen(
                 onDeleteClick = viewModel::deleteTimer,
                 onHideTimer = viewModel::hideTimer,
                 onBackButtonClick = onBackButtonClick,
-                onSelectedView = viewModel::onChangeFilter,
+                onSelectedView = viewModel::onChangeView,
+                onDismissBottomSheet = viewModel::onDismissBottomSheet,
+                floatingActionButton = if (uiState.selectedView == 0) floatingActionButton else noneFloatingActionButton
             )
 
         }
@@ -210,6 +228,8 @@ fun MonitorScreenReady(
     onHideTimer: onLongType,
     onBackButtonClick: onDismissType,
     onSelectedView: onIntType,
+    onDismissBottomSheet: onDismissType,
+    floatingActionButton: onDismissComposableType
 ) {
 
     val monitorState = MonitorState(
@@ -228,7 +248,6 @@ fun MonitorScreenReady(
         onSelectedView = onSelectedView,
     )
 
-    var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
@@ -248,21 +267,7 @@ fun MonitorScreenReady(
         },
         bottomBar = { MainBottomBar(monitorState.navController) },
         floatingActionButtonPosition = FabPosition.End,
-        floatingActionButton =  {
-            FloatingActionButton(
-                onClick = {
-                    showBottomSheet = true
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = CircleShape
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.content_description_icon)
-                )
-            }
-        },
+        floatingActionButton = floatingActionButton
     ) { innerPadding ->
 
         if (uiState.selectedView == 0) {
@@ -274,14 +279,14 @@ fun MonitorScreenReady(
                 viewOptions = viewOptions
             )
 
-            if (showBottomSheet) {
+            if (uiState.showBottomSheet) {
                 ActivitySelectionBottomSheet(
                     sheetState = sheetState,
                     // Function to handle dismissal (swipes, back button, or manual)
                     onDismiss = {
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
-                                showBottomSheet = false
+                                onDismissBottomSheet.invoke()
                             }
                         }
                     },
@@ -289,7 +294,7 @@ fun MonitorScreenReady(
                     onActivitySelected = { id ->
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
-                                showBottomSheet = false
+                                onDismissBottomSheet.invoke()
                             }
                         }
                         monitorState.onNewTimerClick.invoke(id)

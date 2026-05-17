@@ -59,8 +59,6 @@ fun MonitorScreenRowItem(
     val stopIcon = Icons.Filled.StopCircle
     val separation = dimensionResource(R.dimen.side_separation)
 
-    var checked by remember { mutableStateOf(item.visible) }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -108,9 +106,8 @@ fun MonitorScreenRowItem(
                 }
             } else {
                 Checkbox(
-                    checked = checked,
+                    checked = item.visible,
                     onCheckedChange = {
-                        checked = it
                         monitorState.onHideTimer.invoke(item.timerTrackingId!!)
                     }
                 )
