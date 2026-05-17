@@ -90,7 +90,7 @@ object TimeUtils {
         // We compute the remaining days to reach Saturday.
         val daysUntilSaturday = DayOfWeek.SATURDAY.value - currentDayOfWeek.value
         val saturdayDate = if (currentDayOfWeek == DayOfWeek.SUNDAY) {
-            today.minusDays(1) // If today is Sunday, Saturday was yesterday
+            today.plusDays(DayOfWeek.SATURDAY.value.toLong()) // If today is Sunday, Saturday will be in 6 days
         } else {
             today.plusDays(daysUntilSaturday.toLong())
         }
