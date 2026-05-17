@@ -54,12 +54,15 @@
     <string name="label_version">Version: %1$s</string>
     <string name="label_developer">Developer: %1$s</string>
     <string name="label_contact">Contact/Support: %1$s</string>
+    <string name="label_contact_email">hdelamano@gmail.com</string>
+    <string name="url_contact_email">hdelamano@gmail.com</string>
     <string name="label_legal">Legal</string>
     <string name="label_privacy_policy">Privacy Policy</string>
-    <string name="url_privacy_policy">www.budoxr.com/ett/privacy-policy.html</string>
+    <string name="url_privacy_policy">https://www.budoxr.com/ett/privacy-policy.html</string>
     <string name="label_terms_of_service">Terms of Service</string>
-    <string name="url_terms_of_service">www.budoxr.com/ett/terms-service.html</string>
+    <string name="url_terms_of_service">https://www.budoxr.com/ett/terms-service.html</string>
     <string name="label_software_licenses">Software Licenses</string>
     <string name="label_mit_license">MIT license</string>
+    <string name="url_mit_license">https://mit-license.org/</string>"
 
 </resources>
