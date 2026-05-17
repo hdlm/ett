@@ -9,8 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
 import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.commons.utils.combine
+import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.domain.BarChartItemModel
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeWeeklyInfoUseCase
+import com.budoxr.ett.ui.navigation.Screens
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +26,8 @@ import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WeeklyBarChartViewModel(
-    private val activityElapsedTimeWeeklyInfoUseCase: ActivityElapsedTimeWeeklyInfoUseCase
+    private val activityElapsedTimeWeeklyInfoUseCase: ActivityElapsedTimeWeeklyInfoUseCase,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : KoinViewModel() {
 
     private val _totalTimeActivities = MutableStateFlow<List<ActivityElapsedTimeWeeklyInfoUseCase>>(emptyList())
@@ -51,6 +54,8 @@ class WeeklyBarChartViewModel(
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine WeeklyBarChartScreenUiState.Loading
                 }
+
+                saveLastScreen()
 
                 val items = mutableSetOf<BarChartItemModel>()
                 totalTimeActivities.forEach { activity ->
@@ -91,6 +96,14 @@ class WeeklyBarChartViewModel(
                     refreshing.update { false }
                 }
             }
+        }
+    }
+
+    private fun saveLastScreen() {
+        val baseRoute = Screens.WeeklyBarChartScreen.baseRoute
+        viewModelScope.launch {
+            userPreferencesRepository.saveLastScreen(baseRoute)
+            Timber.tag(TAG).i("save the last screen: $baseRoute")
         }
     }
 

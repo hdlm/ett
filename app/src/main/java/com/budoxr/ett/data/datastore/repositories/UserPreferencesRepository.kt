@@ -33,9 +33,9 @@ class UserPreferencesRepository(private val context: Context) {
             preferences[PreferencesKeys.LAST_SCREEN] ?: Screens.MonitorScreen.baseRoute
         }
 
-    suspend fun updateLastScreen(newValue: String) {
+    suspend fun saveLastScreen(baseRoute: String) {
         context.dataStore.edit { preferences ->
-            preferences[PreferencesKeys.LAST_SCREEN] = newValue
+            preferences[PreferencesKeys.LAST_SCREEN] = baseRoute
         }
     }
 

@@ -102,6 +102,10 @@ dependencies {
     // --- app startup ---
     implementation(libs.appstartup)
 
+    // --- Reflection API module ---
+    implementation(platform(libs.kotlin.bom))
+    implementation(libs.kotlin.reflect)
+
     // --- UI & Jetpack Compose Stack ---
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.androidx.compose.full)

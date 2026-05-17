@@ -29,4 +29,22 @@ sealed class Screens (
     object ActivityFormScreen: Screens(route = "ActivityFormScreen/{id}", titleResId = R.string.title_activity_form_screen , Icons.AutoMirrored.Filled.Assignment)
     object WeeklyBarChartScreen: Screens(route = "WeeklyBarChartScreen", titleResId = R.string.title_weekly_bar_chart_screen, Icons.Outlined.BarChart)
     object AboutScreen: Screens(route = "AboutScreen", titleResId = R.string.title_about_screen, Icons.Outlined.Info)
+
+    companion object {
+        // Caches the sub-objects into an O(1) memory map on class loading phase
+        private val routeMap: Map<String, Screens> by lazy {
+            Screens::class.sealedSubclasses
+                .mapNotNull { it.objectInstance }
+                .associateBy { it.baseRoute }
+        }
+
+        /**
+         * Safely extracts the companion 'Screens' object matching the provided raw string route.
+         * Returns null if no match is found, preventing sudden application crashes.
+         */
+        fun fromBaseRoute(baseRoute: String?): Screens? {
+            if (baseRoute == null) return null
+            return routeMap[baseRoute]
+        }
+    }
 }

@@ -71,6 +71,10 @@ koin-test-junit = { group = "io.insert-koin", name = "koin-test-junit4", version
 # app startup
 appstartup = { group = "androidx.startup", name = "startup-runtime", version.ref = "startupVersion" }
 
+# Standard platform BOM ensures the reflection version perfectly matches your compiler
+kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlin"}
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect"}
+
 # Persistence (Room, Datastore)
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomVersion" }
 room-compiler-ksp = { group = "androidx.room", name = "room-compiler", version.ref = "roomVersion" }

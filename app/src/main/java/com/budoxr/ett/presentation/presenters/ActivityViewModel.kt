@@ -9,7 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
 import com.budoxr.ett.commons.utils.combine
 import com.budoxr.ett.data.database.entities.ActivityEntity
+import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
+import com.budoxr.ett.ui.navigation.Screens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -20,13 +22,13 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.component.inject
 import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ActivityViewModel : KoinViewModel() {
-    private val activityInfoUseCase: ActivityInfoUseCase by inject()
-
+class ActivityViewModel(
+    private val activityInfoUseCase: ActivityInfoUseCase,
+    private val userPreferencesRepository: UserPreferencesRepository
+) : KoinViewModel() {
     private val _activities = MutableStateFlow<List<ActivityEntity>>(emptyList()) // Asumo List<ActivityEntity> o similar
     private val _formState = MutableStateFlow(ActivityState())
     val formState : StateFlow<ActivityState>
@@ -56,6 +58,8 @@ class ActivityViewModel : KoinViewModel() {
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine ActivityScreenUiState.Loading
                 }
+
+                saveLastScreen()
 
                 val activities = setActivities.toList()
 
@@ -97,6 +101,14 @@ class ActivityViewModel : KoinViewModel() {
             it.copy(
                 search = value
             )
+        }
+    }
+
+    private fun saveLastScreen() {
+        val baseRoute = Screens.ActivityScreen.baseRoute
+        viewModelScope.launch {
+            userPreferencesRepository.saveLastScreen(baseRoute)
+            Timber.tag(TAG).i("save the last screen: $baseRoute")
         }
     }
 

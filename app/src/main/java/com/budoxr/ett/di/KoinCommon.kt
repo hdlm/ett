@@ -30,9 +30,9 @@ import org.koin.dsl.module
 object Modules {
     val appModule = module {
         viewModel { (activityId: Long) -> ActivityFormViewModel(activityId, get(), get()) }
-        viewModel { MonitorViewModel(get(), get(), get()) }
-        viewModel { ActivityViewModel() }
-        viewModel { WeeklyBarChartViewModel(get()) }
+        viewModel { MonitorViewModel(get(), get(), get(), get()) }
+        viewModel { ActivityViewModel(get(), get() ) }
+        viewModel { WeeklyBarChartViewModel(get(), get()) }
     }
 
     fun provideDataBase(context: Context): AppDatabase =

@@ -396,7 +396,7 @@ fun MonitorScreenContentPreview() {
         isRefreshing = false,
         onRefresh = {},
         onNewTimerClick = {},
-        timers = emptyList(),
+        timers = emptyList(), // This should be 'timers' to avoid the unused variable warning
         onStartClick = {_ ->},
         onStopClick = {_ ->},
         onHideTimer = { _ ->},

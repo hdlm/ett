@@ -15,9 +15,11 @@ import com.budoxr.ett.commons.utils.toTimestamp
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
+import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
+import com.budoxr.ett.ui.navigation.Screens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -38,6 +40,7 @@ class MonitorViewModel(
     private val timerTrackingVisibleInfoUseCase: TimerTrackingVisibleInfoUseCase,
     private val timerTrackingInsertUseCase: TimerTrackingInsertUseCase,
     private val activityInfoUseCase: ActivityInfoUseCase,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : KoinViewModel() {
 
     private val _activities = activityInfoUseCase().stateIn(
@@ -75,6 +78,8 @@ class MonitorViewModel(
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine MonitorScreenUiState.Loading
                 }
+
+                saveLastScreen()
 
                 //TODO apply the filter to the list of timers
 
@@ -198,6 +203,13 @@ class MonitorViewModel(
         //TODO not implemented yet
     }
 
+    private fun saveLastScreen() {
+        val baseRoute = Screens.MonitorScreen.baseRoute
+        viewModelScope.launch {
+            userPreferencesRepository.saveLastScreen(baseRoute)
+            Timber.tag(TAG).i("save the last screen: $baseRoute")
+        }
+    }
 
     companion object {
         private const val TAG = "che.MonitorViewModel"
