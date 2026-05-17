@@ -6,6 +6,7 @@
 package com.budoxr.ett.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,9 +25,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -44,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -59,9 +63,11 @@ import com.budoxr.ett.commons.onDismissComposableType
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.commons.onLongType
+import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
+import com.budoxr.ett.presentation.presenters.GroupedSumState
 import com.budoxr.ett.presentation.presenters.MonitorScreenUiState
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
 import com.budoxr.ett.ui.components.ActivitySelectionBottomSheet
@@ -394,11 +400,20 @@ fun MonitorScreenHistoricalContent(
     viewOptions: Array<String>
 ) {
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
+    val lineSpacing = dimensionResource(id = R.dimen.line_spacing_1)
     val iconSize = dimensionResource(id = R.dimen.icon_huge_size)
 
     val pullToRefreshState = rememberPullToRefreshState()
 
     val grouped = monitorState.historicalTimers.groupBy { it.nameActivity  }
+        .map { (nameActivity, timers) ->
+            val totalSum = timers.sumOf { it.timerTracking.elapsedTime }
+            GroupedSumState(
+                groupKey = nameActivity,
+                items = timers,
+                totalSum = totalSum
+            )
+        }
 
     PullToRefreshBox(
         state = pullToRefreshState,          // Le pasa el estado del gesto
@@ -424,19 +439,49 @@ fun MonitorScreenHistoricalContent(
                 }
             }
 
-            grouped.forEach { (nameActivity, timers) ->
+            grouped.forEach { groupData ->
                 stickyHeader {
-                    Text(text = nameActivity, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = horizontalMargin))
+                    Text(
+                        text = groupData.groupKey,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(horizontal = horizontalMargin, vertical = lineSpacing)
+                    )
                 }
 
-                items(timers) { timer ->
+                items(
+                    items = groupData.items,
+                    key = { "item_${groupData.groupKey}_${it.timerTracking.timerTrackingId}"}
+                ) { timer ->
                     MonitorScreenRowHistoricalItem(
                         monitorState = monitorState,
                         item = timer,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+
+                // Dynamically append the sum directly after the last element of this group
+                item("sum_${groupData.groupKey}") {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 1.dp, bottom = 1.dp),
+                        thickness = 1.dp,
+                        color = Color.LightGray.copy(0.3f)
+                    )
+                    Text(
+                        text = "Total elapsed time: ${groupData.totalSum.toTimestampFormat()}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = horizontalMargin, top = lineSpacing, bottom = lineSpacing)
+                    )
+
+                }
             }
+
 
             item {
                 if (monitorState.activeTimers.isEmpty()) {

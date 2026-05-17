@@ -279,3 +279,9 @@ sealed interface MonitorScreenUiState {
     ) : MonitorScreenUiState
 
 }
+
+data class GroupedSumState(
+    val groupKey: String,
+    val items: List<TimerTrackingQuery>,
+    val totalSum: Long
+)

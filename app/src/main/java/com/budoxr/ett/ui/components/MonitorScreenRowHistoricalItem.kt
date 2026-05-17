@@ -40,7 +40,7 @@ fun MonitorScreenRowHistoricalItem(
     modifier: Modifier
 ) {
 
-    val iconSize = dimensionResource(id = R.dimen.icon_medium_size)
+    val iconSize = dimensionResource(id = R.dimen.icon_small_size)
     val deleteIcon = Icons.Filled.Delete
     val separation = dimensionResource(R.dimen.side_separation)
 
