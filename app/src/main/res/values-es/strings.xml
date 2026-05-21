@@ -63,7 +63,7 @@
     <string name="url_terms_of_service">https://www.budoxr.com/ett/terms-service-es.html</string>
     <string name="label_software_licenses">Licencias de software</string>
     <string name="label_mit_license">MIT license</string>
-    <string name="url_mit_license">https://mit-license.org/</string>"
+    <string name="url_mit_license">https://mit-license.org/</string>
 
     <!-- SettingScreen -->
     <string name="title_setting_screen">Ajustes</string>

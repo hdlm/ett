@@ -16,8 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.presentation.presenters.ManageBackupUiState
@@ -26,6 +28,7 @@ import com.budoxr.ett.presentation.presenters.TypeOperation
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.navigation.Screens
+import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import timber.log.Timber
 
 @Composable
@@ -55,21 +58,6 @@ fun ManageBackupScreen(
     )
 }
 
-@Composable
-private fun ManageBackupScreenBackup(
-    typeOperation: TypeOperation,
-    isLoading: Boolean,
-) {
-    // TODO: Implement Backup UI
-}
-
-@Composable
-private fun ManageBackupScreenRestore(
-    typeOperation: TypeOperation,
-    errorMessage: String? = null,
-) {
-    // TODO: Implement Restore UI
-}
 
 @Composable
 private fun ManageBackupScreenContent(
@@ -120,5 +108,42 @@ private fun ManageBackupScreenContent(
         }
     }
 }
+
+
+@Composable
+private fun ManageBackupScreenBackup(
+    typeOperation: TypeOperation,
+    isLoading: Boolean,
+) {
+    // TODO: Implement Backup UI
+}
+
+@Composable
+private fun ManageBackupScreenRestore(
+    typeOperation: TypeOperation,
+    errorMessage: String? = null,
+) {
+    // TODO: Implement Restore UI
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ManageBackupScreenBackupPreview() {
+    val navController = rememberNavController()
+    val isDarkTheme = false
+    val typeOperation = TypeOperation.Restore
+    EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
+        ManageBackupScreenContent(
+            navController = navController,
+            typeOperation = typeOperation,
+            isLoading = false,
+            errorMessage = null,
+            isDarkTheme = false,
+            onBackButtonClick = {}
+        )
+    }
+}
+
+
 
 private const val TAG = "che.ManageBackupScreen"
