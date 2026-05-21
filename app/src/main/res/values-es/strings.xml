@@ -65,4 +65,13 @@
     <string name="label_mit_license">MIT license</string>
     <string name="url_mit_license">https://mit-license.org/</string>"
 
+    <!-- SettingScreen -->
+    <string name="title_setting_screen">Ajustes</string>
+    <string name="label_make_backup">Make Backup</string>
+    <string name="label_restore_backup">Restore Backup</string>
+
+    <!-- ManageBackupScreen -->
+    <string name="title_manage_backup_make">Realizar Backup</string>
+    <string name="title_manage_backup_restore">Restaurar Backup</string>
+
 </resources>

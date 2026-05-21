@@ -15,6 +15,7 @@ import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepositoryImp
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.presenters.ActivityFormViewModel
 import com.budoxr.ett.presentation.presenters.ActivityViewModel
+import com.budoxr.ett.presentation.presenters.ManageBackupViewModel
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
 import com.budoxr.ett.presentation.presenters.WeeklyBarChartViewModel
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeWeeklyInfoUseCase
@@ -35,6 +36,7 @@ object Modules {
         viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
         viewModel { WeeklyBarChartViewModel(get(), get()) }
+        viewModel {(typeOperation: Int) -> ManageBackupViewModel(typeOperation) }
     }
 
     fun provideDataBase(context: Context): AppDatabase =

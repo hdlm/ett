@@ -279,15 +279,20 @@ fun ActivityScreenContent(
                     Row(modifier = Modifier.fillMaxSize(),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
-                            contentDescription = stringResource(R.string.content_description_icon),
-                            tint = MaterialTheme.colorScheme.primary, //standard icon color (onSurfaceVariant)
-                            modifier = Modifier.size(iconSize)
-                        )
+                        Column(modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                                contentDescription = stringResource(R.string.content_description_icon),
+                                tint = MaterialTheme.colorScheme.primary, //standard icon color (onSurfaceVariant)
+                                modifier = Modifier.size(iconSize)
+                            )
+                            Text(text = stringResource(R.string.msg_no_records), style = MaterialTheme.typography.titleMedium)
+                        }
+
                     }
 
-                    Text(text = stringResource(R.string.msg_no_records), style = MaterialTheme.typography.titleMedium)
                 }
             }
         }

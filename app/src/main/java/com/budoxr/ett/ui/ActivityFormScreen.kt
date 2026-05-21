@@ -70,8 +70,6 @@ fun ActivityFormScreen(
 ) {
     Timber.tag(TAG).i("Compose / Recompose -> id: $id")
 
-    val lineSpacing1x = dimensionResource(R.dimen.line_spacing_1)
-    val lineSpacing3x = dimensionResource(R.dimen.line_spacing_3)
     val marginHorizontal = dimensionResource(R.dimen.margin_horizontal)
 
     val formState by viewModel.formState.collectAsStateWithLifecycle()
@@ -144,14 +142,12 @@ fun ActivityFormScreen(
                     .padding(horizontal = marginHorizontal),
                 ) {
 
-                    Spacer(modifier = Modifier.padding(vertical = lineSpacing1x))
                     ActivityFormBodyScreen(
                         isDarkTheme = isDarkTheme,
                         formState = formState,
                         onNameChanged = viewModel::onNameChanged,
                         onColorChange = viewModel::onColorChanged,
                     )
-                    Spacer(modifier = Modifier.padding(vertical = lineSpacing3x))
 
                 }
 

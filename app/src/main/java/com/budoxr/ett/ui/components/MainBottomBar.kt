@@ -34,7 +34,7 @@ fun MainBottomBar(navController: NavHostController) {
         Screens.MonitorScreen,
         Screens.ActivityScreen,
         Screens.WeeklyBarChartScreen,
-        Screens.AboutScreen
+        Screens.SettingScreen
     )
 
     currentRoute?.let {
