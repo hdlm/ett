@@ -8,6 +8,8 @@ package com.budoxr.ett.di
 import android.content.Context
 import androidx.room.Room
 import com.budoxr.ett.data.database.AppDatabase
+import com.budoxr.ett.data.database.DatabaseBackupManager
+import com.budoxr.ett.data.database.DatabaseBackupManagerImpl
 import com.budoxr.ett.data.database.repositories.ActivityLocalRepository
 import com.budoxr.ett.data.database.repositories.ActivityLocalRepositoryImpl
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepository
@@ -36,7 +38,7 @@ object Modules {
         viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
         viewModel { WeeklyBarChartViewModel(get(), get()) }
-        viewModel {(typeOperation: Int) -> ManageBackupViewModel(typeOperation) }
+        viewModel {(typeOperation: Int) -> ManageBackupViewModel(typeOperation, get()) }
     }
 
     fun provideDataBase(context: Context): AppDatabase =
@@ -61,7 +63,9 @@ object Modules {
         factory { ActivityElapsedTimeWeeklyInfoUseCase() }
 
         factory<TimerTrackingLocalRepository> { TimerTrackingLocalRepositoryImpl() }
+        factory<DatabaseBackupManager> { DatabaseBackupManagerImpl(androidContext(), get(), "ett.db") }
         factory { TimerTrackingVisibleInfoUseCase() }
+
         factory { TimerTrackingInsertUseCase() }
         factory { TimerTrackingWeeklyInfoUseCase() }
         factory { TimerTrackingInfoUseCase() }

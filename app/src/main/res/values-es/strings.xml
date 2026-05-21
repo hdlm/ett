@@ -73,5 +73,9 @@
     <!-- ManageBackupScreen -->
     <string name="title_manage_backup_make">Realizar Backup</string>
     <string name="title_manage_backup_restore">Restaurar Backup</string>
+    <string name="label_start_backup">Comenzar el Respaldo</string>
+    <string name="label_start_restore">Comenzar la Restauración</string>
+    <string name="message_backup_done">El respaldo fue completado satisfactoriamente.</string>
+    <string name="message_backup_failed">El respaldo ha fallado.</string>
 
 </resources>

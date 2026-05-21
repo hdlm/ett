@@ -73,5 +73,10 @@
     <!-- ManageBackupScreen -->
     <string name="title_manage_backup_make">Make Backup</string>
     <string name="title_manage_backup_restore">Restore Backup</string>
+    <string name="label_start_backup">Start the Backup</string>
+    <string name="label_start_restore">Start the Restore</string>
+    <string name="message_backup_done">The backup has been successfully completed.</string>
+    <string name="message_backup_failed">The backup has been failed.</string>
+
 
 </resources>

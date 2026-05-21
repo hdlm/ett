@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,9 +53,6 @@ fun AboutScreen(
 ) {
     Timber.tag(TAG).i("Compose / Recompose, language: $language")
 
-
-
-
     Scaffold(
         topBar = {
             GlobalTopBar(
@@ -80,7 +78,8 @@ fun AboutScreen(
             Image(
                 painter = painterResource(id = R.drawable.ett_logo),
                 contentDescription = stringResource(id = R.string.content_description_ett_logo),
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier.size(120.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
