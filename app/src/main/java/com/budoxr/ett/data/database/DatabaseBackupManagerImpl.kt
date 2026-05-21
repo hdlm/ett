@@ -12,6 +12,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
+import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -29,12 +30,15 @@ class DatabaseBackupManagerImpl(
      */
     override suspend fun backupDatabase(destinationFile: File): Result<Unit> = withContext(Dispatchers.IO) {
         try {
+            Timber.tag(TAG).d("backupDatabase() -> Destination: ${destinationFile.absolutePath}")
+
             // 1. Force a checkpoint to merge WAL journal files into the main .db file
             roomDatabase.query(SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)"))
 
             // 2. Locate the source database file paths
             val dbFile: File = context.getDatabasePath(databaseName)
             if (!dbFile.exists()) {
+                Timber.tag(TAG).e("backupDatabase() -> Source database file not found at: ${dbFile.absolutePath}")
                 return@withContext Result.failure(FileNotFoundException("Source database file not found."))
             } else {
                 // 3. Perform a highly efficient streaming block copy
@@ -43,11 +47,14 @@ class DatabaseBackupManagerImpl(
                         input.copyTo(output)
                     }
                 }
+                Timber.tag(TAG).i("backupDatabase() -> Success! File saved at: ${destinationFile.absolutePath}")
                 Result.success(Unit)
             }
         } catch (e: IOException) {
+            Timber.tag(TAG).e(e, "backupDatabase() -> IOException")
             Result.failure(e)
         } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "backupDatabase() -> Unexpected error")
             Result.failure(e)
         }
     }
@@ -58,7 +65,10 @@ class DatabaseBackupManagerImpl(
      */
     override suspend fun restoreDatabase(sourceFile: File): Result<Unit> = withContext(Dispatchers.IO) {
         try {
+            Timber.tag(TAG).d("restoreDatabase() -> Source: ${sourceFile.absolutePath}")
+            
             if (!sourceFile.exists()) {
+                Timber.tag(TAG).e("restoreDatabase() -> Source file not found at: ${sourceFile.absolutePath}")
                 return@withContext Result.failure(FileNotFoundException("Source backup file not found: ${sourceFile.absolutePath}"))
             }
 
@@ -81,16 +91,25 @@ class DatabaseBackupManagerImpl(
                 }
             }
 
+            Timber.tag(TAG).i("restoreDatabase() -> Success! Database restored from: ${sourceFile.absolutePath}")
             Result.success(Unit)
         } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "restoreDatabase() -> Unexpected error")
             Result.failure(e)
         }
     }
 
     /**
      * Returns the reference to the app-specific Download folder in the internal local storage.
+     * Path example: /storage/emulated/0/Android/data/com.budoxr.ett/files/Download
      */
     override fun getDownloadFolder(): File? {
-        return context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        val folder = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        Timber.tag(TAG).d("getDownloadFolder() -> Returning: ${folder?.absolutePath}")
+        return folder
+    }
+
+    companion object {
+        private const val TAG = "che.DatabaseBackupManager"
     }
 }

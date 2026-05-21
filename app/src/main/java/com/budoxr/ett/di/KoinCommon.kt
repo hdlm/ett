@@ -7,6 +7,7 @@ package com.budoxr.ett.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.budoxr.ett.data.database.AppDatabase
 import com.budoxr.ett.data.database.DatabaseBackupManager
 import com.budoxr.ett.data.database.DatabaseBackupManagerImpl
@@ -38,7 +39,7 @@ object Modules {
         viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
         viewModel { WeeklyBarChartViewModel(get(), get()) }
-        viewModel {(typeOperation: Int) -> ManageBackupViewModel(typeOperation, get()) }
+        viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get()) }
     }
 
     fun provideDataBase(context: Context): AppDatabase =
@@ -53,7 +54,13 @@ object Modules {
 
     val databaseModule = module {
         single { UserPreferencesRepository(androidContext()) }
+        
+        // Provide AppDatabase singleton
         single { provideDataBase(androidContext()) }
+        
+        // Explicitly provide RoomDatabase type by delegating to the AppDatabase singleton
+        single<RoomDatabase> { get<AppDatabase>() }
+        
         single { provideActivityDao(get()) }
         single { provideTimeTrackingDao(get()) }
 
@@ -63,16 +70,19 @@ object Modules {
         factory { ActivityElapsedTimeWeeklyInfoUseCase() }
 
         factory<TimerTrackingLocalRepository> { TimerTrackingLocalRepositoryImpl() }
-        factory<DatabaseBackupManager> { DatabaseBackupManagerImpl(androidContext(), get(), "ett.db") }
+        
+        factory<DatabaseBackupManager> { 
+            DatabaseBackupManagerImpl(
+                context = androidContext(), 
+                roomDatabase = get(), 
+                databaseName = "ett.db"
+            )
+        }
+        
         factory { TimerTrackingVisibleInfoUseCase() }
-
         factory { TimerTrackingInsertUseCase() }
         factory { TimerTrackingWeeklyInfoUseCase() }
         factory { TimerTrackingInfoUseCase() }
         factory { TimerTrackingDeleteUseCase() }
-
     }
-
 }
-
-

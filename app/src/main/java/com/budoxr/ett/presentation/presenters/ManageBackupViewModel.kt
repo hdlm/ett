@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 
 class ManageBackupViewModel(
     private val typeOperation: Int,
@@ -27,15 +28,32 @@ class ManageBackupViewModel(
     fun startBackup() {
         Timber.tag(TAG).d("startBackup() -> called.")
         viewModelScope.launch {
-            _uiState.value = ManageBackupUiState.Ready(isLoading = true)
-            databaseBackupManager
-                .backupDatabase(databaseBackupManager.getDownloadFolder()!!)
+            val currentType = TypeOperation.Backup
+            _uiState.value = ManageBackupUiState.Ready(typeOperation = currentType, isLoading = true)
+            
+            val folder = databaseBackupManager.getDownloadFolder()
+            if (folder == null) {
+                _uiState.value = ManageBackupUiState.Success(
+                    typeOperation = currentType, 
+                    errorMessage = R.string.message_backup_failed
+                )
+                return@launch
+            }
+
+            val backupFile = File(folder, BACKUP_FILE_NAME)
+            databaseBackupManager.backupDatabase(backupFile)
                 .fold(
                     onSuccess = {
-                        _uiState.value = ManageBackupUiState.Success(typeOperation = TypeOperation.Backup)
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType,
+                            backupPath = backupFile.absolutePath
+                        )
                     },
                     onFailure = {
-                        _uiState.value = ManageBackupUiState.Success(typeOperation = TypeOperation.Backup, errorMessage = R.string.message_backup_failed )
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType, 
+                            errorMessage = R.string.message_backup_failed 
+                        )
                     }
                 )
             Timber.tag(TAG).i("backing up the database.")
@@ -43,11 +61,43 @@ class ManageBackupViewModel(
     }
 
     fun startRestore() {
-        //TODO not implemented yet
+        Timber.tag(TAG).d("startRestore() -> called.")
+        viewModelScope.launch {
+            val currentType = TypeOperation.Restore
+            _uiState.value = ManageBackupUiState.Ready(typeOperation = currentType, isLoading = true)
+            
+            val folder = databaseBackupManager.getDownloadFolder()
+            if (folder == null) {
+                _uiState.value = ManageBackupUiState.Success(
+                    typeOperation = currentType, 
+                    errorMessage = R.string.message_restore_failed
+                )
+                return@launch
+            }
+
+            val backupFile = File(folder, BACKUP_FILE_NAME)
+            databaseBackupManager.restoreDatabase(backupFile)
+                .fold(
+                    onSuccess = {
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType,
+                            backupPath = backupFile.absolutePath
+                        )
+                    },
+                    onFailure = {
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType, 
+                            errorMessage = R.string.message_restore_failed
+                        )
+                    }
+                )
+            Timber.tag(TAG).i("restoring the database.")
+        }
     }
 
     companion object {
         private const val TAG = "che.ManageBackupViewModel"
+        private const val BACKUP_FILE_NAME = "ett_backup.db"
     }
 }
 
@@ -62,7 +112,8 @@ sealed interface ManageBackupUiState {
     data class Success(
         val typeOperation: TypeOperation = TypeOperation.Backup,
         @field:StringRes
-        val errorMessage: Int? = null
+        val errorMessage: Int? = null,
+        val backupPath: String? = null
     ) : ManageBackupUiState
 
 }

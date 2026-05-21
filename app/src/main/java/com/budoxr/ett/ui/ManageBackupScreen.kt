@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,6 +43,7 @@ import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.presentation.presenters.ManageBackupUiState
 import com.budoxr.ett.presentation.presenters.ManageBackupViewModel
 import com.budoxr.ett.presentation.presenters.TypeOperation
+import com.budoxr.ett.ui.components.ButtonConfirm
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.navigation.Screens
@@ -59,17 +61,19 @@ fun ManageBackupScreen(
 
     val manageBackupUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val (typeOperation, isLoading, errorMessage) = when (val uiState = manageBackupUiState) {
-        is ManageBackupUiState.Ready -> Triple(uiState.typeOperation, uiState.isLoading, null)
-        is ManageBackupUiState.Success -> Triple(uiState.typeOperation, false, uiState.errorMessage)
+    val (typeOperation, isLoading, errorMessage, isSuccess, backupPath) = when (val uiState = manageBackupUiState) {
+        is ManageBackupUiState.Ready -> quintupleOf(uiState.typeOperation, uiState.isLoading, null, false, null)
+        is ManageBackupUiState.Success -> quintupleOf(uiState.typeOperation, false, uiState.errorMessage, uiState.errorMessage == null, uiState.backupPath)
     }
-    Timber.tag(TAG).d("typeOperation: $typeOperation, isLoading: $isLoading, errorMessage: $errorMessage")
+    Timber.tag(TAG).d("typeOperation: $typeOperation, isLoading: $isLoading, errorMessage: $errorMessage, isSuccess: $isSuccess, backupPath: $backupPath")
 
     ManageBackupScreenContent(
         navController = navController,
         typeOperation = typeOperation,
         isLoading = isLoading,
         errorMessage = errorMessage,
+        isSuccess = isSuccess,
+        backupPath = backupPath,
         isDarkTheme = isDarkTheme,
         onBackButtonClick = onBackButtonClick,
         onStartBackupClick = { viewModel.startBackup() },
@@ -77,6 +81,15 @@ fun ManageBackupScreen(
     )
 }
 
+private data class Quintuple<out A, out B, out C, out D, out E>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+    val fifth: E
+)
+
+private fun <A, B, C, D, E> quintupleOf(a: A, b: B, c: C, d: D, e: E): Quintuple<A, B, C, D, E> = Quintuple(a, b, c, d, e)
 
 @Composable
 private fun ManageBackupScreenContent(
@@ -85,6 +98,8 @@ private fun ManageBackupScreenContent(
     isLoading: Boolean,
     @StringRes
     errorMessage: Int?,
+    isSuccess: Boolean,
+    backupPath: String?,
     isDarkTheme: Boolean,
     onBackButtonClick: onDismissType,
     onStartBackupClick: onDismissType,
@@ -119,12 +134,17 @@ private fun ManageBackupScreenContent(
         ) {
             when (typeOperation) {
                 TypeOperation.Backup -> ManageBackupScreenBackup(
-                    typeOperation = typeOperation,
                     isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    isSuccess = isSuccess,
+                    backupPath = backupPath,
+                    onStartBackupClick = onStartBackupClick
                 )
                 TypeOperation.Restore -> ManageBackupScreenRestore(
-                    typeOperation = typeOperation,
+                    isLoading = isLoading,
                     errorMessage = errorMessage,
+                    isSuccess = isSuccess,
+                    onRestoreBackupClick = onRestoreBackupClick
                 )
             }
         }
@@ -134,8 +154,12 @@ private fun ManageBackupScreenContent(
 
 @Composable
 private fun ManageBackupScreenBackup(
-    typeOperation: TypeOperation,
     isLoading: Boolean,
+    @StringRes
+    errorMessage: Int?,
+    isSuccess: Boolean,
+    backupPath: String?,
+    onStartBackupClick: onDismissType,
 ) {
     Column(
         modifier = Modifier
@@ -166,15 +190,57 @@ private fun ManageBackupScreenBackup(
                 modifier = Modifier.size(48.dp),
                 color = MaterialTheme.colorScheme.primary
             )
+        } else {
+            ButtonConfirm(
+                label = stringResource(id = R.string.label_make_backup),
+                isEnabled = true,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = onStartBackupClick
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (isSuccess) {
+            Text(
+                text = stringResource(id = R.string.message_backup_done),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+            backupPath?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
+        }
+
+        errorMessage?.let {
+            Text(
+                text = stringResource(it),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
 
 @Composable
 private fun ManageBackupScreenRestore(
-    typeOperation: TypeOperation,
+    isLoading: Boolean,
     @StringRes
     errorMessage: Int? = null,
+    isSuccess: Boolean,
+    onRestoreBackupClick: onDismissType,
 ) {
     Column(
         modifier = Modifier
@@ -200,16 +266,43 @@ private fun ManageBackupScreenRestore(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        errorMessage?.let {
-            Text(
-                text = stringResource(it),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            ButtonConfirm(
+                label = stringResource(id = R.string.label_restore_backup),
+                isEnabled = true,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = onRestoreBackupClick
             )
         }
 
-    }
+        Spacer(modifier = Modifier.height(16.dp))
 
+        if (isSuccess) {
+            Text(
+                text = stringResource(id = R.string.message_restore_done),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        errorMessage?.let {
+            Text(
+                text = stringResource(it),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true)
@@ -217,13 +310,15 @@ private fun ManageBackupScreenRestore(
 fun ManageBackupScreenBackupPreview() {
     val navController = rememberNavController()
     val isDarkTheme = false
-    val typeOperation = TypeOperation.Restore
+    val typeOperation = TypeOperation.Backup
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
         ManageBackupScreenContent(
             navController = navController,
             typeOperation = typeOperation,
-            isLoading = true,
+            isLoading = false,
             errorMessage = null,
+            isSuccess = true,
+            backupPath = "/storage/emulated/0/Android/data/com.budoxr.ett/files/Download/ett_backup.db",
             isDarkTheme = false,
             onBackButtonClick = {},
             onStartBackupClick = {},
