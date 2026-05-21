@@ -11,11 +11,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -27,8 +25,11 @@ import com.budoxr.ett.ui.theme.gray
 import com.budoxr.ett.ui.theme.grayLight
 
 @Composable
-fun MainBottomBar(navController: NavHostController) {
-    val currentRoute = currentRoute(navController)
+fun MainBottomBar(
+    navController: NavHostController,
+    selectedRoute: String? = null
+) {
+    val currentRoute = selectedRoute ?: currentRoute(navController)
 
     val navigationItems = listOf(
         Screens.MonitorScreen,
@@ -39,7 +40,11 @@ fun MainBottomBar(navController: NavHostController) {
 
     currentRoute?.let {
         BottomAppBar {
-            BottomNavigationBar(navController = navController, items = navigationItems)
+            BottomNavigationBar(
+                navController = navController,
+                items = navigationItems,
+                selectedRoute = it
+            )
         }
     }
 }
@@ -48,19 +53,20 @@ fun MainBottomBar(navController: NavHostController) {
 fun BottomNavigationBar(
     navController: NavHostController,
     items: List<Screens>,
+    selectedRoute: String?
 ) {
-
-    val currentRoute = currentRoute(navController)
-
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
     ) {
         items.forEach { screen ->
+            val isSelected = selectedRoute == screen.route || 
+                             (selectedRoute != null && screen.baseRoute == getBaseRoute(selectedRoute))
+
             NavigationBarItem(
                 icon = { Icon(imageVector = screen.icon, contentDescription = stringResource(R.string.content_description_icon) ) },
-                label = { BottomNavigationBarText(selected = currentRoute == screen.route, label = stringResource(screen.titleResId) ) },
-                selected = currentRoute == screen.route,
+                label = { BottomNavigationBarText(selected = isSelected, label = stringResource(screen.titleResId) ) },
+                selected = isSelected,
                 onClick = {
                     val destination = when (screen) {
                         // Special case: ActivityFormScreen requires an initial '0' argument

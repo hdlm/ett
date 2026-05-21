@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 Henry De la Mano
+ * Licensed under the MIT License.
+ * See LICENSE file in the project root for full license information.
+ */
 package com.budoxr.ett.ui
 
 import androidx.compose.foundation.layout.Box
@@ -20,6 +25,7 @@ import com.budoxr.ett.presentation.presenters.ManageBackupViewModel
 import com.budoxr.ett.presentation.presenters.TypeOperation
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
+import com.budoxr.ett.ui.navigation.Screens
 import timber.log.Timber
 
 @Composable
@@ -89,7 +95,12 @@ private fun ManageBackupScreenContent(
                 onActionButtonClick = {}
             )
         },
-        bottomBar = { MainBottomBar(navController = navController) },
+        bottomBar = { 
+            MainBottomBar(
+                navController = navController, 
+                selectedRoute = Screens.SettingScreen.route
+            ) 
+        },
         floatingActionButtonPosition = FabPosition.End,
     ) { innerPadding ->
 
