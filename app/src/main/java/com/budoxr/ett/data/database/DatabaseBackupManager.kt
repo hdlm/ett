@@ -22,4 +22,11 @@ interface DatabaseBackupManager {
      * Returns the reference to the app-specific Download folder in the internal local storage.
      */
     fun getDownloadFolder(): File?
+
+    /**
+     * Programmatically restarts the application to re-initialize the database connection.
+     * This is required after a successful [restoreDatabase] because the Singleton 
+     * database instance remains closed after restoration.
+     */
+    fun triggerAppRestart()
 }

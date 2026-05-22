@@ -6,6 +6,7 @@
 package com.budoxr.ett.data.database
 
 import android.content.Context
+import android.content.Intent
 import android.os.Environment
 import androidx.room.RoomDatabase
 import kotlinx.coroutines.Dispatchers
@@ -66,19 +67,21 @@ class DatabaseBackupManagerImpl(
             }
 
             // 1. Close the database to stop all operations and release file locks
+            Timber.tag(TAG).d("restoreDatabase() -> Closing active database connection.")
             roomDatabase.close()
 
             // 2. Locate the target database file path
             val dbFile: File = context.getDatabasePath(databaseName)
 
             // 3. Delete existing database files (including WAL and SHM) to ensure a clean restore
-            // context.deleteDatabase is the safest way to remove a Room database and its support files
+            Timber.tag(TAG).d("restoreDatabase() -> Deleting current database files.")
             context.deleteDatabase(databaseName)
             
             // Ensure the directory exists for restoration
             dbFile.parentFile?.mkdirs()
 
             // 4. Perform the copy from source to the database location
+            Timber.tag(TAG).d("restoreDatabase() -> Copying data from backup...")
             sourceFile.inputStream().use { input ->
                 FileOutputStream(dbFile).use { output ->
                     input.copyTo(output)
@@ -101,6 +104,36 @@ class DatabaseBackupManagerImpl(
         val folder = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
         Timber.tag(TAG).d("getDownloadFolder() -> Returning: ${folder?.absolutePath}")
         return folder
+    }
+
+    /**
+     * Programmatically restarts the application.
+     * This is required because the Singleton database instance must be re-initialized.
+     */
+    override fun triggerAppRestart() {
+        Timber.tag(TAG).i("triggerAppRestart() -> Initiating restart sequence...")
+        try {
+            val packageManager = context.packageManager
+            val intent = packageManager.getLaunchIntentForPackage(context.packageName)
+            if (intent != null) {
+                val componentName = intent.component
+                val mainIntent = Intent.makeRestartActivityTask(componentName)
+                context.startActivity(mainIntent)
+                Timber.tag(TAG).d("triggerAppRestart() -> Restart intent sent successfully.")
+                
+                // Give the system a brief moment to process the start intent
+                Thread.sleep(200) 
+            } else {
+                Timber.tag(TAG).e("triggerAppRestart() -> Could not find launch intent for package: ${context.packageName}")
+            }
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "triggerAppRestart() -> Failed to send restart intent.")
+        } finally {
+            // Forcefully terminate the process to ensure clean re-initialization
+            Timber.tag(TAG).i("triggerAppRestart() -> Terminating process...")
+            android.os.Process.killProcess(android.os.Process.myPid())
+            System.exit(0)
+        }
     }
 
     companion object {

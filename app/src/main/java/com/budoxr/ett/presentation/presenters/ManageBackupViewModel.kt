@@ -9,6 +9,7 @@ import com.budoxr.ett.R
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.data.database.DatabaseBackupManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -76,22 +77,27 @@ class ManageBackupViewModel(
             }
 
             val backupFile = File(folder, BACKUP_FILE_NAME)
-            databaseBackupManager.restoreDatabase(backupFile)
-                .fold(
-                    onSuccess = {
-                        _uiState.value = ManageBackupUiState.Success(
-                            typeOperation = currentType,
-                            backupPath = backupFile.absolutePath
-                        )
-                    },
-                    onFailure = {
-                        _uiState.value = ManageBackupUiState.Success(
-                            typeOperation = currentType, 
-                            errorMessage = R.string.message_restore_failed
-                        )
-                    }
+            val result = databaseBackupManager.restoreDatabase(backupFile)
+            
+            if (result.isSuccess) {
+                Timber.tag(TAG).i("Database restored successfully. Updating UI state...")
+                _uiState.value = ManageBackupUiState.Success(
+                    typeOperation = currentType,
+                    backupPath = backupFile.absolutePath
                 )
-            Timber.tag(TAG).i("restoring the database.")
+                
+                // Wait for the UI to reflect the success message and logs to flush
+                delay(1500) 
+                
+                Timber.tag(TAG).i("Triggering app restart now.")
+                databaseBackupManager.triggerAppRestart()
+            } else {
+                Timber.tag(TAG).e(result.exceptionOrNull(), "Database restore failed.")
+                _uiState.value = ManageBackupUiState.Success(
+                    typeOperation = currentType, 
+                    errorMessage = R.string.message_restore_failed
+                )
+            }
         }
     }
 
