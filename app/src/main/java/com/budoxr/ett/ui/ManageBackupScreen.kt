@@ -5,6 +5,7 @@
  */
 package com.budoxr.ett.ui
 
+import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -44,6 +45,7 @@ import com.budoxr.ett.presentation.presenters.ManageBackupUiState
 import com.budoxr.ett.presentation.presenters.ManageBackupViewModel
 import com.budoxr.ett.presentation.presenters.TypeOperation
 import com.budoxr.ett.ui.components.ButtonConfirm
+import com.budoxr.ett.ui.components.CsvFilePickerButton
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.navigation.Screens
@@ -60,6 +62,7 @@ fun ManageBackupScreen(
     Timber.tag(TAG).i("compose / recompose")
 
     val manageBackupUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val csvFilePath by viewModel.csvFilePath.collectAsStateWithLifecycle()
 
     val (typeOperation, isLoading, errorMessage, isSuccess, backupPath) = when (val uiState = manageBackupUiState) {
         is ManageBackupUiState.Ready -> quintupleOf(uiState.typeOperation, uiState.isLoading, null, false, null)
@@ -74,10 +77,13 @@ fun ManageBackupScreen(
         errorMessage = errorMessage,
         isSuccess = isSuccess,
         backupPath = backupPath,
+        csvFilePath = csvFilePath,
         isDarkTheme = isDarkTheme,
         onBackButtonClick = onBackButtonClick,
         onStartBackupClick = { viewModel.startBackup() },
-        onRestoreBackupClick = { viewModel.startRestore() },
+        onStartRestoreClick = { viewModel.startRestore() },
+        onCsvFileSelected = { viewModel.selectCsvFile(it) },
+        onStartImportCsvClick = { viewModel.startImportCsv() },
     )
 }
 
@@ -100,10 +106,13 @@ private fun ManageBackupScreenContent(
     errorMessage: Int?,
     isSuccess: Boolean,
     backupPath: String?,
+    csvFilePath: Uri?,
     isDarkTheme: Boolean,
     onBackButtonClick: onDismissType,
     onStartBackupClick: onDismissType,
-    onRestoreBackupClick: onDismissType
+    onStartRestoreClick: onDismissType,
+    onCsvFileSelected: (Uri) -> Unit,
+    onStartImportCsvClick: onDismissType
 ) {
     Scaffold(
         topBar = {
@@ -115,6 +124,7 @@ private fun ManageBackupScreenContent(
                 title = when (typeOperation) {
                     TypeOperation.Backup -> stringResource(R.string.title_manage_backup_make)
                     TypeOperation.Restore -> stringResource(R.string.title_manage_backup_restore)
+                    TypeOperation.ImportFromCsv -> stringResource(R.string.title_manage_backup_cvs_import)
                 },
                 actionIcon = null,
                 onActionButtonClick = {}
@@ -144,7 +154,16 @@ private fun ManageBackupScreenContent(
                     isLoading = isLoading,
                     errorMessage = errorMessage,
                     isSuccess = isSuccess,
-                    onRestoreBackupClick = onRestoreBackupClick
+                    onStartRestoreClick = onStartRestoreClick
+                )
+
+                TypeOperation.ImportFromCsv -> ManageBackupScreenImportCsv(
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    isSuccess = isSuccess,
+                    csvFilePath = csvFilePath,
+                    onCsvFileSelected = onCsvFileSelected,
+                    onStartImportCsvClick = onStartImportCsvClick
                 )
             }
         }
@@ -240,7 +259,7 @@ private fun ManageBackupScreenRestore(
     @StringRes
     errorMessage: Int? = null,
     isSuccess: Boolean,
-    onRestoreBackupClick: onDismissType,
+    onStartRestoreClick: onDismissType,
 ) {
     Column(
         modifier = Modifier
@@ -279,7 +298,99 @@ private fun ManageBackupScreenRestore(
                 buttonIcon = null,
                 buttonVector = null,
                 buttonImg = null,
-                onConfirmClick = onRestoreBackupClick
+                onConfirmClick = onStartRestoreClick
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (isSuccess) {
+            Text(
+                text = stringResource(id = R.string.message_restore_done),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        errorMessage?.let {
+            Text(
+                text = stringResource(it),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun ManageBackupScreenImportCsv(
+    isLoading: Boolean,
+    @StringRes
+    errorMessage: Int? = null,
+    isSuccess: Boolean,
+    csvFilePath: Uri?,
+    onCsvFileSelected: (Uri) -> Unit,
+    onStartImportCsvClick: onDismissType,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ett_logo),
+            contentDescription = stringResource(id = R.string.content_description_ett_logo),
+            modifier = Modifier.size(120.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(id = R.string.label_start_import_csv),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            CsvFilePickerButton(
+                label = stringResource(id = R.string.label_select_csv_file),
+                onFileSelected = onCsvFileSelected,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            csvFilePath?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = it.toString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ButtonConfirm(
+                label = stringResource(id = R.string.label_import_csv),
+                isEnabled = csvFilePath != null,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = onStartImportCsvClick
             )
         }
 
@@ -310,7 +421,7 @@ private fun ManageBackupScreenRestore(
 fun ManageBackupScreenBackupPreview() {
     val navController = rememberNavController()
     val isDarkTheme = false
-    val typeOperation = TypeOperation.Backup
+    val typeOperation = TypeOperation.ImportFromCsv
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
         ManageBackupScreenContent(
             navController = navController,
@@ -319,10 +430,13 @@ fun ManageBackupScreenBackupPreview() {
             errorMessage = null,
             isSuccess = true,
             backupPath = "/storage/emulated/0/Android/data/com.budoxr.ett/files/Download/ett_backup.db",
+            csvFilePath = null,
             isDarkTheme = false,
             onBackButtonClick = {},
             onStartBackupClick = {},
-            onRestoreBackupClick = {}
+            onStartRestoreClick = {},
+            onCsvFileSelected = {},
+            onStartImportCsvClick = {}
         )
     }
 }

@@ -5,6 +5,7 @@
  */
 package com.budoxr.ett.data.database
 
+import android.net.Uri
 import java.io.File
 
 interface DatabaseBackupManager {
@@ -17,6 +18,11 @@ interface DatabaseBackupManager {
      * Restores the database from a source file.
      */
     suspend fun restoreDatabase(sourceFile: File): Result<Unit>
+
+    /**
+     * Imports data from a CSV file into the database.
+     */
+    suspend fun importFromCsv(uri: Uri): Result<Unit>
 
     /**
      * Returns the reference to the app-specific Download folder in the internal local storage.

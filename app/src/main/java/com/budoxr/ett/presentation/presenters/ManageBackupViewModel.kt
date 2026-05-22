@@ -5,6 +5,7 @@
  */
 package com.budoxr.ett.presentation.presenters
 
+import android.net.Uri
 import com.budoxr.ett.R
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
@@ -22,9 +23,13 @@ class ManageBackupViewModel(
     private val databaseBackupManager: DatabaseBackupManager
 ) : KoinViewModel() {
 
+    private val _csvFilePath = MutableStateFlow<Uri?>(null)
+    val csvFilePath: StateFlow<Uri?> = _csvFilePath.asStateFlow()
+
     private val _uiState = MutableStateFlow<ManageBackupUiState>(ManageBackupUiState.Ready(TypeOperation.fromValue(typeOperation)))
     val uiState: StateFlow<ManageBackupUiState>
         get() = _uiState.asStateFlow()
+
 
     fun startBackup() {
         Timber.tag(TAG).d("startBackup() -> called.")
@@ -101,6 +106,46 @@ class ManageBackupViewModel(
         }
     }
 
+    fun selectCsvFile(uri: Uri) {
+        Timber.tag(TAG).d("selectCsvFile() -> called with uri: $uri")
+        _csvFilePath.value = uri
+    }
+
+    fun startImportCsv() {
+        Timber.tag(TAG).d("startImportCsv() -> called.")
+        viewModelScope.launch {
+            val currentType = TypeOperation.ImportFromCsv
+            val uri = _csvFilePath.value
+
+            if (uri == null) {
+                _uiState.value = ManageBackupUiState.Success(
+                    typeOperation = currentType,
+                    errorMessage = R.string.message_import_failed
+                )
+                return@launch
+            }
+
+            _uiState.value = ManageBackupUiState.Ready(typeOperation = currentType, isLoading = true)
+
+            databaseBackupManager.importFromCsv(uri)
+                .fold(
+                    onSuccess = {
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType
+                        )
+                        _csvFilePath.value = null // Clear selection on success
+                    },
+                    onFailure = { error ->
+                        Timber.tag(TAG).e(error, "startImportCsv() -> Import failed")
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType,
+                            errorMessage = R.string.message_import_failed
+                        )
+                    }
+                )
+        }
+    }
+
     companion object {
         private const val TAG = "che.ManageBackupViewModel"
         private const val BACKUP_FILE_NAME = "ett_backup.db"
@@ -119,7 +164,7 @@ sealed interface ManageBackupUiState {
         val typeOperation: TypeOperation = TypeOperation.Backup,
         @field:StringRes
         val errorMessage: Int? = null,
-        val backupPath: String? = null
+        val backupPath: String? = null,
     ) : ManageBackupUiState
 
 }
@@ -127,7 +172,8 @@ sealed interface ManageBackupUiState {
 
 enum class TypeOperation(val value: Int) {
     Backup(0),
-    Restore(1);
+    Restore(1),
+    ImportFromCsv(2);
 
     companion object {
         fun fromValue(value: Int): TypeOperation =

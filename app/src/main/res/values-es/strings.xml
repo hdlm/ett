@@ -67,14 +67,18 @@
 
     <!-- SettingScreen -->
     <string name="title_setting_screen">Ajustes</string>
-    <string name="label_make_backup">Make Backup</string>
-    <string name="label_restore_backup">Restore Backup</string>
+    <string name="label_make_backup">Realizar el Backup</string>
+    <string name="label_restore_backup">Restaurar el Backup</string>
+    <string name="label_import_csv">Importar desde .CSV</string>
 
     <!-- ManageBackupScreen -->
     <string name="title_manage_backup_make">Realizar Backup</string>
     <string name="title_manage_backup_restore">Restaurar Backup</string>
+    <string name="title_manage_backup_cvs_import">Import from .CSV</string>
     <string name="label_start_backup">Comenzar el Respaldo</string>
     <string name="label_start_restore">Comenzar la Restauración</string>
+    <string name="label_start_import_csv">Comenzar la Importación</string>
+    <string name="label_select_csv_file">Seleccionar el archivo CSV</string>
     <string name="message_backup_done">El respaldo fue completado satisfactoriamente.</string>
     <string name="message_backup_failed">El respaldo ha fallado.</string>
     <string name="message_restore_done">La restauración fue completada satisfactoriamente.</string>

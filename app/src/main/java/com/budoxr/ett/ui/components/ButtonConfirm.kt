@@ -119,9 +119,10 @@ fun ButtonConfirm(
 @Preview(showBackground = true)
 fun ButtonConfirmPreview() {
     val iconSize = dimensionResource(id = R.dimen.icon_large_size)
+    val isDarkTheme = false
 
     EasyTimeTrackingTheme(
-        darkTheme = true,
+        darkTheme = isDarkTheme,
         dynamicColor = false
     ) {
         Surface(modifier = Modifier

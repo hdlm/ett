@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
+import com.budoxr.ett.presentation.presenters.TypeOperation
 import com.budoxr.ett.ui.components.ButtonConfirm
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
@@ -57,7 +58,9 @@ fun SettingContent(
     navigateToManageBackup: onIntType,
     navigateToAbout: onDismissType
 ) {
+    val lineSpacing = dimensionResource(R.dimen.line_spacing_1)
     val horizontalMargin = dimensionResource(R.dimen.margin_horizontal)
+
 
     Scaffold(
         topBar = {
@@ -89,7 +92,7 @@ fun SettingContent(
                 buttonIcon = null,
                 buttonVector = null,
                 buttonImg = null,
-                onConfirmClick = { navigateToManageBackup(0) },
+                onConfirmClick = { navigateToManageBackup(TypeOperation.Backup.value) },
             )
 
             ButtonConfirm(
@@ -100,7 +103,19 @@ fun SettingContent(
                 buttonIcon = null,
                 buttonVector = null,
                 buttonImg = null,
-                onConfirmClick = { navigateToManageBackup(1) },
+                onConfirmClick = { navigateToManageBackup(TypeOperation.Restore.value) },
+            )
+
+            ButtonConfirm(
+                modifier = Modifier
+                    .padding(bottom = lineSpacing),
+                label = stringResource(R.string.title_manage_backup_cvs_import),
+                isEnabled = true,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = { navigateToManageBackup(TypeOperation.ImportFromCsv.value) },
             )
 
             ButtonConfirm(

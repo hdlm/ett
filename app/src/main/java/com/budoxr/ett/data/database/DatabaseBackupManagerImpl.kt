@@ -7,6 +7,7 @@ package com.budoxr.ett.data.database
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Environment
 import androidx.room.RoomDatabase
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +26,7 @@ class DatabaseBackupManagerImpl(
 
     /**
      * Safely backs up the Room SQLite database file to a specified destination file.
-     * 
+     *
      * Optimized for SDK 29+: Uses 'VACUUM INTO' for an atomic and consistent single-file backup.
      * This command handles WAL mode consistency automatically by merging the log into the destination.
      */
@@ -44,7 +45,7 @@ class DatabaseBackupManagerImpl(
             // 3. Execute VACUUM INTO via the low-level database handle
             val db = roomDatabase.openHelper.writableDatabase
             db.execSQL("VACUUM INTO '${destinationFile.absolutePath}'")
-            
+
             Timber.tag(TAG).i("backupDatabase() -> Success using VACUUM INTO at: ${destinationFile.absolutePath}")
             Result.success(Unit)
         } catch (e: Exception) {
@@ -60,7 +61,6 @@ class DatabaseBackupManagerImpl(
     override suspend fun restoreDatabase(sourceFile: File): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             Timber.tag(TAG).d("restoreDatabase() -> Source: ${sourceFile.absolutePath}")
-            
             if (!sourceFile.exists()) {
                 Timber.tag(TAG).e("restoreDatabase() -> Source file not found at: ${sourceFile.absolutePath}")
                 return@withContext Result.failure(FileNotFoundException("Source backup file not found: ${sourceFile.absolutePath}"))
@@ -76,7 +76,7 @@ class DatabaseBackupManagerImpl(
             // 3. Delete existing database files (including WAL and SHM) to ensure a clean restore
             Timber.tag(TAG).d("restoreDatabase() -> Deleting current database files.")
             context.deleteDatabase(databaseName)
-            
+
             // Ensure the directory exists for restoration
             dbFile.parentFile?.mkdirs()
 
@@ -91,7 +91,31 @@ class DatabaseBackupManagerImpl(
             Timber.tag(TAG).i("restoreDatabase() -> Success! Database restored to: ${sourceFile.absolutePath}")
             Result.success(Unit)
         } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "restoreDatabase() -> Unexpected error during restore")
+            Timber.tag(TAG).e(e, "restoreDatabase() -> Error during restore")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Imports data from a CSV file received via URI by copying it to the cache directory.
+     * The file is saved as 'data.cvs' in the internal cache.
+     */
+    override suspend fun importFromCsv(uri: Uri): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            Timber.tag(TAG).d("importFromCsv() -> URI: $uri")
+
+            val targetFile = File(context.cacheDir, CSV_FILE)
+
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(targetFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            } ?: throw FileNotFoundException("Could not open input stream from URI: $uri")
+
+            Timber.tag(TAG).i("importFromCsv() -> Success! File copied to cache as data.cvs")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "importFromCsv() -> Error during CSV import copy")
             Result.failure(e)
         }
     }
@@ -111,26 +135,14 @@ class DatabaseBackupManagerImpl(
      * This is required because the Singleton database instance must be re-initialized.
      */
     override fun triggerAppRestart() {
-        Timber.tag(TAG).i("triggerAppRestart() -> Initiating restart sequence...")
         try {
-            val packageManager = context.packageManager
-            val intent = packageManager.getLaunchIntentForPackage(context.packageName)
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
             if (intent != null) {
-                val componentName = intent.component
-                val mainIntent = Intent.makeRestartActivityTask(componentName)
+                val mainIntent = Intent.makeRestartActivityTask(intent.component)
                 context.startActivity(mainIntent)
-                Timber.tag(TAG).d("triggerAppRestart() -> Restart intent sent successfully.")
-                
-                // Give the system a brief moment to process the start intent
                 Thread.sleep(200) 
-            } else {
-                Timber.tag(TAG).e("triggerAppRestart() -> Could not find launch intent for package: ${context.packageName}")
             }
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "triggerAppRestart() -> Failed to send restart intent.")
         } finally {
-            // Forcefully terminate the process to ensure clean re-initialization
-            Timber.tag(TAG).i("triggerAppRestart() -> Terminating process...")
             android.os.Process.killProcess(android.os.Process.myPid())
             System.exit(0)
         }
@@ -138,5 +150,6 @@ class DatabaseBackupManagerImpl(
 
     companion object {
         private const val TAG = "che.DatabaseBackupManager"
+        private const val CSV_FILE = "data.csv"
     }
 }
