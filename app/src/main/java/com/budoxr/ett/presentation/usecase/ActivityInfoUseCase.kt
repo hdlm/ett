@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import java.util.Collections.addAll
 
 class ActivityInfoUseCase : KoinComponent {
     val localRepository: ActivityLocalRepository
@@ -22,6 +21,9 @@ class ActivityInfoUseCase : KoinComponent {
             list.toSortedSet( compareBy<ActivityEntity> { it.name } )
 
         }
+
+    suspend operator fun invoke(isAsync: Boolean): Set<ActivityEntity> =
+        localRepository.getAll().toSortedSet( compareBy<ActivityEntity> { it.name } )
 
     operator fun invoke(activityId: Long) = localRepository.observeById(activityId)
 

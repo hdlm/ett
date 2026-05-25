@@ -8,6 +8,9 @@ package com.budoxr.ett.di
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.budoxr.ett.commons.utils.CsvHelper
+import com.budoxr.ett.commons.utils.FileUtils
+import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.AppDatabase
 import com.budoxr.ett.data.database.DatabaseBackupManager
 import com.budoxr.ett.data.database.DatabaseBackupManagerImpl
@@ -36,10 +39,14 @@ import org.koin.dsl.module
 object Modules {
     val appModule = module {
         viewModel { (activityId: Long) -> ActivityFormViewModel(activityId, get(), get()) }
-        viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get()) }
+        viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
         viewModel { WeeklyBarChartViewModel(get(), get()) }
-        viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get()) }
+        viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get(), get(), get(), get(), get(), get(), get()) }
+
+        factory { FileUtils(androidContext()) }
+        factory { CsvHelper() }
+        factory { Utility(androidContext()) }
     }
 
     fun provideDataBase(context: Context): AppDatabase =
@@ -75,7 +82,8 @@ object Modules {
             DatabaseBackupManagerImpl(
                 context = androidContext(), 
                 roomDatabase = get(), 
-                databaseName = "ett.db"
+                databaseName = "ett.db",
+                fileUtils = get(),
             )
         }
         

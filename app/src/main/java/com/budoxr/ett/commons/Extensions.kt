@@ -9,6 +9,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.ui.theme.alert
 import com.budoxr.ett.ui.theme.blue as bblue
 import com.budoxr.ett.ui.theme.bright
@@ -23,6 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transformLatest
+import timber.log.Timber
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -63,17 +65,23 @@ return@map lstItem
 @OptIn(ExperimentalCoroutinesApi::class)
 fun <T> Flow<T>.emitLastestPeriodically(interval: Duration): Flow<T> = transformLatest {
     while(true) {
-        Log.d(TAG, "emitLastestPeriodically() -> emit: $it")
+        Timber.tag(TAG).d("emitLastestPeriodically() -> emit: $it")
         emit (it)
         delay(interval)
     }
 }
 
-fun String.toLocalDate(): LocalDate {
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss")
-    val localDateTime = LocalDateTime.parse(this, formatter)
+fun String.toLocalDateTime(): LocalDate {
+    val localDateTime = LocalDateTime.parse(this, TimeUtils.timestampFormatter)
     return localDateTime.toLocalDate()
 }
+
+fun String.toLocalDate(): LocalDate {
+    val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+    val parsedDate = LocalDate.parse(this, formatter)
+    return parsedDate
+}
+
 
 @SuppressLint("LogNotTimber")
 fun String.fromFechaTimeDb(): Date {

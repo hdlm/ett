@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -27,7 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
-import com.budoxr.ett.commons.utils.Utility.formatLastThreeDigits
+import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.ui.MonitorState
@@ -37,6 +38,7 @@ import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 fun MonitorScreenRowHistoricalItem(
     monitorState: MonitorState,
     item: TimerTrackingQuery,
+    formatLastThreeDigits: (Long) -> String,
     modifier: Modifier
 ) {
 
@@ -96,7 +98,9 @@ fun MonitorScreenRowHistoricalItem(
 @Composable
 @Preview(showBackground = true)
 fun MonitorScreenRowHistoricalItemPreview() {
+    val context = LocalContext.current
     val isDarkTheme = false
+    val utily = Utility(context)
 
     val monitorState = MonitorState(
         navController = rememberNavController(),
@@ -135,6 +139,7 @@ fun MonitorScreenRowHistoricalItemPreview() {
             MonitorScreenRowHistoricalItem(
                 monitorState = monitorState,
                 item = item,
+                formatLastThreeDigits = utily::formatLastThreeDigits,
                 modifier = Modifier.fillMaxWidth()
             )
         }

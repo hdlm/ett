@@ -6,22 +6,27 @@
 package com.budoxr.ett.data.database
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.os.Environment
 import androidx.room.RoomDatabase
+import com.budoxr.ett.commons.utils.CsvEncoding
+import com.budoxr.ett.commons.utils.FileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import timber.log.Timber
+import java.io.BufferedReader
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.io.IOException
+import java.nio.charset.Charset
 
 class DatabaseBackupManagerImpl(
     private val context: Context,
     private val roomDatabase: RoomDatabase,
-    private val databaseName: String
+    private val databaseName: String,
+    private val fileUtils: FileUtils,
 ) : DatabaseBackupManager, KoinComponent {
 
     /**
@@ -83,8 +88,8 @@ class DatabaseBackupManagerImpl(
             // 4. Perform the copy from source to the database location
             Timber.tag(TAG).d("restoreDatabase() -> Copying data from backup...")
             sourceFile.inputStream().use { input ->
-                FileOutputStream(dbFile).use { output ->
-                    input.copyTo(output)
+                FileOutputStream(dbFile).use { outputStream ->
+                    input.copyTo(outputStream)
                 }
             }
 
@@ -98,58 +103,42 @@ class DatabaseBackupManagerImpl(
 
     /**
      * Imports data from a CSV file received via URI by copying it to the cache directory.
-     * The file is saved as 'data.cvs' in the internal cache.
+     * The file is saved as 'data.csv' in the internal cache.
      */
-    override suspend fun importFromCsv(uri: Uri): Result<Unit> = withContext(Dispatchers.IO) {
+    override suspend fun importFromCsv(uri: Uri): Result<String> = withContext(Dispatchers.IO) {
         try {
             Timber.tag(TAG).d("importFromCsv() -> URI: $uri")
 
             val targetFile = File(context.cacheDir, CSV_FILE)
 
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                FileOutputStream(targetFile).use { outputStream ->
-                    inputStream.copyTo(outputStream)
+            // Using openFileDescriptor as a workaround for some Samsung devices/MTP issues
+            // where openInputStream might fail with SecurityException even if URI permissions were granted.
+            context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                FileInputStream(pfd.fileDescriptor).use { inputStream ->
+                    FileOutputStream(targetFile).use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
                 }
-            } ?: throw FileNotFoundException("Could not open input stream from URI: $uri")
+            } ?: throw FileNotFoundException("Could not open file descriptor for URI: $uri")
 
-            Timber.tag(TAG).i("importFromCsv() -> Success! File copied to cache as data.cvs")
-            Result.success(Unit)
+            val data =  fileUtils.readCsvContent(csvFile = targetFile)
+
+            Timber.tag(TAG).i("importFromCsv() -> Success! File copied to cache as $CSV_FILE")
+            Result.success(data)
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "importFromCsv() -> Error during CSV import copy")
             Result.failure(e)
         }
     }
 
-    /**
-     * Returns the reference to the app-specific Download folder in the internal local storage.
-     * Path example: /storage/emulated/0/Android/data/com.budoxr.ett/files/Download
-     */
-    override fun getDownloadFolder(): File? {
-        val folder = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-        Timber.tag(TAG).d("getDownloadFolder() -> Returning: ${folder?.absolutePath}")
-        return folder
-    }
 
-    /**
-     * Programmatically restarts the application.
-     * This is required because the Singleton database instance must be re-initialized.
-     */
-    override fun triggerAppRestart() {
-        try {
-            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-            if (intent != null) {
-                val mainIntent = Intent.makeRestartActivityTask(intent.component)
-                context.startActivity(mainIntent)
-                Thread.sleep(200) 
-            }
-        } finally {
-            android.os.Process.killProcess(android.os.Process.myPid())
-            System.exit(0)
-        }
-    }
+
+
+
+
 
     companion object {
         private const val TAG = "che.DatabaseBackupManager"
-        private const val CSV_FILE = "data.csv"
+        const val CSV_FILE = "data.csv"
     }
 }

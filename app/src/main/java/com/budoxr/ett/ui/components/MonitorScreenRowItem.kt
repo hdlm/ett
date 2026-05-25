@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -38,7 +39,7 @@ import com.budoxr.ett.R
 import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.commons.utils.TimeUtils.formatElapsedTime
 import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
-import com.budoxr.ett.commons.utils.Utility.formatLastThreeDigits
+import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.commons.utils.toEpochMillis
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
@@ -51,6 +52,7 @@ fun MonitorScreenRowItem(
     monitorState: MonitorState,
     nameActivity: String,
     item: TimerTrackingEntity,
+    formatLastThreeDigits: (Long) -> String,
     modifier: Modifier
 ) {
 
@@ -144,6 +146,7 @@ fun RealTimeTimer(startTimestamp: Long) {
 @Composable
 @Preview(showBackground = true)
 fun MonitorScreenRowItemPreview() {
+    val utility = Utility(LocalContext.current)
     val isDarkTheme = false
     
     val monitorState = MonitorState(
@@ -185,6 +188,7 @@ fun MonitorScreenRowItemPreview() {
                 monitorState = monitorState,
                 nameActivity = activity.name,
                 item = item,
+                formatLastThreeDigits = utility::formatLastThreeDigits,
                 modifier = Modifier.fillMaxWidth()
             )
         }

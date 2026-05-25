@@ -13,7 +13,14 @@ import org.koin.core.component.inject
 class ActivityInsertUseCase : KoinComponent {
     private val repository: ActivityLocalRepository by inject()
 
-    suspend operator fun invoke(activity: ActivityEntity) : Unit =
-        repository.insert(activity)
-
+    suspend operator fun invoke(activity: ActivityEntity): Long {
+        return if (activity.activityId == null) {
+            // Try to find by name first to avoid UNIQUE constraint violation if we use IGNORE and still want the ID
+            val existing = repository.getByName(activity.name)
+            existing?.activityId ?: repository.insert(activity)
+        } else {
+            repository.update(activity)
+            activity.activityId
+        }
+    }
 }

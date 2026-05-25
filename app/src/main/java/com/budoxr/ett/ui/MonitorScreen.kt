@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -60,6 +61,7 @@ import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.commons.onLongType
 import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
+import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
@@ -146,7 +148,8 @@ fun MonitorScreen(
                 onBackButtonClick = onBackButtonClick,
                 onSelectedView = viewModel::onChangeView,
                 onDismissBottomSheet = viewModel::onDismissBottomSheet,
-                floatingActionButton = if (uiState.selectedView == 0) floatingActionButton else noneFloatingActionButton
+                floatingActionButton = if (uiState.selectedView == 0) floatingActionButton else noneFloatingActionButton,
+                formatLastThreeDigits = viewModel::formatLastThreeDigits
             )
 
         }
@@ -231,7 +234,8 @@ fun MonitorScreenReady(
     onBackButtonClick: onDismissType,
     onSelectedView: onIntType,
     onDismissBottomSheet: onDismissType,
-    floatingActionButton: onDismissComposableType
+    floatingActionButton: onDismissComposableType,
+    formatLastThreeDigits: (Long) -> String
 ) {
 
     val monitorState = MonitorState(
@@ -278,7 +282,8 @@ fun MonitorScreenReady(
                     .fillMaxSize()
                     .padding(innerPadding),
                 monitorState = monitorState,
-                viewOptions = viewOptions
+                viewOptions = viewOptions,
+                formatLastThreeDigits = formatLastThreeDigits
             )
 
             if (uiState.showBottomSheet) {
@@ -310,7 +315,8 @@ fun MonitorScreenReady(
                     .fillMaxSize()
                     .padding(innerPadding),
                 monitorState = monitorState,
-                viewOptions = viewOptions
+                viewOptions = viewOptions,
+                formatLastThreeDigits = formatLastThreeDigits
             )
         }
     }
@@ -321,7 +327,8 @@ fun MonitorScreenReady(
 fun MonitorScreenContent(
     modifier: Modifier,
     monitorState: MonitorState,
-    viewOptions: Array<String>
+    viewOptions: Array<String>,
+    formatLastThreeDigits: (Long) -> String,
 ) {
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
     val iconSize = dimensionResource(id = R.dimen.icon_huge_size)
@@ -357,6 +364,7 @@ fun MonitorScreenContent(
                     monitorState = monitorState,
                     nameActivity = timer.activity.name,
                     item = timer.timerTracking,
+                    formatLastThreeDigits = formatLastThreeDigits,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -393,7 +401,8 @@ fun MonitorScreenContent(
 fun MonitorScreenHistoricalContent(
     modifier: Modifier,
     monitorState: MonitorState,
-    viewOptions: Array<String>
+    viewOptions: Array<String>,
+    formatLastThreeDigits: (Long) -> String
 ) {
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
     val lineSpacing = dimensionResource(id = R.dimen.line_spacing_1)
@@ -455,6 +464,7 @@ fun MonitorScreenHistoricalContent(
                     MonitorScreenRowHistoricalItem(
                         monitorState = monitorState,
                         item = timer,
+                        formatLastThreeDigits = formatLastThreeDigits,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -511,6 +521,7 @@ fun MonitorScreenHistoricalContent(
 @Preview(showBackground = true)
 fun MonitorScreenContentPreview() {
     val navController = rememberNavController()
+    val utility =  Utility(LocalContext.current)
     val isDarkTheme = false
 
     val viewOptions: Array<String> = stringArrayResource(id = R.array.monitor_views_array)
@@ -555,7 +566,8 @@ fun MonitorScreenContentPreview() {
         MonitorScreenContent(
             modifier = Modifier.fillMaxSize(),
             monitorState = monitorState,
-            viewOptions = viewOptions
+            viewOptions = viewOptions,
+            formatLastThreeDigits = utility::formatLastThreeDigits
         )
     }
 

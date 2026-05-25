@@ -6,10 +6,16 @@
 package com.budoxr.ett.presentation.presenters
 
 import android.net.Uri
-import com.budoxr.ett.R
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
+import com.budoxr.ett.R
+import com.budoxr.ett.commons.utils.CsvHelper
+import com.budoxr.ett.commons.utils.FileUtils
+import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.DatabaseBackupManager
+import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
+import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,8 +26,14 @@ import java.io.File
 
 class ManageBackupViewModel(
     private val typeOperation: Int,
-    private val databaseBackupManager: DatabaseBackupManager
-) : KoinViewModel() {
+    private val databaseBackupManager: DatabaseBackupManager,
+    private val activityInfoUseCase: ActivityInfoUseCase,
+    private val activityInsertUseCase: ActivityInsertUseCase,
+    private val timerTrackingUseCase: TimerTrackingInsertUseCase,
+    private val fileUtils: FileUtils,
+    private val utility: Utility,
+    private val cvsHelper: CsvHelper,
+    ) : KoinViewModel() {
 
     private val _csvFilePath = MutableStateFlow<Uri?>(null)
     val csvFilePath: StateFlow<Uri?> = _csvFilePath.asStateFlow()
@@ -37,7 +49,7 @@ class ManageBackupViewModel(
             val currentType = TypeOperation.Backup
             _uiState.value = ManageBackupUiState.Ready(typeOperation = currentType, isLoading = true)
             
-            val folder = databaseBackupManager.getDownloadFolder()
+            val folder = fileUtils.getDownloadFolder()
             if (folder == null) {
                 _uiState.value = ManageBackupUiState.Success(
                     typeOperation = currentType, 
@@ -72,7 +84,7 @@ class ManageBackupViewModel(
             val currentType = TypeOperation.Restore
             _uiState.value = ManageBackupUiState.Ready(typeOperation = currentType, isLoading = true)
             
-            val folder = databaseBackupManager.getDownloadFolder()
+            val folder = fileUtils.getDownloadFolder()
             if (folder == null) {
                 _uiState.value = ManageBackupUiState.Success(
                     typeOperation = currentType, 
@@ -95,7 +107,7 @@ class ManageBackupViewModel(
                 delay(1500) 
                 
                 Timber.tag(TAG).i("Triggering app restart now.")
-                databaseBackupManager.triggerAppRestart()
+                utility.triggerAppRestart()
             } else {
                 Timber.tag(TAG).e(result.exceptionOrNull(), "Database restore failed.")
                 _uiState.value = ManageBackupUiState.Success(
@@ -129,14 +141,21 @@ class ManageBackupViewModel(
 
             databaseBackupManager.importFromCsv(uri)
                 .fold(
-                    onSuccess = {
+                    onSuccess = { data ->
+                        cvsHelper.processCsvRawData(
+                            rawData = data,
+                            activities = activityInfoUseCase.invoke(true),
+                            activityInsertUseCase = activityInsertUseCase,
+                            timerTrackingUseCase = timerTrackingUseCase
+                        )
+                        
                         _uiState.value = ManageBackupUiState.Success(
                             typeOperation = currentType
                         )
                         _csvFilePath.value = null // Clear selection on success
                     },
                     onFailure = { error ->
-                        Timber.tag(TAG).e(error, "startImportCsv() -> Import failed")
+                        Timber.tag(TAG).e(error, "startImportCsv() -> Import failed.")
                         _uiState.value = ManageBackupUiState.Success(
                             typeOperation = currentType,
                             errorMessage = R.string.message_import_failed
@@ -145,6 +164,9 @@ class ManageBackupViewModel(
                 )
         }
     }
+
+
+
 
     companion object {
         private const val TAG = "che.ManageBackupViewModel"
@@ -178,5 +200,23 @@ enum class TypeOperation(val value: Int) {
     companion object {
         fun fromValue(value: Int): TypeOperation =
             entries.find { it.value == value } ?: Backup
+    }
+}
+
+enum class CsvFields(val value: Int) {
+    Activity(0),
+    SundayValue(1),
+    MondayValue(2),
+    TuesdayValue(3),
+    WednesdayValue(4),
+    ThursdayValue(5),
+    FridayValue(6),
+    SaturdayValue(7),
+    Sunday(8),
+    Saturday(9);
+
+    companion object {
+        fun fromValue(value: Int): CsvFields =
+            entries.find { it.value == value } ?: Activity
     }
 }

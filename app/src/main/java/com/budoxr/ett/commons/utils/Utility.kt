@@ -5,7 +5,11 @@
  */
 package com.budoxr.ett.commons.utils
 
-object Utility {
+import android.content.Context
+import android.content.Intent
+import org.koin.core.component.KoinComponent
+
+class Utility(private val context: Context): KoinComponent {
     /**
      * Formats a long value to show only the last three digits,
      * padded with leading zeros if the value is less than 100.
@@ -15,5 +19,23 @@ object Utility {
         val lastThree = value % 1000
         // Format with leading zeros, minimum 3 characters
         return "%03d".format(lastThree)
+    }
+
+    /**
+     * Programmatically restarts the application.
+     * This is required because the Singleton database instance must be re-initialized.
+     */
+    fun triggerAppRestart() {
+        try {
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            if (intent != null) {
+                val mainIntent = Intent.makeRestartActivityTask(intent.component)
+                context.startActivity(mainIntent)
+                Thread.sleep(200)
+            }
+        } finally {
+            android.os.Process.killProcess(android.os.Process.myPid())
+            System.exit(0)
+        }
     }
 }

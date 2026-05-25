@@ -22,17 +22,6 @@ interface DatabaseBackupManager {
     /**
      * Imports data from a CSV file into the database.
      */
-    suspend fun importFromCsv(uri: Uri): Result<Unit>
+    suspend fun importFromCsv(uri: Uri): Result<String>
 
-    /**
-     * Returns the reference to the app-specific Download folder in the internal local storage.
-     */
-    fun getDownloadFolder(): File?
-
-    /**
-     * Programmatically restarts the application to re-initialize the database connection.
-     * This is required after a successful [restoreDatabase] because the Singleton 
-     * database instance remains closed after restoration.
-     */
-    fun triggerAppRestart()
 }

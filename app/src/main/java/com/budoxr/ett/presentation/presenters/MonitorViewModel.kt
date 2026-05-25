@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
 import com.budoxr.ett.commons.toFechaTimeDb
 import com.budoxr.ett.commons.utils.TimeUtils
+import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.commons.utils.combine
 import com.budoxr.ett.commons.utils.toTimestamp
 import com.budoxr.ett.data.database.entities.ActivityEntity
@@ -45,7 +46,8 @@ class MonitorViewModel(
     private val timerTrackingInsertUseCase: TimerTrackingInsertUseCase,
     private val timerTrackingDeleteUseCase: TimerTrackingDeleteUseCase,
     private val activityInfoUseCase: ActivityInfoUseCase,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val utility: Utility
 ) : KoinViewModel() {
 
     private val _activities = activityInfoUseCase().stateIn(
@@ -256,6 +258,8 @@ class MonitorViewModel(
             Timber.tag(TAG).i("save the last screen: $baseRoute")
         }
     }
+
+    fun formatLastThreeDigits(value: Long): String = utility.formatLastThreeDigits(value)
 
     companion object {
         private const val TAG = "che.MonitorViewModel"

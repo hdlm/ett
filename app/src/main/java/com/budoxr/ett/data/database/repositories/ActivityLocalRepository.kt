@@ -9,9 +9,11 @@ import com.budoxr.ett.data.database.entities.ActivityEntity
 import kotlinx.coroutines.flow.Flow
 
 interface ActivityLocalRepository {
-    suspend fun insert(activity: ActivityEntity)
+    suspend fun insert(activity: ActivityEntity): Long
+    suspend fun update(activity: ActivityEntity)
     suspend fun delete(activity: ActivityEntity)
     suspend fun getById(id: Long): ActivityEntity?
+    suspend fun getByName(name: String): ActivityEntity?
     fun observeById(id: Long): Flow<ActivityEntity?>
     suspend fun getAll(): List<ActivityEntity>
     fun observeAll(): Flow<List<ActivityEntity>>

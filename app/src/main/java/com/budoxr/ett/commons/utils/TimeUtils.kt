@@ -56,6 +56,8 @@ object TimeUtils {
         }
     }
 
+
+
     /**
      * Formats the difference between now and the [startTimestamp]
      * into a HH:mm:ss string.
@@ -102,6 +104,10 @@ object TimeUtils {
     }
 }
 
+fun LocalDateTime.toTimestamp(): String {
+    return this.format(TimeUtils.timestampFormatter)
+}
+
 fun <T> T.toTimestamp(): String {
     return LocalDateTime.now().format(TimeUtils.timestampFormatter)
 }
@@ -129,5 +135,3 @@ fun String?.toEpochMillis(formatter: DateTimeFormatter): Long {
         0L
     }
 }
-
-
