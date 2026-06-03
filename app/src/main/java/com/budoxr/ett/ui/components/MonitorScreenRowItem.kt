@@ -37,7 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.utils.TimeUtils
-import com.budoxr.ett.commons.utils.TimeUtils.formatElapsedTime
+import com.budoxr.ett.commons.utils.TimeUtils.calculateElapsedTime
 import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.commons.utils.toEpochMillis
@@ -80,7 +80,7 @@ fun MonitorScreenRowItem(
         ) {
             if (item.endTime == null) {
                 RealTimeTimer(
-                    startTimestamp = item.startTime.toEpochMillis(TimeUtils.timestampFormatter),
+                    startTimeEpocMillis = item.startTime.toEpochMillis(TimeUtils.timestampFormatter),
                 )
             } else {
                 Text(
@@ -122,14 +122,14 @@ fun MonitorScreenRowItem(
 
 
 @Composable
-fun RealTimeTimer(startTimestamp: Long) {
+fun RealTimeTimer(startTimeEpocMillis: Long) {
     // 1. State to hold the formatted string
     var timeDisplay by remember { mutableStateOf("00:00:00") }
 
     // 2. Side effect to run the timer logic
-    LaunchedEffect(startTimestamp) {
+    LaunchedEffect(startTimeEpocMillis) {
         while (true) {
-            timeDisplay = formatElapsedTime(startTimestamp)
+            timeDisplay = calculateElapsedTime(startTimeEpocMillis)
             delay(1000L) // Wait 1 second
         }
     }

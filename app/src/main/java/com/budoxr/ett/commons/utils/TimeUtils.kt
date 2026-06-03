@@ -40,30 +40,13 @@ object TimeUtils {
     }
 
     /**
-     * Converts seconds into a formatted string (HH:MM:SS or MM:SS).
+     * Calculate the the difference between now and the [startTime]
+     * and Format the result into a HH:mm:ss string.
+     * Note: the epoch millis start from 1 de enero de 1970 a las 00:00:00 UTC (Tiempo Universal Coordinado).
+     * @param startTime The start time in Epoch Millis.
      */
-    fun Long.toTimestampFormat(): String {
-        val hours = this / 3600
-        val minutes = (this % 3600) / 60
-        val seconds = this % 60
-
-        return if (hours > 0) {
-            // Format as 01:30:15
-            "%02d:%02d:%02d".format(hours, minutes, seconds)
-        } else {
-            // Format as 03:00
-            "%02d:%02d".format(minutes, seconds)
-        }
-    }
-
-
-
-    /**
-     * Formats the difference between now and the [startTimestamp]
-     * into a HH:mm:ss string.
-     */
-    fun formatElapsedTime(startTimestamp: Long): String {
-        val elapsedMillis = System.currentTimeMillis() - startTimestamp
+    fun calculateElapsedTime(startTime: Long): String {
+        val elapsedMillis = System.currentTimeMillis() - startTime
         val seconds = (elapsedMillis / 1000) % 60
         val minutes = (elapsedMillis / (1000 * 60)) % 60
         val hours = (elapsedMillis / (1000 * 60 * 60))
@@ -102,12 +85,30 @@ object TimeUtils {
 
         return Pair(sundayDate.format(formatter), saturdayDate.format(formatter))
     }
+
+   /**
+     * Converts seconds into a formatted string (HH:MM:SS or MM:SS).
+     */
+    fun Long.toTimestampFormat(): String {
+        val hours = this / 3600
+        val minutes = (this % 3600) / 60
+        val seconds = this % 60
+
+        return if (hours > 0) {
+            // Format as 01:30:15
+            "%02d:%02d:%02d".format(hours, minutes, seconds)
+        } else {
+            // Format as 03:00
+            "%02d:%02d".format(minutes, seconds)
+        }
+    }
+
+
 }
 
-fun LocalDateTime.toTimestamp(): String {
-    return this.format(TimeUtils.timestampFormatter)
-}
-
+/**
+ * The extension return the local time in a formatted string.
+ */
 fun <T> T.toTimestamp(): String {
     return LocalDateTime.now().format(TimeUtils.timestampFormatter)
 }
