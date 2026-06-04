@@ -65,6 +65,7 @@ import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
+import com.budoxr.ett.presentation.domain.TimerTrackingModel
 import com.budoxr.ett.presentation.presenters.GroupedSumState
 import com.budoxr.ett.presentation.presenters.MonitorScreenUiState
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
@@ -74,6 +75,7 @@ import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.components.MonitorScreenRowHistoricalItem
 import com.budoxr.ett.ui.components.MonitorScreenRowItem
 import com.budoxr.ett.ui.components.SingleChoiceSegmentedButton
+import com.budoxr.ett.ui.components.TimerTrackingBottomSheet
 import com.budoxr.ett.ui.navigation.Screens
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import kotlinx.coroutines.launch
@@ -93,6 +95,7 @@ data class MonitorState(
     val onStopClick: onLongType,
     val onDeleteClick: onLongType,
     val onHideTimer: onLongType,
+    val onSaveTimerTracking: (TimerTrackingModel) -> Unit,
     val onBackButtonClick: onDismissType,
     val onSelectedView: onIntType,
 )
@@ -121,7 +124,7 @@ fun MonitorScreen(
         is MonitorScreenUiState.Ready -> {
             val floatingActionButton: onDismissComposableType = {
                 FloatingActionButton(
-                    onClick = viewModel::onShowBottomSheet,
+                    onClick = viewModel::showActivityBottomSheet,
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape
@@ -132,11 +135,13 @@ fun MonitorScreen(
                     )
                 }
             }
+
             val noneFloatingActionButton: onDismissComposableType = {}
 
             MonitorScreenReady(
                 navController = navController,
                 uiState = uiState,
+                timerTrackingSelected = viewModel.timerTrackingSelected,
                 isDarkTheme = isDarkTheme,
                 isRefreshing = isRefreshing,
                 onRefresh = viewModel::refresh,
@@ -144,10 +149,11 @@ fun MonitorScreen(
                 onStartClick = viewModel::startTimer,
                 onStopClick = viewModel::stopTimer,
                 onDeleteClick = viewModel::deleteTimer,
-                onHideTimer = viewModel::hideTimer,
+                onHideTimer = viewModel::showTimerTrackingBottomSheet,
+                onSaveTimerTracking = viewModel::saveTimerTracking,
                 onBackButtonClick = onBackButtonClick,
-                onSelectedView = viewModel::onChangeView,
-                onDismissBottomSheet = viewModel::onDismissBottomSheet,
+                onSelectedView = viewModel::changeView,
+                onDismissBottomSheet = viewModel::dismissBottomSheet,
                 floatingActionButton = if (uiState.selectedView == 0) floatingActionButton else noneFloatingActionButton,
                 formatLastThreeDigits = viewModel::formatLastThreeDigits
             )
@@ -223,6 +229,7 @@ private fun MonitorScreenError(msg: String?, onRetry: onDismissType?, modifier: 
 fun MonitorScreenReady(
     navController: NavHostController,
     uiState: MonitorScreenUiState.Ready,
+    timerTrackingSelected: TimerTrackingModel?,
     isDarkTheme: Boolean,
     isRefreshing: Boolean,
     onRefresh: onDismissType,
@@ -231,6 +238,7 @@ fun MonitorScreenReady(
     onStopClick: onLongType,
     onDeleteClick: onLongType,
     onHideTimer: onLongType,
+    onSaveTimerTracking: (TimerTrackingModel) -> Unit,
     onBackButtonClick: onDismissType,
     onSelectedView: onIntType,
     onDismissBottomSheet: onDismissType,
@@ -250,6 +258,7 @@ fun MonitorScreenReady(
         onStopClick = onStopClick,
         onDeleteClick = onDeleteClick,
         onHideTimer = onHideTimer,
+        onSaveTimerTracking = onSaveTimerTracking,
         onBackButtonClick = onBackButtonClick,
         onSelectedView = onSelectedView,
     )
@@ -286,28 +295,43 @@ fun MonitorScreenReady(
                 formatLastThreeDigits = formatLastThreeDigits
             )
 
-            if (uiState.showBottomSheet) {
-                ActivitySelectionBottomSheet(
-                    sheetState = sheetState,
-                    // Function to handle dismissal (swipes, back button, or manual)
-                    onDismiss = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                onDismissBottomSheet.invoke()
+            if (uiState.bottomSheetHandle.bottomSheetExpanded) {
+                if (uiState.bottomSheetHandle.showActivity) {
+                    ActivitySelectionBottomSheet(
+                        sheetState = sheetState,
+                        // Function to handle dismissal (swipes, back button, or manual)
+                        onDismiss = {
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    onDismissBottomSheet.invoke()
+                                }
                             }
-                        }
-                    },
-                    placeholderActivities = uiState.activities,
-                    onActivitySelected = { id ->
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                onDismissBottomSheet.invoke()
+                        },
+                        placeholderActivities = uiState.activities,
+                        onActivitySelected = { id ->
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    onDismissBottomSheet.invoke()
+                                }
                             }
+                            monitorState.onNewTimerClick.invoke(id)
                         }
-                        monitorState.onNewTimerClick.invoke(id)
-                    }
 
-                )
+                    )
+                } else {
+                    TimerTrackingBottomSheet(
+                        sheetState = sheetState,
+                        onDismiss = {
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    onDismissBottomSheet.invoke()
+                                }
+                            }
+                        },
+                        timerTrackingSelected = timerTrackingSelected!!,
+                        onClick = monitorState.onSaveTimerTracking
+                    )
+                }
             }
         } else {
             MonitorScreenHistoricalContent(
@@ -554,12 +578,13 @@ fun MonitorScreenContentPreview() {
         onNewTimerClick = {},
         activeTimers = emptyList(),
         historicalTimers = emptyList(),
-        onStartClick = {_ ->},
-        onStopClick = {_ ->},
-        onDeleteClick = {_ ->},
-        onHideTimer = { _ ->},
+        onStartClick = { _ -> },
+        onStopClick = { _ -> },
+        onDeleteClick = { _ -> },
+        onHideTimer = { _ -> },
         onBackButtonClick = {},
-        onSelectedView = { _ ->},
+        onSelectedView = { _ -> },
+        onSaveTimerTracking = { _ -> },
     )
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {

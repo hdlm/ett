@@ -18,6 +18,9 @@ import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
+import com.budoxr.ett.data.mapper.toEntity
+import com.budoxr.ett.data.mapper.toModel
+import com.budoxr.ett.presentation.domain.TimerTrackingModel
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingDeleteUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInfoUseCase
@@ -59,7 +62,11 @@ class MonitorViewModel(
     private val _timers = MutableStateFlow<List<TimersWithActivity>>(emptyList())
     private val _historical = MutableStateFlow<List<TimerTrackingQuery>>(emptyList())
     private val _selectedView = MutableStateFlow(0)
-    private val _showBottomSheet = MutableStateFlow(false)
+    private val _bottomSheetHandle = MutableStateFlow(BottomSheetHandle())
+
+    private var _timerTrackingSelected: TimerTrackingModel? = null
+    val timerTrackingSelected: TimerTrackingModel?
+        get() = _timerTrackingSelected
 
     private val _uiState = MutableStateFlow<MonitorScreenUiState>(MonitorScreenUiState.Loading)
     val uiState: StateFlow<MonitorScreenUiState>
@@ -80,13 +87,13 @@ class MonitorViewModel(
                     timerTrackingInfoUseCase.invoke()
                 },
                 _selectedView,
-                _showBottomSheet,
+                _bottomSheetHandle,
                 refreshing
             ) { activities,
                 timers,
                 historical,
                 selectedView,
-                showBottomSheet,
+                bottomSheetHandle,
                 refreshing ->
 
                 if (refreshing) {
@@ -111,7 +118,7 @@ class MonitorViewModel(
                     activeTimers = timers,
                     historicalTimers = historical,
                     selectedView = selectedView,
-                    showBottomSheet = showBottomSheet
+                    bottomSheetHandle = bottomSheetHandle
                 )
 
             }.catch { throwable ->
@@ -219,36 +226,38 @@ class MonitorViewModel(
 
     }
 
-
-    fun hideTimer(timeTrackingId: Long) {
-        Timber.tag(TAG).d("hideTimer() -> called")
-
-        val timerTracking = _timers.value.find { it.timerTracking.timerTrackingId == timeTrackingId }
-        timerTracking?.let {
-            val timerTrackingUpdated = it.timerTracking.copy(
-                visible = false
-            )
-            viewModelScope.launch(Dispatchers.IO) {
-                timerTrackingInsertUseCase.invoke(timerTrackingUpdated)
-                Timber.tag(TAG).i("Hide the timer with id: $timeTrackingId")
-            }
-        }
-
-    }
-
-    fun onChangeView(index: Int) {
-        Timber.tag(TAG).d("onChangeFilter() -> called, index: $index")
+    fun changeView(index: Int) {
+        Timber.tag(TAG).d("changeView() -> called, index: $index")
         _selectedView.update { index }
     }
 
-    fun onShowBottomSheet() {
-        Timber.tag(TAG).d("onShowBottomSheet() -> called")
-        _showBottomSheet.update { true }
+    fun showActivityBottomSheet() {
+        Timber.tag(TAG).d("showActivityBottomSheet() -> called")
+        _bottomSheetHandle.update { _bottomSheetHandle.value.showActivityBottomSheet() }
     }
 
-    fun onDismissBottomSheet() {
+    fun dismissBottomSheet() {
         Timber.tag(TAG).d("onDismissBottomSheet() -> called")
-        _showBottomSheet.update { false }
+        _bottomSheetHandle.update { _bottomSheetHandle.value.dismissAll() }
+    }
+
+    fun showTimerTrackingBottomSheet(timeTrackingId: Long) {
+        Timber.tag(TAG).d("showTimerTracking() -> called, timerTrackingId: $timeTrackingId")
+
+        val timerTrackingSelected = _timers.value.find { it.timerTracking.timerTrackingId == timeTrackingId }
+        timerTrackingSelected?.let {
+            _timerTrackingSelected = it.timerTracking.toModel()
+        }
+        _bottomSheetHandle.update { _bottomSheetHandle.value.showTimerTrackingBottomSheet() }
+    }
+
+    fun saveTimerTracking(timerTracking: TimerTrackingModel) {
+        Timber.tag(TAG)
+            .d("saveTimerTracking() -> called, timerTracking: ${timerTracking.timerTrackingId}")
+        viewModelScope.launch(Dispatchers.IO) {
+            timerTrackingInsertUseCase.invoke(timerTracking.toEntity())
+        }
+
     }
 
     private fun saveLastScreen() {
@@ -260,6 +269,41 @@ class MonitorViewModel(
     }
 
     fun formatLastThreeDigits(value: Long): String = utility.formatLastThreeDigits(value)
+
+    data class BottomSheetHandle(
+        val bottomSheetExpanded: Boolean = false,
+        val showActivity: Boolean = false,
+        val showTimerTracking: Boolean = false,
+    ) {
+        fun showActivityBottomSheet(): BottomSheetHandle {
+            val sheetHandle = reset()
+            return sheetHandle.copy(
+                showActivity = true,
+                bottomSheetExpanded = true
+            )
+
+        }
+
+        fun showTimerTrackingBottomSheet(): BottomSheetHandle {
+            val sheetHandle = reset()
+            return sheetHandle.copy(
+                showTimerTracking = true,
+                bottomSheetExpanded = true
+            )
+
+        }
+
+        private fun reset(): BottomSheetHandle {
+            return copy(
+                bottomSheetExpanded = false,
+                showActivity = false,
+                showTimerTracking = false,
+            )
+        }
+
+        fun dismissAll() = reset()
+    }
+
 
     companion object {
         private const val TAG = "che.MonitorViewModel"
@@ -279,7 +323,7 @@ sealed interface MonitorScreenUiState {
         val activeTimers: List<TimersWithActivity> = emptyList(),
         val historicalTimers: List<TimerTrackingQuery> = emptyList(),
         val selectedView: Int = 0,
-        val showBottomSheet: Boolean = false,
+        val bottomSheetHandle: MonitorViewModel.BottomSheetHandle = MonitorViewModel.BottomSheetHandle()
     ) : MonitorScreenUiState
 
 }

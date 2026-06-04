@@ -11,6 +11,10 @@
     <string name="label_retry">Reintentar</string>
     <string name="msg_no_records">No se encontraron registros</string>
     <string name="label_select_activity">Seleccione una actividad</string>
+    <string name="label_save_timer">Guardar Temporizador</string>
+    <string name="label_adjust_timer">Ajustar Tiempo</string>
+    <string name="label_start_timer">Tiempo de inicio</string>
+    <string name="label_end_timer">Tiempo final</string>
     <string name="content_description_start_timer">Iniciar Temporizador</string>
     <string-array name="monitor_views_array">
         <item name="actual">Currents</item>

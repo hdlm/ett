@@ -32,6 +32,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.budoxr.ett.R
+import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onLongType
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import timber.log.Timber
@@ -41,7 +42,7 @@ import timber.log.Timber
 @Composable
 fun ActivitySelectionBottomSheet(
     sheetState: SheetState,
-    onDismiss: () -> Unit,
+    onDismiss: onDismissType,
     placeholderActivities: List<ActivityEntity>,
     onActivitySelected: onLongType
 ) {
