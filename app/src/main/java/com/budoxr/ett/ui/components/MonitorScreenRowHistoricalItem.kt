@@ -117,6 +117,7 @@ fun MonitorScreenRowHistoricalItemPreview() {
         onBackButtonClick = {},
         onSelectedView = { _ -> },
         onSaveTimerTracking = { _ -> },
+        onActivityClick = { _ -> },
     )
 
     val timerTrackingEntity = TimerTrackingEntity(

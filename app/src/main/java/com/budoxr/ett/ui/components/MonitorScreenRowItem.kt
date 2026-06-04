@@ -163,7 +163,8 @@ fun MonitorScreenRowItemPreview() {
         onHideTimer = { _ -> },
         onBackButtonClick = {},
         onSelectedView = { _ -> },
-        onSaveTimerTracking = { _ -> }
+        onSaveTimerTracking = { _ -> },
+        onActivityClick = { _ -> }
     )
 
     val activity = ActivityEntity(

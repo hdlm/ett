@@ -65,6 +65,8 @@ import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
+import com.budoxr.ett.data.mapper.toModel
+import com.budoxr.ett.presentation.domain.ActivityModel
 import com.budoxr.ett.presentation.domain.TimerTrackingModel
 import com.budoxr.ett.presentation.presenters.GroupedSumState
 import com.budoxr.ett.presentation.presenters.MonitorScreenUiState
@@ -96,6 +98,7 @@ data class MonitorState(
     val onDeleteClick: onLongType,
     val onHideTimer: onLongType,
     val onSaveTimerTracking: (TimerTrackingModel) -> Unit,
+    val onActivityClick: (ActivityModel) -> Unit,
     val onBackButtonClick: onDismissType,
     val onSelectedView: onIntType,
 )
@@ -151,6 +154,7 @@ fun MonitorScreen(
                 onDeleteClick = viewModel::deleteTimer,
                 onHideTimer = viewModel::showTimerTrackingBottomSheet,
                 onSaveTimerTracking = viewModel::saveTimerTracking,
+                onActivityClick = viewModel::showActivitiesInTimerTrackingBottomSheet,
                 onBackButtonClick = onBackButtonClick,
                 onSelectedView = viewModel::changeView,
                 onDismissBottomSheet = viewModel::dismissBottomSheet,
@@ -239,6 +243,7 @@ fun MonitorScreenReady(
     onDeleteClick: onLongType,
     onHideTimer: onLongType,
     onSaveTimerTracking: (TimerTrackingModel) -> Unit,
+    onActivityClick: (ActivityModel) -> Unit,
     onBackButtonClick: onDismissType,
     onSelectedView: onIntType,
     onDismissBottomSheet: onDismissType,
@@ -259,6 +264,7 @@ fun MonitorScreenReady(
         onDeleteClick = onDeleteClick,
         onHideTimer = onHideTimer,
         onSaveTimerTracking = onSaveTimerTracking,
+        onActivityClick = onActivityClick,
         onBackButtonClick = onBackButtonClick,
         onSelectedView = onSelectedView,
     )
@@ -329,7 +335,10 @@ fun MonitorScreenReady(
                             }
                         },
                         timerTrackingSelected = timerTrackingSelected!!,
-                        onClick = monitorState.onSaveTimerTracking
+                        showActivityList = uiState.bottomSheetHandle.showActivitiesInTimerTracking,
+                        activities = uiState.activities.map { it.toModel() },
+                        onClick = monitorState.onSaveTimerTracking,
+                        onActivityClick = monitorState.onActivityClick
                     )
                 }
             }
@@ -585,6 +594,7 @@ fun MonitorScreenContentPreview() {
         onBackButtonClick = {},
         onSelectedView = { _ -> },
         onSaveTimerTracking = { _ -> },
+        onActivityClick = { _ -> },
     )
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {

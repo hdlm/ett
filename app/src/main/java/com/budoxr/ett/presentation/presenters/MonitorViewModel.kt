@@ -20,6 +20,7 @@ import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.data.mapper.toEntity
 import com.budoxr.ett.data.mapper.toModel
+import com.budoxr.ett.presentation.domain.ActivityModel
 import com.budoxr.ett.presentation.domain.TimerTrackingModel
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingDeleteUseCase
@@ -251,6 +252,20 @@ class MonitorViewModel(
         _bottomSheetHandle.update { _bottomSheetHandle.value.showTimerTrackingBottomSheet() }
     }
 
+    fun showActivitiesInTimerTrackingBottomSheet(activity: ActivityModel) {
+        Timber.tag(TAG).d("showActivitiesInTimerTrackingBottomSheet() -> called, activity: ${activity.name} (${activity.activityId})")
+        if (_bottomSheetHandle.value.showActivitiesInTimerTracking) {
+            _timerTrackingSelected = _timerTrackingSelected?.copy(
+                activityId = activity.activityId!!
+            )
+            _bottomSheetHandle.update { _bottomSheetHandle.value.copy(showActivitiesInTimerTracking = false) }
+        } else {
+            _bottomSheetHandle.update { _bottomSheetHandle.value.showActivitiesInTimerTrackingBottomSheet() }
+
+        }
+    }
+
+
     fun saveTimerTracking(timerTracking: TimerTrackingModel) {
         Timber.tag(TAG)
             .d("saveTimerTracking() -> called, timerTracking: ${timerTracking.timerTrackingId}")
@@ -274,6 +289,7 @@ class MonitorViewModel(
         val bottomSheetExpanded: Boolean = false,
         val showActivity: Boolean = false,
         val showTimerTracking: Boolean = false,
+        val showActivitiesInTimerTracking: Boolean = false,
     ) {
         fun showActivityBottomSheet(): BottomSheetHandle {
             val sheetHandle = reset()
@@ -293,11 +309,21 @@ class MonitorViewModel(
 
         }
 
+        fun showActivitiesInTimerTrackingBottomSheet(): BottomSheetHandle {
+            val sheetHandle = reset()
+            return sheetHandle.copy(
+                showTimerTracking = true,
+                showActivitiesInTimerTracking = true,
+                bottomSheetExpanded = true
+            )
+        }
+
         private fun reset(): BottomSheetHandle {
             return copy(
                 bottomSheetExpanded = false,
                 showActivity = false,
                 showTimerTracking = false,
+                showActivitiesInTimerTracking = false
             )
         }
 
