@@ -119,6 +119,7 @@ app/schemas/io.dynamiteapps.peimi.data.database.AppDatabase/1.json
 
 # Custom files
 LEERME.txt
+log.txt
 app/cipher_key.txt
 app/signin_release.txt
 app/java_processes.csv
