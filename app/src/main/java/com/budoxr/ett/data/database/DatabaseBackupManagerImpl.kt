@@ -8,18 +8,15 @@ package com.budoxr.ett.data.database
 import android.content.Context
 import android.net.Uri
 import androidx.room.RoomDatabase
-import com.budoxr.ett.commons.utils.CsvEncoding
 import com.budoxr.ett.commons.utils.FileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import timber.log.Timber
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
-import java.io.IOException
-import java.nio.charset.Charset
 
 class DatabaseBackupManagerImpl(
     private val context: Context,
