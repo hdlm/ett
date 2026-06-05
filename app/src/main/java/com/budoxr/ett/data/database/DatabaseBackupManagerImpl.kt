@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026 Henry De la Mano
  * Licensed under the MIT License.
- * See LICENSE file in the project root for full license information.
+ * See the LICENSE file in the project root for full license information.
  */
 package com.budoxr.ett.data.database
 
@@ -17,7 +17,6 @@ import timber.log.Timber
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.charset.Charset

@@ -29,7 +29,7 @@ class ActivityViewModel(
     private val activityInfoUseCase: ActivityInfoUseCase,
     private val userPreferencesRepository: UserPreferencesRepository
 ) : KoinViewModel() {
-    private val _activities = MutableStateFlow<List<ActivityEntity>>(emptyList()) // Asumo List<ActivityEntity> o similar
+    private val _activities = MutableStateFlow<List<ActivityEntity>>(emptyList())
     private val _formState = MutableStateFlow(ActivityState())
     val formState : StateFlow<ActivityState>
         get() = _formState.asStateFlow()
@@ -42,6 +42,9 @@ class ActivityViewModel(
 
     init {
         Timber.tag(TAG).i("init() -> called")
+        
+        // Save the last screen only once upon initialization
+        saveLastScreen()
 
         viewModelScope.launch(Dispatchers.IO) {
             combine(
@@ -58,8 +61,6 @@ class ActivityViewModel(
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine ActivityScreenUiState.Loading
                 }
-
-                saveLastScreen()
 
                 val activities = setActivities.toList()
 

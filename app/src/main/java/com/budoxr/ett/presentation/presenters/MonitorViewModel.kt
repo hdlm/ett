@@ -8,7 +8,6 @@ package com.budoxr.ett.presentation.presenters
 import android.database.sqlite.SQLiteException
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
-import com.budoxr.ett.commons.toFechaTimeDb
 import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.commons.utils.combine
@@ -25,8 +24,8 @@ import com.budoxr.ett.presentation.domain.TimerTrackingModel
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingDeleteUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInfoUseCase
-import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
+import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.ui.navigation.Screens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,7 +40,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MonitorViewModel(
@@ -78,6 +76,9 @@ class MonitorViewModel(
     val isRefreshing: StateFlow<Boolean> = refreshing.asStateFlow()
 
     init {
+        // Save the last screen only once upon initialization
+        saveLastScreen()
+
         viewModelScope.launch {
             combine(
                 _activities,
@@ -101,8 +102,6 @@ class MonitorViewModel(
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine MonitorScreenUiState.Loading
                 }
-
-                saveLastScreen()
 
                 _timers.value = timers
                 _historical.value = historical
@@ -148,12 +147,6 @@ class MonitorViewModel(
         }
     }
 
-    fun emptyTimer(activityId: Long) = TimerTrackingEntity(
-        timerTrackingId = null,
-        startTime = Date().toFechaTimeDb(),
-        endTime = null,
-        activityId = activityId,
-    )
 
     fun newTimer(activityId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -180,6 +173,7 @@ class MonitorViewModel(
         }
 
     }
+    
     fun startTimer(timeTrackingId: Long) {
         Timber.tag(TAG).d("startTimer() -> called")
         // By default when it is created a new timer, it is start the timer

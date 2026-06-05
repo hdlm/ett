@@ -48,7 +48,7 @@ class CsvHelperTest {
         // Act
         csvHelper.processCsvRawData(
             rawData = rawData,
-            activityInfoUseCase = activityInfoUseCase,
+            activities = activityInfoUseCase.invoke(true),
             activityInsertUseCase = activityInsertUseCase,
             timerTrackingUseCase = timerTrackingUseCase
         )
@@ -80,7 +80,7 @@ class CsvHelperTest {
         // Act
         csvHelper.processCsvRawData(
             rawData = rawData,
-            activityInfoUseCase = activityInfoUseCase,
+            activities = activityInfoUseCase.invoke(true),
             activityInsertUseCase = activityInsertUseCase,
             timerTrackingUseCase = timerTrackingUseCase
         )

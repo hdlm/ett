@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026 Henry De la Mano
  * Licensed under the MIT License.
- * See LICENSE file in the project root for full license information.
+ * See the LICENSE file in the project root for full license information.
  */
 package com.budoxr.ett.data.database.entities
 
@@ -21,4 +21,3 @@ data class ActivityEntity(
     val name: String,
     val color: Color? = null,
 )
-

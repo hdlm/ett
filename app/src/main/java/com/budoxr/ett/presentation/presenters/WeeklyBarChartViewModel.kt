@@ -40,6 +40,9 @@ class WeeklyBarChartViewModel(
     private val refreshing = MutableStateFlow(false)
 
     init {
+        // Save the last screen only once upon initialization
+        saveLastScreen()
+
         viewModelScope.launch {
 
             combine(
@@ -54,8 +57,6 @@ class WeeklyBarChartViewModel(
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine WeeklyBarChartScreenUiState.Loading
                 }
-
-                saveLastScreen()
 
                 val items = mutableSetOf<BarChartItemModel>()
                 totalTimeActivities.forEach { activity ->

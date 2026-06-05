@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 Henry De la Mano
+ * Licensed under the MIT License.
+ * See the LICENSE file in the project root for full license information.
+ */
 package com.budoxr.ett.ui.components
 
 import androidx.compose.foundation.background
@@ -35,6 +40,7 @@ import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.commons.utils.TimeUtils
+import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.presentation.domain.ActivityModel
 import com.budoxr.ett.presentation.domain.TimerTrackingModel
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
@@ -129,15 +135,16 @@ private fun TimerTrackingBottomSheetContent(
         endTimeDigits = endTimeDigits.copy(third = newValue)
     }
     val onConfirmClick: onDismissType = {
-        Timber.tag(TAG).d("onConfirmClick() -> invoked.")
+        Timber.tag(TAG).d("onConfirmClick() -> invoked, timerTrackingId: ${timerTrackingSelected.timerTrackingId}")
         val startTimeUpdated = "${timerTrackingSelected.startTime.substringBefore(" ")} ${startTimeDigits.first.toString().padStart(2, '0')}:${startTimeDigits.second.toString().padStart(2, '0')}:${startTimeDigits.third.toString().padStart(2, '0')}"
-        val endTimeUpdated = "${timerTrackingSelected.startTime.substringBefore(" ")} ${endTimeDigits.first.toString().padStart(2, '0')}:${endTimeDigits.second.toString().padStart(2, '0')}:${endTimeDigits.third.toString().padStart(2, '0')}"
+        val endTimeUpdated = "${timerTrackingSelected.endTime?.substringBefore(" ") ?: timerTrackingSelected.startTime.substringBefore(" ")} ${endTimeDigits.first.toString().padStart(2, '0')}:${endTimeDigits.second.toString().padStart(2, '0')}:${endTimeDigits.third.toString().padStart(2, '0')}"
         val timerTrackingUpdated = timerTrackingSelected.copy(
             startTime = startTimeUpdated,
             endTime = endTimeUpdated,
             elapsedTime = TimeUtils.calculateTimestampDifference(startTimeUpdated, endTimeUpdated),
             visible = false,
         )
+        Timber.tag(TAG).i("confirm the changes:\n\t-> startTime: $startTimeUpdated\n\t-> endTime: $endTimeUpdated\n\t-> elapsedTime: ${timerTrackingUpdated.elapsedTime.toTimestampFormat()} (${timerTrackingUpdated.elapsedTime}s)")
         onClick.invoke(timerTrackingUpdated)
         onDismiss.invoke()
     }
@@ -154,6 +161,12 @@ private fun TimerTrackingBottomSheetContent(
         )
 
         if (showActivityList) {
+            Text(
+                text = stringResource(R.string.label_select_activity),
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(bottom = lineSpacing)
+            )
+
             TimerTrackingActivityList(
                 activities = activities,
                 onActivityClick = {
@@ -321,7 +334,7 @@ private fun TimerTrackingBottomSheetPreview() {
         ) {
             TimerTrackingBottomSheetContent(
                 timerTrackingSelected = timerSelected,
-                showActivityList = true,
+                showActivityList = false,
                 activities = activities,
                 onClick = {},
                 onActivityClick = {},

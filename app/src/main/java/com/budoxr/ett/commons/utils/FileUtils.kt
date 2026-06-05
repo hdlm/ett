@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 Henry De la Mano
+ * Licensed under the MIT License.
+ * See the LICENSE file in the project root for full license information.
+ */
 package com.budoxr.ett.commons.utils
 
 import android.content.Context
