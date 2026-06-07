@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -43,6 +46,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
+import com.budoxr.ett.di.Modules.appModule
+import com.budoxr.ett.presentation.domain.BarChartItemModel
 import com.budoxr.ett.presentation.presenters.WeeklyBarChartScreenUiState
 import com.budoxr.ett.presentation.presenters.WeeklyBarChartViewModel
 import com.budoxr.ett.ui.components.GlobalTopBar
@@ -50,7 +55,10 @@ import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.components.PureBarChart
 import com.budoxr.ett.ui.navigation.Screens
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
+import com.budoxr.ett.ui.theme.gray
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.KoinApplication
+import org.koin.dsl.koinConfiguration
 import timber.log.Timber
 
 @Composable
@@ -186,11 +194,13 @@ fun WeeklyBarChartScreenReady(
                 .padding(horizontalMargin),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = stringResource(R.string.title_date_period_format, uiState.period!!.first, uiState.period.second),
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center
-                )
+                if (uiState.period != null) {
+                    Text(
+                        text = stringResource(R.string.title_date_period_format, uiState.period.first, uiState.period.second),
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
             Box(
@@ -213,30 +223,40 @@ fun WeeklyBarChartScreenReady(
 @Preview(showBackground = true)
 fun WeeklyBarChartScreenPreview() {
     val navController = rememberNavController()
+    val item = BarChartItemModel(
+        key = 1,
+        value = 3600.00F,
+        label = "C++",
+        color = gray
+    )
     val isDarkTheme = false
+    val uiState = WeeklyBarChartScreenUiState.Ready(
+        period = Pair("2023-01-01", "2023-01-07"),
+        items = listOf(item)
+    )
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
-        Surface(modifier = Modifier
-            .fillMaxSize(),
+        Surface( modifier = Modifier.fillMaxSize()
+            .windowInsetsPadding(WindowInsets.safeDrawing),
             color = MaterialTheme.colorScheme.background
         ) {
             Column {
                 Text(
-                    text = stringResource(R.string.title_date_period_format),
+                    text = stringResource(R.string.title_date_period_format, "2023-01-01", "2023-01-07"),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                WeeklyBarChartScreen(
+                WeeklyBarChartScreenReady(
                     navController = navController,
                     isDarkTheme = isDarkTheme,
+                    uiState = uiState,
                     onBackButtonClick = {},
                 )
+
             }
         }
-
     }
-
 }
 
 private const val TAG = "che.WeeklyBarChartScreen"
