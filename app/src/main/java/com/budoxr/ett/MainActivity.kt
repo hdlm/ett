@@ -10,7 +10,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -46,7 +49,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             EasyTimeTrackingTheme(dynamicColor = false) {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.safeDrawing),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MainScreen(isDarkTheme = isSystemInDarkTheme())
