@@ -102,6 +102,24 @@ class MonitorViewModel(
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine MonitorScreenUiState.Loading
                 }
+                
+                //TODO hardccode
+//                val startTime = "2026-06-08 00:00:01"
+//                val endTime = "2026-06-08 05:36:00"
+//                val elapsedTime = TimeUtils.calculateTimestampDifference(startTime, endTime)
+//                val fixTimer = TimerTrackingModel(
+//                    timerTrackingId = 259,
+//                    startTime = startTime,
+//                    endTime = endTime,
+//                    elapsedTime = elapsedTime,
+//                    visible = true,
+//                    done = true,
+//                    activityId = 5
+//                )
+//                timerTrackingInsertUseCase.invoke(fixTimer.toEntity())
+                
+                
+                
 
                 _timers.value = timers
                 _historical.value = historical

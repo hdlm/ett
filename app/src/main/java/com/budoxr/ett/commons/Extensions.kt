@@ -71,9 +71,9 @@ fun <T> Flow<T>.emitLastestPeriodically(interval: Duration): Flow<T> = transform
     }
 }
 
-fun String.toLocalDateTime(): LocalDate {
+fun String.toLocalDateTime(): LocalDateTime {
     val localDateTime = LocalDateTime.parse(this, TimeUtils.timestampFormatter)
-    return localDateTime.toLocalDate()
+    return localDateTime
 }
 
 fun String.toLocalDate(): LocalDate {

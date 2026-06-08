@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
+import com.budoxr.ett.commons.toLocalDateTime
 import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.presentation.domain.ActivityModel
@@ -138,9 +139,11 @@ private fun TimerTrackingBottomSheetContent(
         Timber.tag(TAG).d("onConfirmClick() -> invoked, timerTrackingId: ${timerTrackingSelected.timerTrackingId}")
         val startTimeUpdated = "${timerTrackingSelected.startTime.substringBefore(" ")} ${startTimeDigits.first.toString().padStart(2, '0')}:${startTimeDigits.second.toString().padStart(2, '0')}:${startTimeDigits.third.toString().padStart(2, '0')}"
         val endTimeUpdated = "${timerTrackingSelected.endTime?.substringBefore(" ") ?: timerTrackingSelected.startTime.substringBefore(" ")} ${endTimeDigits.first.toString().padStart(2, '0')}:${endTimeDigits.second.toString().padStart(2, '0')}:${endTimeDigits.third.toString().padStart(2, '0')}"
+        val ldtStart = startTimeUpdated.toLocalDateTime()
+        val ldtEnd = endTimeUpdated.toLocalDateTime()
         val timerTrackingUpdated = timerTrackingSelected.copy(
-            startTime = startTimeUpdated,
-            endTime = endTimeUpdated,
+            startTime = if(ldtStart.isAfter(ldtEnd)) endTimeUpdated else startTimeUpdated,
+            endTime = if(ldtStart.isAfter(ldtEnd)) startTimeUpdated else endTimeUpdated,
             elapsedTime = TimeUtils.calculateTimestampDifference(startTimeUpdated, endTimeUpdated),
             visible = false,
         )
