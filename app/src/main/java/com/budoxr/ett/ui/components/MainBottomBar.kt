@@ -5,24 +5,38 @@
  */
 package com.budoxr.ett.ui.components
 
-import com.budoxr.ett.R
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.budoxr.ett.R
 import com.budoxr.ett.ui.navigation.Screens
-import com.budoxr.ett.ui.theme.gray
-import com.budoxr.ett.ui.theme.grayLight
+import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 
 @Composable
 fun MainBottomBar(
@@ -49,16 +63,14 @@ fun MainBottomBar(
     }
 }
 
+
 @Composable
 fun BottomNavigationBar(
     navController: NavHostController,
     items: List<Screens>,
     selectedRoute: String?
 ) {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    ) {
+    NavigationBar {
         items.forEach { screen ->
             val isSelected = selectedRoute == screen.route || 
                              (selectedRoute != null && screen.baseRoute == getBaseRoute(selectedRoute))
@@ -99,7 +111,7 @@ private fun BottomNavigationBarText(
     if(selected) {
         Text(label, fontSize = 11.sp, fontWeight = FontWeight.Normal, color = MaterialTheme.colorScheme.primary)
     } else {
-        Text(label, fontSize = 11.sp, fontWeight = FontWeight.Normal, color = gray)
+        Text(label, fontSize = 11.sp, fontWeight = FontWeight.Normal, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -112,6 +124,52 @@ fun currentRoute(navController: NavHostController): String? {
 
 fun getBaseRoute(route: String): String =
     route.substringBefore('/')
+
+
+@Composable
+@Preview(showBackground = true)
+private fun BottomNavigationBarPreview() {
+    val horizontalMargin = dimensionResource(R.dimen.margin_horizontal)
+    val isDarkTheme = false
+    val navController = NavHostController(LocalContext.current)
+
+    EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
+
+        Scaffold( modifier = Modifier.systemBarsPadding(),
+            topBar = {
+                GlobalTopBar(
+                    isDarkTheme = isDarkTheme,
+                    navIcon = Screens.MonitorScreen.icon,
+                    onBackButtonClick = {},
+                    titleIcon = null,
+                    title = stringResource(Screens.MonitorScreen.titleResId),
+                    actionIcon = null,
+                    onActionButtonClick = {},
+                )
+            },
+            bottomBar = {
+                MainBottomBar(
+                    navController = navController,
+                    selectedRoute = Screens.MonitorScreen.route
+                )
+            },
+            floatingActionButtonPosition = FabPosition.End,
+            floatingActionButton = {}
+        ) { innerPadding ->
+
+            Surface(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                Column(modifier = Modifier.padding(horizontalMargin),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Text("This is a BottomBar preview.")
+                }
+            }
+
+        }
+
+    }
+}
 
 
 private const val TAG = "che.MainBottomBar"

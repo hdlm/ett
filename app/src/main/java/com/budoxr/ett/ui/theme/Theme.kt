@@ -28,11 +28,14 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = onPrimaryBase,
     secondary = secondaryBase,
     onSecondary = onSecondaryBase,
+    secondaryContainer = secondaryContainer,
     tertiary = tertiaryBase,
     background = background,
     surface = surfaceBase,
     onSurface = onSurfaceBase,
     onSurfaceVariant = gray,  //standard icon color
+    surfaceContainer = tertiaryBase,
+
     error = error
 )
 
