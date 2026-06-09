@@ -1,11 +1,13 @@
 package com.budoxr.ett.ui.components
 
-import androidx.compose.foundation.layout.WindowInsets
+import com.budoxr.ett.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -17,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.budoxr.ett.commons.onDismissType
 import java.time.Instant
@@ -42,7 +45,8 @@ fun DateRangePickerBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        contentWindowInsets = { WindowInsets(0, 0, 0, 0) }
+        dragHandle = { BottomSheetDefaults.DragHandle() },
+        modifier = Modifier.padding(top = 24.dp) // Optional: adjust padding
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -63,9 +67,12 @@ fun DateRangePickerBottomSheet(
                 enabled = isConfirmEnabled,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(end = 16.dp, top = 8.dp)
+                    .padding(end = 16.dp, top = 0.dp)
             ) {
-                Text("Confirm")
+                Text(
+                    stringResource(R.string.label_confirm),
+                    style = MaterialTheme.typography.labelMedium
+                )
             }
 
             DateRangePicker(
@@ -73,10 +80,11 @@ fun DateRangePickerBottomSheet(
                 modifier = Modifier.weight(1f, fill = false),
                 title = {
                     Text(
-                        text = "Select travel dates",
-                        modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
+                        text = stringResource(R.string.label_select_date_range),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
                     )
-                }
+                },
             )
         }
     }

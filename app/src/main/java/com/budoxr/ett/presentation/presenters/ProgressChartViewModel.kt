@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class WeeklyBarChartViewModel(
+class ProgressChartViewModel(
     private val activityElapsedTimeDailyInfoUseCase: ActivityElapsedTimeDailyInfoUseCase,
     private val activityElapsedTimeYesterdayInfoUseCase: ActivityElapsedTimeYesterdayInfoUseCase,
     private val activityElapsedTimeWeeklyInfoUseCase: ActivityElapsedTimeWeeklyInfoUseCase,
@@ -48,8 +48,8 @@ class WeeklyBarChartViewModel(
 
     private val _dateRange = MutableStateFlow<Pair<String,String>?>(null)
 
-    private val _uiState = MutableStateFlow<WeeklyBarChartScreenUiState>(WeeklyBarChartScreenUiState.Loading)
-    val uiState: StateFlow<WeeklyBarChartScreenUiState>
+    private val _uiState = MutableStateFlow<ProgressChartScreenUiState>(ProgressChartScreenUiState.Loading)
+    val uiState: StateFlow<ProgressChartScreenUiState>
         get() = _uiState.asStateFlow()
 
 
@@ -71,7 +71,7 @@ class WeeklyBarChartViewModel(
                         DatePeriod.ByRange -> activityElapsedTimeByRangeInfoUseCase.invoke(_dateRange.value)
                     }
                 }
-            val composedFlow: Flow<WeeklyBarChartScreenUiState> = flow2
+            val composedFlow: Flow<ProgressChartScreenUiState> = flow2
                 .flatMapLatest { totalTimeActivities ->
                     com.budoxr.ett.commons.utils.combine(
                         _dateRange,
@@ -83,7 +83,7 @@ class WeeklyBarChartViewModel(
 
                         if (refreshing) {
                             Timber.tag(TAG).d("refreshing: $refreshing")
-                            return@combine WeeklyBarChartScreenUiState.Loading
+                            return@combine ProgressChartScreenUiState.Loading
                         }
 
                         val items = totalTimeActivities.map { activity ->
@@ -95,7 +95,7 @@ class WeeklyBarChartViewModel(
                             )
                         }
 
-                        WeeklyBarChartScreenUiState.Ready(
+                        ProgressChartScreenUiState.Ready(
                             labelPeriod = when(_period.value) {
                                 DatePeriod.Today -> TimeUtils.getDailyPeriod()
                                 DatePeriod.Yesterday -> TimeUtils.getYesterdayPeriod()
@@ -112,10 +112,10 @@ class WeeklyBarChartViewModel(
                 }
 
             composedFlow
-                .onStart { _uiState.value = WeeklyBarChartScreenUiState.Loading }
+                .onStart { _uiState.value = ProgressChartScreenUiState.Loading }
                 .catch { throwable ->
                     throwable.printStackTrace()
-                    _uiState.value = WeeklyBarChartScreenUiState.Error( errorMessage = "error: ${throwable.message}" )
+                    _uiState.value = ProgressChartScreenUiState.Error( errorMessage = "error: ${throwable.message}" )
                     Timber.tag(TAG).e( throwable,"error: ${throwable.localizedMessage}")
                 }.collect {
                     _uiState.value = it
@@ -150,7 +150,7 @@ class WeeklyBarChartViewModel(
 
 
     private fun saveLastScreen() {
-        val baseRoute = Screens.WeeklyBarChartScreen.baseRoute
+        val baseRoute = Screens.ProgressChartScreen.baseRoute
         viewModelScope.launch {
             userPreferencesRepository.saveLastScreen(baseRoute)
             Timber.tag(TAG).i("save the last screen: $baseRoute")
@@ -227,18 +227,18 @@ class WeeklyBarChartViewModel(
     }
 }
 
-sealed interface WeeklyBarChartScreenUiState {
-    data object Loading : WeeklyBarChartScreenUiState
+sealed interface ProgressChartScreenUiState {
+    data object Loading : ProgressChartScreenUiState
 
     data class Error(
         val errorMessage: String? = null
-    ) : WeeklyBarChartScreenUiState
+    ) : ProgressChartScreenUiState
 
     data class Ready(
         val labelPeriod: Pair<String,String>? = null,
-        val period: WeeklyBarChartViewModel.DatePeriod? = null,
+        val period: ProgressChartViewModel.DatePeriod? = null,
         val items: List<BarChartItemModel> = emptyList(),
-        val bottomSheetHandle: WeeklyBarChartViewModel.BottomSheetHandle = WeeklyBarChartViewModel.BottomSheetHandle()
-    ) : WeeklyBarChartScreenUiState
+        val bottomSheetHandle: ProgressChartViewModel.BottomSheetHandle = ProgressChartViewModel.BottomSheetHandle()
+    ) : ProgressChartScreenUiState
 
 }

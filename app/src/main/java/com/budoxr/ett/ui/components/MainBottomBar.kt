@@ -48,7 +48,7 @@ fun MainBottomBar(
     val navigationItems = listOf(
         Screens.MonitorScreen,
         Screens.ActivityScreen,
-        Screens.WeeklyBarChartScreen,
+        Screens.ProgressChartScreen,
         Screens.SettingScreen
     )
 

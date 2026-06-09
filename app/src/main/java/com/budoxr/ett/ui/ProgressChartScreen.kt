@@ -48,10 +48,9 @@ import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
-import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.presentation.domain.BarChartItemModel
-import com.budoxr.ett.presentation.presenters.WeeklyBarChartScreenUiState
-import com.budoxr.ett.presentation.presenters.WeeklyBarChartViewModel
+import com.budoxr.ett.presentation.presenters.ProgressChartScreenUiState
+import com.budoxr.ett.presentation.presenters.ProgressChartViewModel
 import com.budoxr.ett.ui.components.DateRangePickerBottomSheet
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
@@ -64,28 +63,28 @@ import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
 @Composable
-fun WeeklyBarChartScreen(
+fun ProgressChartScreen(
     navController: NavHostController,
     isDarkTheme: Boolean,
     onBackButtonClick: onDismissType,
-    viewModel: WeeklyBarChartViewModel = koinViewModel()
+    viewModel: ProgressChartViewModel = koinViewModel()
 ) {
     Timber.tag(TAG).i("compose / recompose")
 
     val weeklyBarChartScreenUiState by viewModel.uiState.collectAsStateWithLifecycle()
     when (val uiState = weeklyBarChartScreenUiState) {
-        is WeeklyBarChartScreenUiState.Loading -> {
+        is ProgressChartScreenUiState.Loading -> {
             WeeklyBarChartScreenLoading()
         }
-        is WeeklyBarChartScreenUiState.Error -> {
+        is ProgressChartScreenUiState.Error -> {
             WeeklyBarChartScreenError(
                 msg =  uiState.errorMessage!!,
                 onRetry = { onBackButtonClick.invoke() }
             )
         }
-        is WeeklyBarChartScreenUiState.Ready -> {
+        is ProgressChartScreenUiState.Ready -> {
             val onChangePeriod: onIntType = {
-                viewModel.changePeriod(WeeklyBarChartViewModel.DatePeriod.fromIndex(it))
+                viewModel.changePeriod(ProgressChartViewModel.DatePeriod.fromIndex(it))
             }
 
             WeeklyBarChartScreenReady(
@@ -169,7 +168,7 @@ private fun WeeklyBarChartScreenError(msg: String?, onRetry: onDismissType?, mod
 fun WeeklyBarChartScreenReady(
     navController: NavHostController,
     isDarkTheme: Boolean,
-    uiState: WeeklyBarChartScreenUiState.Ready,
+    uiState: ProgressChartScreenUiState.Ready,
     onBackButtonClick: onDismissType,
     onChangePeriod: onIntType,
     onChangeDateRange: (Pair<String,String>) -> Unit,
@@ -187,9 +186,9 @@ fun WeeklyBarChartScreenReady(
         topBar = {
             GlobalTopBar(
                 isDarkTheme = isDarkTheme,
-                navIcon = Screens.WeeklyBarChartScreen.icon,
+                navIcon = Screens.ProgressChartScreen.icon,
                 titleIcon = null,
-                title = stringResource(R.string.title_long_weekly_bar_chart_screen),
+                title = stringResource(R.string.title_long_progress_bar_chart_screen),
                 actionIcon = null,
                 onBackButtonClick = onBackButtonClick,
                 navIconPainter = null,
@@ -259,7 +258,7 @@ fun WeeklyBarChartScreenPreview() {
         color = gray
     )
     val isDarkTheme = false
-    val uiState = WeeklyBarChartScreenUiState.Ready(
+    val uiState = ProgressChartScreenUiState.Ready(
         labelPeriod = Pair("2023-01-01", "2023-01-07"),
         items = listOf(item)
     )

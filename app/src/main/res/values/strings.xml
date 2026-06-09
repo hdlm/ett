@@ -48,11 +48,13 @@
         <item name="pink">Pink</item>
     </string-array>
 
-    <!-- WeeklyBarChartScreen -->
-    <string name="title_weekly_bar_chart_screen">Progress</string>
-    <string name="title_long_weekly_bar_chart_screen">Weekly Progress</string>
+    <!-- ProgressChartScreen -->
+    <string name="title_progress_bar_chart_screen">Progress</string>
+    <string name="title_long_progress_bar_chart_screen">Progress Bar Chart</string>
     <string name="label_y_axis">Time (hh:mm)</string>
     <string name="title_date_period_format">Week of %1$s - %2$s</string>
+    <string name="label_confirm">Confirmar</string>
+    <string name="label_select_date_range">Select date range</string>
     <string-array name="filter_chart_array">
         <item name="today">Today</item>
         <item name="yesterday">Yesterday</item>
