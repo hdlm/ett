@@ -24,6 +24,7 @@ import com.budoxr.ett.presentation.presenters.ActivityViewModel
 import com.budoxr.ett.presentation.presenters.ManageBackupViewModel
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
 import com.budoxr.ett.presentation.presenters.WeeklyBarChartViewModel
+import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeByRangeInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeDailyInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeMonthlyInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeWeeklyInfoUseCase
@@ -44,7 +45,7 @@ object Modules {
         viewModel { (activityId: Long) -> ActivityFormViewModel(activityId, get(), get()) }
         viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
-        viewModel { WeeklyBarChartViewModel(get(), get(), get(), get(), get()) }
+        viewModel { WeeklyBarChartViewModel(get(), get(), get(), get(), get(), get()) }
         viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get(), get(), get(), get(), get(), get(), get()) }
 
         factory { FileUtils(androidContext()) }
@@ -81,6 +82,7 @@ object Modules {
         factory { ActivityElapsedTimeYesterdayInfoUseCase(get()) }
         factory { ActivityElapsedTimeWeeklyInfoUseCase(get()) }
         factory { ActivityElapsedTimeMonthlyInfoUseCase(get()) }
+        factory { ActivityElapsedTimeByRangeInfoUseCase(get()) }
 
         factory<TimerTrackingLocalRepository> { TimerTrackingLocalRepositoryImpl() }
         

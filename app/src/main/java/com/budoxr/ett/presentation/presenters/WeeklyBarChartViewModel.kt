@@ -8,8 +8,10 @@ package com.budoxr.ett.presentation.presenters
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
 import com.budoxr.ett.commons.utils.TimeUtils
+import com.budoxr.ett.data.database.entities.relations.ActivityTotalTimeQuery
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.domain.BarChartItemModel
+import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeByRangeInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeDailyInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeMonthlyInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeWeeklyInfoUseCase
@@ -17,12 +19,13 @@ import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeYesterdayInfoUseCa
 import com.budoxr.ett.ui.navigation.Screens
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -33,6 +36,7 @@ class WeeklyBarChartViewModel(
     private val activityElapsedTimeYesterdayInfoUseCase: ActivityElapsedTimeYesterdayInfoUseCase,
     private val activityElapsedTimeWeeklyInfoUseCase: ActivityElapsedTimeWeeklyInfoUseCase,
     private val activityElapsedTimeMonthlyInfoUseCase: ActivityElapsedTimeMonthlyInfoUseCase,
+    private val activityElapsedTimeByRangeInfoUseCase: ActivityElapsedTimeByRangeInfoUseCase,
     private val userPreferencesRepository: UserPreferencesRepository
 ) : KoinViewModel() {
 
@@ -55,50 +59,69 @@ class WeeklyBarChartViewModel(
         saveLastScreen()
 
         viewModelScope.launch {
-            _period.flatMapLatest { currentPeriod ->
-                when(currentPeriod) {
-                    DatePeriod.Today -> activityElapsedTimeDailyInfoUseCase.invoke()
-                    DatePeriod.Yesterday -> activityElapsedTimeYesterdayInfoUseCase.invoke()
-                    DatePeriod.Weekly -> activityElapsedTimeWeeklyInfoUseCase.invoke()
-                    DatePeriod.Monthly -> activityElapsedTimeMonthlyInfoUseCase.invoke()
-                    DatePeriod.ByRange -> activityElapsedTimeWeeklyInfoUseCase.invoke()
+
+            val flow1 = period
+            val flow2: Flow<List<ActivityTotalTimeQuery>> = flow1
+                .flatMapLatest { currentPeriod ->
+                    when (currentPeriod) {
+                        DatePeriod.Today -> activityElapsedTimeDailyInfoUseCase.invoke()
+                        DatePeriod.Yesterday -> activityElapsedTimeYesterdayInfoUseCase.invoke()
+                        DatePeriod.Weekly -> activityElapsedTimeWeeklyInfoUseCase.invoke()
+                        DatePeriod.Monthly -> activityElapsedTimeMonthlyInfoUseCase.invoke()
+                        DatePeriod.ByRange -> activityElapsedTimeByRangeInfoUseCase.invoke(_dateRange.value)
+                    }
                 }
-            }.combine(refreshing) { totalTimeActivities, refreshing ->
-                if (refreshing) {
-                    Timber.tag(TAG).d("refreshing: $refreshing")
-                    return@combine WeeklyBarChartScreenUiState.Loading
+            val composedFlow: Flow<WeeklyBarChartScreenUiState> = flow2
+                .flatMapLatest { totalTimeActivities ->
+                    com.budoxr.ett.commons.utils.combine(
+                        _dateRange,
+                        _bottomSheetHandle,
+                        refreshing,
+                    ) { dateRange,
+                        bottomSheetHandle,
+                        refreshing ->
+
+                        if (refreshing) {
+                            Timber.tag(TAG).d("refreshing: $refreshing")
+                            return@combine WeeklyBarChartScreenUiState.Loading
+                        }
+
+                        val items = totalTimeActivities.map { activity ->
+                            BarChartItemModel(
+                                key = activity.activity.activityId!!,
+                                value = activity.totalElapsedTime.toFloat(),
+                                label = activity.activity.name,
+                                color = activity.activity.color!!
+                            )
+                        }
+
+                        WeeklyBarChartScreenUiState.Ready(
+                            labelPeriod = when(_period.value) {
+                                DatePeriod.Today -> TimeUtils.getDailyPeriod()
+                                DatePeriod.Yesterday -> TimeUtils.getYesterdayPeriod()
+                                DatePeriod.Weekly -> TimeUtils.getWeekPeriod()
+                                DatePeriod.Monthly -> TimeUtils.getMonthlyPeriod()
+                                else ->  _dateRange.value
+                            },
+                            period = period.value,
+                            items = items,
+                            bottomSheetHandle = bottomSheetHandle
+                        )
+                    }
+
                 }
 
-                val items = totalTimeActivities.map { activity ->
-                    BarChartItemModel(
-                        key = activity.activity.activityId!!,
-                        value = activity.totalElapsedTime.toFloat(),
-                        label = activity.activity.name,
-                        color = activity.activity.color!!
-                    )
+            composedFlow
+                .onStart { _uiState.value = WeeklyBarChartScreenUiState.Loading }
+                .catch { throwable ->
+                    throwable.printStackTrace()
+                    _uiState.value = WeeklyBarChartScreenUiState.Error( errorMessage = "error: ${throwable.message}" )
+                    Timber.tag(TAG).e( throwable,"error: ${throwable.localizedMessage}")
+                }.collect {
+                    _uiState.value = it
                 }
-
-                WeeklyBarChartScreenUiState.Ready(
-                    labelPeriod = when(_period.value) {
-                        DatePeriod.Today -> TimeUtils.getDailyPeriod()
-                        DatePeriod.Yesterday -> TimeUtils.getYesterdayPeriod()
-                        DatePeriod.Weekly -> TimeUtils.getWeekPeriod()
-                        DatePeriod.Monthly -> TimeUtils.getMonthlyPeriod()
-                        else -> TimeUtils.getWeekPeriod()
-                    },
-                    period = period.value,
-                    items = items
-                )
-
-            }.catch { throwable ->
-                throwable.printStackTrace()
-                _uiState.value = WeeklyBarChartScreenUiState.Error( errorMessage = "error: ${throwable.message}" )
-                Timber.tag(TAG).e( throwable,"error: ${throwable.localizedMessage}")
-            }.collect {
-                _uiState.value = it
-            }
+            refresh(force = true)
         }
-        refresh(force = true)
 
     }
 
@@ -119,6 +142,9 @@ class WeeklyBarChartViewModel(
 
     fun changePeriod(period: DatePeriod) {
         Timber.tag(TAG).i("changePeriod() -> invoked, period: $period")
+        if (period == DatePeriod.ByRange) {
+            showBottomSheetHandle()
+        }
         _period.update { period }
     }
 
@@ -131,13 +157,29 @@ class WeeklyBarChartViewModel(
         }
     }
 
-    fun showBottomSheetHandle(startDate: String, endDate:String) {
+
+    //region BottomSheetHandle methods
+    fun showBottomSheetHandle() {
         Timber.tag(TAG).i("showBottomSheetHandle() -> called.")
         _bottomSheetHandle.update {
             _bottomSheetHandle.value.showDateRangePicker()
         }
-
     }
+
+    fun changeDateRange(dateRange: Pair<String,String>) {
+        Timber.tag(TAG).i("changeDateRange() -> called: ${dateRange.first} - ${dateRange.second}.")
+        _dateRange.update { dateRange }
+        dismiss()
+    }
+
+    fun dismiss() {
+        Timber.tag(TAG).i("dismiss() -> called.")
+        _bottomSheetHandle.update {
+            _bottomSheetHandle.value.dismissAll()
+        }
+    }
+    //endregion
+
 
     data class BottomSheetHandle(
         val bottomSheetExpanded: Boolean = false,

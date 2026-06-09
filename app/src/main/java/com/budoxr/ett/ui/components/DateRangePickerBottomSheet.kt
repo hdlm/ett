@@ -27,14 +27,11 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DateRangePickerBottomSheet(
     onDismiss: onDismissType,
-    onRangeSelected: (startDate: String, endDate: String) -> Unit
+    onRangeSelected: (Pair<String,String>) -> Unit
 ) {
-    // Hoist the bottom sheet configuration state
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    // Hoist the DateRangePicker calendar state
     val rangePickerState = rememberDateRangePickerState()
 
-    // Performance Optimized validation tracking
     val isConfirmEnabled by remember {
         derivedStateOf {
             rangePickerState.selectedStartDateMillis != null &&
@@ -56,11 +53,11 @@ fun DateRangePickerBottomSheet(
                     val start = rangePickerState.selectedStartDateMillis
                     val end = rangePickerState.selectedEndDateMillis
                     if (start != null && end != null) {
-                        val formatter = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.systemDefault())
+                        val formatter = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.of("UTC"))
                         val startStr = formatter.format(Instant.ofEpochMilli(start))
                         val endStr = formatter.format(Instant.ofEpochMilli(end))
 
-                        onRangeSelected(startStr, endStr)
+                        onRangeSelected.invoke(Pair(startStr, endStr))
                     }
                 },
                 enabled = isConfirmEnabled,

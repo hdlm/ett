@@ -48,14 +48,15 @@ import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
+import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.presentation.domain.BarChartItemModel
 import com.budoxr.ett.presentation.presenters.WeeklyBarChartScreenUiState
 import com.budoxr.ett.presentation.presenters.WeeklyBarChartViewModel
+import com.budoxr.ett.ui.components.DateRangePickerBottomSheet
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.components.OptionsFlowChips
 import com.budoxr.ett.ui.components.PureBarChart
-import com.budoxr.ett.ui.components.SingleChoiceSegmentedButton
 import com.budoxr.ett.ui.navigation.Screens
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import com.budoxr.ett.ui.theme.gray
@@ -92,7 +93,9 @@ fun WeeklyBarChartScreen(
                 isDarkTheme = isDarkTheme,
                 uiState = uiState,
                 onBackButtonClick = onBackButtonClick,
-                onChangePeriod = onChangePeriod
+                onChangePeriod = onChangePeriod,
+                onChangeDateRange = viewModel::changeDateRange,
+                onDismiss = viewModel::dismiss
             )
 
         }
@@ -168,7 +171,9 @@ fun WeeklyBarChartScreenReady(
     isDarkTheme: Boolean,
     uiState: WeeklyBarChartScreenUiState.Ready,
     onBackButtonClick: onDismissType,
-    onChangePeriod: onIntType
+    onChangePeriod: onIntType,
+    onChangeDateRange: (Pair<String,String>) -> Unit,
+    onDismiss: onDismissType
 ) {
     val horizontalMargin = dimensionResource(R.dimen.margin_horizontal)
     val filterOptions: Array<String> = stringArrayResource(id = R.array.filter_chart_array)
@@ -228,6 +233,15 @@ fun WeeklyBarChartScreenReady(
                     modifier = Modifier.padding(horizontalMargin)
                 )
             }
+
+            if (uiState.bottomSheetHandle.bottomSheetExpanded) {
+                if (uiState.bottomSheetHandle.showDateRangePicker) {
+                    DateRangePickerBottomSheet(
+                        onDismiss = onDismiss,
+                        onRangeSelected = onChangeDateRange
+                    )
+                }
+            }
         }
 
     }
@@ -268,6 +282,8 @@ fun WeeklyBarChartScreenPreview() {
                     uiState = uiState,
                     onBackButtonClick = {},
                     onChangePeriod = { _ -> },
+                    onChangeDateRange = { _ -> },
+                    onDismiss = {}
                 )
 
             }
