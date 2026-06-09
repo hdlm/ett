@@ -54,6 +54,28 @@ object TimeUtils {
         return "%02d:%02d:%02d".format(hours, minutes, seconds)
     }
 
+
+    fun getDailyPeriod(today: LocalDate = LocalDate.now()): Pair<String, String> {
+        // Format dates to "YYYY-MM-DD"
+        val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+        return Pair(today.format(formatter), today.format(formatter))
+    }
+
+    fun getYesterdayPeriod(today: LocalDate = LocalDate.now()): Pair<String, String> {
+        val yesterday = today.minusDays(1L)
+
+        // Format dates to "YYYY-MM-DD"
+        val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+        return Pair(yesterday.format(formatter), yesterday.format(formatter))
+    }
+
+    fun getMonthlyPeriod(today: LocalDate = LocalDate.now()): Pair<String, String> {
+        val firstDayOfMonth = today.withDayOfMonth(1)
+        // Format dates to "YYYY-MM-DD"
+        val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+        return Pair(firstDayOfMonth.format(formatter), today.format(formatter))
+    }
+
     /**
      * Calculates the dates corresponding to last Sunday and Saturday based on the current date.
      * Returns a [Pair] of strings formatted in ISO-8601 layout (YYYY-MM-DD).

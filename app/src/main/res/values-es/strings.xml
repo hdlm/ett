@@ -53,6 +53,13 @@
     <string name="title_long_weekly_bar_chart_screen">Avance Semanal</string>
     <string name="label_y_axis">Tiempo (hh:mm)</string>
     <string name="title_date_period_format">Semana del %1$s - %2$s</string>
+    <string-array name="filter_chart_array">
+        <item name="today">Hoy</item>
+        <item name="yesterday">Ayer</item>
+        <item name="weekly">Semanal</item>
+        <item name="monthly">Mensual</item>
+        <item name="by_range">Por rango</item>
+    </string-array>
 
     <!-- AboutScreen -->
     <string name="title_about_screen">Acerca de</string>

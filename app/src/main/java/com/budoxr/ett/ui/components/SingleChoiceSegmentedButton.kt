@@ -24,10 +24,10 @@ import com.budoxr.ett.commons.onIntType
 fun SingleChoiceSegmentedButton(
     modifier: Modifier = Modifier,
     options: List<String>,
-    onChangeSelection: onIntType,
-    indexSelected: Int = 0
+    selectedOptionIndex: Int = 0,
+    onChangeSelection: onIntType
 ) {
-    var selectedIndex by remember { mutableIntStateOf(indexSelected) }
+    var selectedIndex by remember { mutableIntStateOf(selectedOptionIndex) }
 
     val segmentedButtonColors = SegmentedButtonDefaults.colors(
         activeContainerColor = MaterialTheme.colorScheme.primary,

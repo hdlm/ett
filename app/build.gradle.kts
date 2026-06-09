@@ -115,7 +115,8 @@ dependencies {
 
     // --- Persistence (Room, Datastore Preferences) ---
     implementation(libs.room.runtime)
-    api(libs.room.ktx) // Permite que las corrutinas de Room se propaguen a otros módulos si fuera necesario
+    api(libs.room.ktx)
+    implementation(libs.androidx.compose.material3) // Permite que las corrutinas de Room se propaguen a otros módulos si fuera necesario
     ksp(libs.room.compiler.ksp)
     implementation(libs.datastore.preferences)
 

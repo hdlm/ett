@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,19 +47,19 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
-import com.budoxr.ett.di.Modules.appModule
+import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.presentation.domain.BarChartItemModel
 import com.budoxr.ett.presentation.presenters.WeeklyBarChartScreenUiState
 import com.budoxr.ett.presentation.presenters.WeeklyBarChartViewModel
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
+import com.budoxr.ett.ui.components.OptionsFlowChips
 import com.budoxr.ett.ui.components.PureBarChart
+import com.budoxr.ett.ui.components.SingleChoiceSegmentedButton
 import com.budoxr.ett.ui.navigation.Screens
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 import com.budoxr.ett.ui.theme.gray
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.KoinApplication
-import org.koin.dsl.koinConfiguration
 import timber.log.Timber
 
 @Composable
@@ -82,11 +83,16 @@ fun WeeklyBarChartScreen(
             )
         }
         is WeeklyBarChartScreenUiState.Ready -> {
+            val onChangePeriod: onIntType = {
+                viewModel.changePeriod(WeeklyBarChartViewModel.DatePeriod.fromIndex(it))
+            }
+
             WeeklyBarChartScreenReady(
                 navController = navController,
                 isDarkTheme = isDarkTheme,
                 uiState = uiState,
                 onBackButtonClick = onBackButtonClick,
+                onChangePeriod = onChangePeriod
             )
 
         }
@@ -161,9 +167,11 @@ fun WeeklyBarChartScreenReady(
     navController: NavHostController,
     isDarkTheme: Boolean,
     uiState: WeeklyBarChartScreenUiState.Ready,
-    onBackButtonClick: onDismissType
+    onBackButtonClick: onDismissType,
+    onChangePeriod: onIntType
 ) {
     val horizontalMargin = dimensionResource(R.dimen.margin_horizontal)
+    val filterOptions: Array<String> = stringArrayResource(id = R.array.filter_chart_array)
 
     val filteredItems = remember(uiState.items) {
         uiState.items.filter { it.value != 0.0f }
@@ -189,14 +197,21 @@ fun WeeklyBarChartScreenReady(
         Column(modifier = Modifier.fillMaxSize()
             .padding(innerPadding)
         ) {
-            Row( modifier = Modifier
-                .fillMaxWidth()
+
+            OptionsFlowChips(modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = horizontalMargin),
+                options = filterOptions,
+                selectedOptionIndex = uiState.period?.ordinal ?: 0,
+                onChangeSelection = onChangePeriod
+            )
+
+            Row( modifier = Modifier.fillMaxWidth()
                 .padding(horizontalMargin),
                 horizontalArrangement = Arrangement.Center
             ) {
-                if (uiState.period != null) {
+                if (uiState.labelPeriod != null) {
                     Text(
-                        text = stringResource(R.string.title_date_period_format, uiState.period.first, uiState.period.second),
+                        text = stringResource(R.string.title_date_period_format, uiState.labelPeriod.first, uiState.labelPeriod.second),
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center
                     )
@@ -231,7 +246,7 @@ fun WeeklyBarChartScreenPreview() {
     )
     val isDarkTheme = false
     val uiState = WeeklyBarChartScreenUiState.Ready(
-        period = Pair("2023-01-01", "2023-01-07"),
+        labelPeriod = Pair("2023-01-01", "2023-01-07"),
         items = listOf(item)
     )
 
@@ -252,6 +267,7 @@ fun WeeklyBarChartScreenPreview() {
                     isDarkTheme = isDarkTheme,
                     uiState = uiState,
                     onBackButtonClick = {},
+                    onChangePeriod = { _ -> },
                 )
 
             }

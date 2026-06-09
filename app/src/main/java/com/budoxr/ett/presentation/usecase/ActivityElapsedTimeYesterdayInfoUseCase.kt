@@ -4,19 +4,16 @@ import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.data.database.entities.relations.ActivityTotalTimeQuery
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepository
 import kotlinx.coroutines.flow.Flow
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 
-class ActivityElapsedTimeWeeklyInfoUseCase(
+class ActivityElapsedTimeYesterdayInfoUseCase(
     private val localRepository: TimerTrackingLocalRepository
-) : KoinComponent {
-
+) {
     operator fun invoke(): Flow<List<ActivityTotalTimeQuery>> {
-        val weeklyPeriod = TimeUtils.getWeekPeriod()
+        val yesterdayPeriod = TimeUtils.getYesterdayPeriod()
 
         return localRepository.observeActivityTotalTimeQuery(
-            startDate = weeklyPeriod.first,
-            endDate = weeklyPeriod.second
+            startDate = yesterdayPeriod.first,
+            endDate = yesterdayPeriod.second
         )
     }
 

@@ -42,6 +42,7 @@ mockkVersion = "1.14.9"
 testRunnerVersion = "1.7.0"
 testRulesVersion = "1.7.0"
 robolectricVersion = "4.16.1"
+material3 = "1.4.0"
 
 [libraries]
 # AndroidX & Compose Core
@@ -118,6 +119,7 @@ androidx-junit-runner = { group = "androidx.test", name = "runner", version.ref 
 androidx-junit-rules = { group = "androidx.test", name = "rules", version.ref = "testRulesVersion" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 [bundles]
 androidx-compose-full = [

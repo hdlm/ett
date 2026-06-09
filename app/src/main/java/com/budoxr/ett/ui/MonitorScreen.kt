@@ -389,7 +389,7 @@ fun MonitorScreenContent(
                         modifier = Modifier,
                         options = viewOptions.toList(),
                         onChangeSelection =  monitorState.onSelectedView,
-                        indexSelected = 0
+                        selectedOptionIndex = 0
                     )
                 }
             }
@@ -474,7 +474,7 @@ fun MonitorScreenHistoricalContent(
                         modifier = Modifier,
                         options = viewOptions.toList(),
                         onChangeSelection =  monitorState.onSelectedView,
-                        indexSelected = 1
+                        selectedOptionIndex = 1
                     )
                 }
             }
