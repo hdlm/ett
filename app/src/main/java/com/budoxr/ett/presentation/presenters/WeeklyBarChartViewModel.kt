@@ -36,9 +36,13 @@ class WeeklyBarChartViewModel(
     private val userPreferencesRepository: UserPreferencesRepository
 ) : KoinViewModel() {
 
+    private val _bottomSheetHandle = MutableStateFlow(BottomSheetHandle())
+
     private val _period = MutableStateFlow<DatePeriod>(DatePeriod.Weekly)
     val period: StateFlow<DatePeriod>
         get() = _period.asStateFlow()
+
+    private val _dateRange = MutableStateFlow<Pair<String,String>?>(null)
 
     private val _uiState = MutableStateFlow<WeeklyBarChartScreenUiState>(WeeklyBarChartScreenUiState.Loading)
     val uiState: StateFlow<WeeklyBarChartScreenUiState>
@@ -127,6 +131,37 @@ class WeeklyBarChartViewModel(
         }
     }
 
+    fun showBottomSheetHandle(startDate: String, endDate:String) {
+        Timber.tag(TAG).i("showBottomSheetHandle() -> called.")
+        _bottomSheetHandle.update {
+            _bottomSheetHandle.value.showDateRangePicker()
+        }
+
+    }
+
+    data class BottomSheetHandle(
+        val bottomSheetExpanded: Boolean = false,
+        val showDateRangePicker: Boolean = false,
+    ) {
+        fun showDateRangePicker(): BottomSheetHandle {
+            val sheetHandle = reset()
+            return sheetHandle.copy(
+                showDateRangePicker = true,
+                bottomSheetExpanded = true
+            )
+        }
+
+        private fun reset(): BottomSheetHandle {
+            return copy(
+                bottomSheetExpanded = false,
+                showDateRangePicker = false,
+            )
+        }
+
+        fun dismissAll() = reset()
+
+    }
+
 
     enum class DatePeriod(val value: String) {
         Today("Today"),
@@ -161,6 +196,7 @@ sealed interface WeeklyBarChartScreenUiState {
         val labelPeriod: Pair<String,String>? = null,
         val period: WeeklyBarChartViewModel.DatePeriod? = null,
         val items: List<BarChartItemModel> = emptyList(),
+        val bottomSheetHandle: WeeklyBarChartViewModel.BottomSheetHandle = WeeklyBarChartViewModel.BottomSheetHandle()
     ) : WeeklyBarChartScreenUiState
 
 }
