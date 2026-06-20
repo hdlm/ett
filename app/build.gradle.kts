@@ -10,12 +10,15 @@ kotlin {
 
 android {
     namespace = "com.budoxr.ett"
-    compileSdk = AndroidSdk.TARGET
+    compileSdk {
+        version = release(AndroidSdk.TARGET) {
+            minorApiLevel = 0
+        }
+    }
 
     defaultConfig {
         applicationId = "com.budoxr.ett"
         minSdk = AndroidSdk.MIN
-        targetSdk = AndroidSdk.TARGET
         versionCode = 2
         versionName = "0.2"
 

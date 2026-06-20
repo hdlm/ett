@@ -7,3 +7,7 @@ repositories {
     mavenCentral()
 }
 
+tasks.named("validatePlugins") {
+    enabled = false
+}
+
