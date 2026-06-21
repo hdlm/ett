@@ -12,7 +12,6 @@ import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.ui.navigation.Screens
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +45,7 @@ class ActivityViewModel(
         // Save the last screen only once upon initialization
         saveLastScreen()
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             combine(
                 _activities.flatMapLatest { _ ->
                     activityInfoUseCase.invoke()

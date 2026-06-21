@@ -97,9 +97,10 @@ fun ActivityScreen(
             )
         }
         is ActivityScreenUiState.Ready -> {
+            val activityState by viewModel.formState.collectAsStateWithLifecycle()
             ActivityScreenReady(
                 navController = navController,
-                uiState = uiState,
+                uiState = uiState.copy(activityState = activityState),
                 isDarkTheme = isDarkTheme,
                 isRefreshing = isRefreshing,
                 onRefresh = viewModel::refresh,

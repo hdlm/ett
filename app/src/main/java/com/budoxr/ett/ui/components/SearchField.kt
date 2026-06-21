@@ -23,10 +23,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.budoxr.ett.R
@@ -42,84 +49,98 @@ fun SearchField(
     placeholder: String,
     modifier: Modifier,
 ) {
-    val showSearchCancelButton = value.isNotEmpty()
     val iconSize = dimensionResource(id = R.dimen.icon_small_size)
+
+    // Using TextFieldValue locally to manage cursor position and sync with external state
+    var textFieldValueState by remember {
+        mutableStateOf(TextFieldValue(text = value, selection = TextRange(value.length)))
+    }
+
+    // Update local state when external value changes (e.g., cleared by parent)
+    LaunchedEffect(value) {
+        if (value != textFieldValueState.text) {
+            textFieldValueState = textFieldValueState.copy(
+                text = value,
+                selection = TextRange(value.length)
+            )
+        }
+    }
 
     val onCancelClick: onDismissType = {
         Timber.tag(TAG).i("onCancelClick() -> invoked")
+        textFieldValueState = TextFieldValue("")
         onValueChange("")
     }
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
+    val showSearchCancelButton = textFieldValueState.text.isNotEmpty()
 
-            Surface(
-                modifier = modifier,
-                shape = MaterialTheme.shapes.medium,
-                tonalElevation = 3.dp,
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
-            ) {
-                BasicTextField(
-                    singleLine = true,
-                    value = value,
-                    onValueChange = onValueChange,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface
-                    ),
-                    decorationBox = { innerTextField ->
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 5.dp)
-                                .fillMaxWidth()
-                                .padding(all = 5.dp),
-                            verticalAlignment =  Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = stringResource(id = R.string.content_description_icon),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(iconSize)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            if(value.isEmpty()) {
+    Box(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            tonalElevation = 3.dp,
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
+        ) {
+            BasicTextField(
+                value = textFieldValueState,
+                onValueChange = {
+                    textFieldValueState = it
+                    if (it.text != value) {
+                        onValueChange(it.text)
+                    }
+                },
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                decorationBox = { innerTextField ->
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = stringResource(id = R.string.content_description_icon),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(iconSize)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (textFieldValueState.text.isEmpty()) {
                                 Text(
                                     text = placeholder,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
-                            } else {
-                                innerTextField()
                             }
+                            innerTextField()
                         }
                     }
+                }
+            )
+        }
+        if (showSearchCancelButton) {
+            IconButton(
+                onClick = onCancelClick,
+                modifier = Modifier
+                    .padding(end = 10.dp)
+                    .size(iconSize)
+                    .align(Alignment.CenterEnd)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Cancel,
+                    contentDescription = stringResource(id = R.string.content_description_icon),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            if (showSearchCancelButton) {
-                IconButton(onClick = onCancelClick,
-                    modifier = Modifier
-                        .padding(end = 10.dp)
-                        .size(iconSize)
-                        .align(Alignment.CenterEnd)
-                    ) {
-                    Icon(
-                        imageVector = Icons.Filled.Cancel,
-                        contentDescription = stringResource(id = R.string.content_description_icon),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
         }
-
     }
 }
 
