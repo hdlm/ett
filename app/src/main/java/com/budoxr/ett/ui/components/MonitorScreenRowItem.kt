@@ -153,6 +153,7 @@ fun MonitorScreenRowItemPreview() {
         isDarkTheme = isDarkTheme,
         isRefreshing = false,
         onRefresh = {},
+        onSearchChange = {},
         onNewTimerClick = {},
         activeTimers = emptyList(),
         historicalTimers = emptyList(),

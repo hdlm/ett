@@ -58,6 +58,10 @@ class MonitorViewModel(
         initialValue = emptyList()
     )
 
+    private val _formState = MutableStateFlow(MonitorFormState())
+    val formState : StateFlow<MonitorFormState>
+        get() = _formState.asStateFlow()
+
     private val _timers = MutableStateFlow<List<TimersWithActivity>>(emptyList())
     private val _historical = MutableStateFlow<List<TimerTrackingQuery>>(emptyList())
     private val _selectedView = MutableStateFlow(0)
@@ -165,6 +169,14 @@ class MonitorViewModel(
         }
     }
 
+    fun onSearchChange(value: String) {
+        Timber.tag(TAG).i("onSearchChange() -> called, value: $value")
+        _formState.update {
+            it.copy(
+                search = value
+            )
+        }
+    }
 
     fun newTimer(activityId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -357,6 +369,7 @@ sealed interface MonitorScreenUiState {
     ) : MonitorScreenUiState
 
     data class Ready(
+        val monitorFormState: MonitorFormState? = null,
         val activities: List<ActivityEntity> = emptyList(),
         val activeTimers: List<TimersWithActivity> = emptyList(),
         val historicalTimers: List<TimerTrackingQuery> = emptyList(),
@@ -370,4 +383,8 @@ data class GroupedSumState(
     val groupKey: String,
     val items: List<TimerTrackingQuery>,
     val totalSum: Long
+)
+
+data class MonitorFormState(
+    val search: String = "",
 )

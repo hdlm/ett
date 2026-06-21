@@ -61,6 +61,7 @@ import com.budoxr.ett.commons.onDismissComposableType
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.commons.onLongType
+import com.budoxr.ett.commons.onStringType
 import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
@@ -91,6 +92,7 @@ data class MonitorState(
     val isDarkTheme: Boolean,
     val isRefreshing: Boolean,
     val onRefresh: onDismissType,
+    val onSearchChange: onStringType,
     val activeTimers: List<TimersWithActivity>,
     val historicalTimers: List<TimerTrackingQuery>,
     val onNewTimerClick: onLongType,
@@ -126,6 +128,7 @@ fun MonitorScreen(
             )
         }
         is MonitorScreenUiState.Ready -> {
+            val monitorFormState by viewModel.formState.collectAsStateWithLifecycle()
             val floatingActionButton: onDismissComposableType = {
                 FloatingActionButton(
                     onClick = viewModel::showActivityBottomSheet,
@@ -144,11 +147,12 @@ fun MonitorScreen(
 
             MonitorScreenReady(
                 navController = navController,
-                uiState = uiState,
+                uiState = uiState.copy(monitorFormState = monitorFormState),
                 timerTrackingSelected = viewModel.timerTrackingSelected,
                 isDarkTheme = isDarkTheme,
                 isRefreshing = isRefreshing,
                 onRefresh = viewModel::refresh,
+                onSearchChange = viewModel::onSearchChange,
                 onNewTimerClick = viewModel::newTimer,
                 onStartClick = viewModel::startTimer,
                 onStopClick = viewModel::stopTimer,
@@ -160,7 +164,7 @@ fun MonitorScreen(
                 onSelectedView = viewModel::changeView,
                 onDismissBottomSheet = viewModel::dismissBottomSheet,
                 floatingActionButton = if (uiState.selectedView == 0) floatingActionButton else noneFloatingActionButton,
-                formatLastThreeDigits = viewModel::formatLastThreeDigits
+                formatLastThreeDigits = viewModel::formatLastThreeDigits,
             )
 
         }
@@ -238,6 +242,7 @@ fun MonitorScreenReady(
     isDarkTheme: Boolean,
     isRefreshing: Boolean,
     onRefresh: onDismissType,
+    onSearchChange: onStringType,
     onNewTimerClick: onLongType,
     onStartClick: onLongType,
     onStopClick: onLongType,
@@ -257,6 +262,7 @@ fun MonitorScreenReady(
         isDarkTheme = isDarkTheme,
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
+        onSearchChange = onSearchChange,
         activeTimers = uiState.activeTimers,
         historicalTimers = uiState.historicalTimers,
         onNewTimerClick = onNewTimerClick,
@@ -299,6 +305,7 @@ fun MonitorScreenReady(
                     .fillMaxSize()
                     .padding(innerPadding),
                 monitorState = monitorState,
+                search = uiState.monitorFormState!!.search,
                 viewOptions = viewOptions,
                 formatLastThreeDigits = formatLastThreeDigits
             )
@@ -315,7 +322,7 @@ fun MonitorScreenReady(
                                 }
                             }
                         },
-                        placeholderActivities = uiState.activities,
+                        placeholderActivities = if (uiState.monitorFormState.search.isNotEmpty()) uiState.activities.filter { it.name.contains(uiState.monitorFormState.search, ignoreCase = true) } else uiState.activities,
                         onActivitySelected = { id ->
                             scope.launch { sheetState.hide() }.invokeOnCompletion {
                                 if (!sheetState.isVisible) {
@@ -323,8 +330,9 @@ fun MonitorScreenReady(
                                 }
                             }
                             monitorState.onNewTimerClick.invoke(id)
-                        }
-
+                        },
+                        search = uiState.monitorFormState.search,
+                        onSearchChange = monitorState.onSearchChange
                     )
                 } else {
                     TimerTrackingBottomSheet(
@@ -362,6 +370,7 @@ fun MonitorScreenReady(
 fun MonitorScreenContent(
     modifier: Modifier,
     monitorState: MonitorState,
+    search: String,
     viewOptions: Array<String>,
     formatLastThreeDigits: (Long) -> String,
 ) {
@@ -586,6 +595,7 @@ fun MonitorScreenContentPreview() {
         isDarkTheme = isDarkTheme,
         isRefreshing = false,
         onRefresh = {},
+        onSearchChange = {},
         onNewTimerClick = {},
         activeTimers = emptyList(),
         historicalTimers = emptyList(),
@@ -603,6 +613,7 @@ fun MonitorScreenContentPreview() {
         MonitorScreenContent(
             modifier = Modifier.fillMaxSize(),
             monitorState = monitorState,
+            search = "",
             viewOptions = viewOptions,
             formatLastThreeDigits = utility::formatLastThreeDigits
         )

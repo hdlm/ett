@@ -106,6 +106,7 @@ fun MonitorScreenRowHistoricalItemPreview() {
         navController = rememberNavController(),
         isDarkTheme = isDarkTheme,
         isRefreshing = false,
+        onSearchChange = {},
         onRefresh = {},
         onNewTimerClick = {},
         activeTimers = emptyList(),
