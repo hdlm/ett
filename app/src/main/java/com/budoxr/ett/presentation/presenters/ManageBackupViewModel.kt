@@ -14,6 +14,7 @@ import com.budoxr.ett.commons.utils.CsvHelper
 import com.budoxr.ett.commons.utils.FileUtils
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.DatabaseBackupManager
+import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.presentation.usecase.ActivitiesWithTimersUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
@@ -34,7 +35,7 @@ class ManageBackupViewModel(
     private val activitiesWithTimersUseCase: ActivitiesWithTimersUseCase,
     private val activityInfoUseCase: ActivityInfoUseCase,
     private val activityInsertUseCase: ActivityInsertUseCase,
-    private val timerTrackingUseCase: TimerTrackingInsertUseCase,
+    private val timerTrackingInsertUseCase: TimerTrackingInsertUseCase,
     private val fileUtils: FileUtils,
     private val utility: Utility,
     private val cvsHelper: CsvHelper,
@@ -160,7 +161,7 @@ class ManageBackupViewModel(
                             rawData = data,
                             activities = activityInfoUseCase.invoke(true),
                             activityInsertUseCase = activityInsertUseCase,
-                            timerTrackingUseCase = timerTrackingUseCase
+                            timerTrackingUseCase = timerTrackingInsertUseCase
                         )
                         
                         _uiState.value = ManageBackupUiState.Success(
@@ -214,6 +215,63 @@ class ManageBackupViewModel(
             )  
         }
         
+    }
+
+    fun startImportJson() {
+        Timber.tag(TAG).d("startImportJson() -> called.")
+        viewModelScope.launch {
+            val currentType = TypeOperation.ImportFromJson
+            val uri = _jsonFilePath.value
+
+            if (uri == null) {
+                _uiState.value = ManageBackupUiState.Success(
+                    typeOperation = currentType,
+                    errorMessage = R.string.message_import_failed
+                )
+                return@launch
+            }
+
+            _uiState.value = ManageBackupUiState.Ready(typeOperation = currentType, isLoading = true)
+
+            databaseBackupManager.importFromJson(uri)
+                .fold(
+                    onSuccess = { data ->
+                        Timber.tag(TAG).d("startImportJson() -> Importing Json file to database...")
+                        val activitiesBuffer = mutableSetOf<ActivityEntity>()
+                        val activitiesDb = utility.performAsyncOperation( scope = this, ) {
+                            activityInfoUseCase.invoke(isAsync = true)
+                        }.await()
+                        activitiesBuffer.addAll(activitiesDb)
+
+                        data.forEach { activityWithTimers ->
+                            val found = activitiesBuffer.find { it.name == activityWithTimers.activity.name }
+                            val activity = found ?: run {
+                                val activityToInsert = activityWithTimers.activity.copy(activityId = null)
+                                val newActivityId = activityInsertUseCase.invoke(activityToInsert)
+                                val newActivity = activityToInsert.copy(activityId = newActivityId)
+                                activitiesBuffer.add(newActivity)
+                                newActivity
+                            }
+
+                            activityWithTimers.timers.forEach { timerTracking ->
+                                val newTimer = timerTracking.copy(activityId = activity.activityId!!, timerTrackingId = null)
+                                timerTrackingInsertUseCase.invoke(newTimer)
+                            }
+                        }
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType
+                        )
+                        _jsonFilePath.value = null // Clear selection on success
+                    },
+                    onFailure = { error ->
+                        Timber.tag(TAG).e(error, "startImportJson() -> Import failed.")
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType,
+                            errorMessage = R.string.message_import_failed
+                        )
+                    }
+                )
+        }
     }
 
 

@@ -84,7 +84,8 @@
     <string name="label_make_backup">Make Backup</string>
     <string name="label_restore_backup">Restore Backup</string>
     <string name="label_import_csv">Import from .CSV</string>
-    <string name="label_export_json">Import from .CSV</string>
+    <string name="label_export_json">Export from .JSON</string>
+    <string name="label_import_json">Import from .JSON</string>
 
     <!-- ManageBackupScreen -->
     <string name="title_manage_backup_make">Make Backup</string>

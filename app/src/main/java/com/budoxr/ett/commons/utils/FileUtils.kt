@@ -17,6 +17,7 @@ import org.koin.core.component.KoinComponent
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -89,6 +90,26 @@ class FileUtils(private val context: Context) : KoinComponent {
     }
 
     /**
+     * The method returns the content of the CSV file in a String
+     * @param jsonFile File to JSON
+     * @return String with all the content of the file
+     */
+    @Throws(FileNotFoundException::class, IOException::class)
+    fun readJsonContent(jsonFile: File): String {
+        return try {
+            val encoding: CsvEncoding = detectEncoding(jsonFile.inputStream())
+            Timber.tag(TAG).i("Json file encoding detected: ${encoding.charset.name()}")
+
+            jsonFile
+                .inputStream()
+                .bufferedReader(Charset.forName(encoding.charset.name()))
+                .use(BufferedReader::readText)
+        } catch (e: IOException) {
+            throw IOException("Error reading the file: '${jsonFile.name}' from the cache's directory: ${e.message}", e)
+        }
+    }
+
+    /**
      * Saves a JSON string directly into the public 'Download' folder using the MediaStore API.
      * @param fileName The desired name of the file (e.g., "activities_backup.json")
      * @param jsonString The serialized JSON payload.
@@ -133,22 +154,59 @@ class FileUtils(private val context: Context) : KoinComponent {
     /**
      * Reads a JSON backup file from a given Content Uri and returns the raw JSON string.
      */
-    suspend fun importActivitiesFromUri(uri: Uri): Result<String> {
+    suspend fun readJsonContent(uri: Uri): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
                 val resolver = context.contentResolver
 
-                // Safely open the stream and wrap inside a reader
-                val jsonString = resolver.openInputStream(uri)?.use { inputStream ->
-                    BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
-                        reader.readText()
+                // Fix: Using openFileDescriptor as a workaround for some devices (like Samsung)
+                // where openInputStream might fail with SecurityException even if URI permissions were granted.
+                val pfd = resolver.openFileDescriptor(uri, "r")
+                    ?: throw IllegalStateException("Could not resolve open stream access for: $uri")
+
+                val jsonString = pfd.use { descriptor ->
+                    FileInputStream(descriptor.fileDescriptor).use { inputStream ->
+                        BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
+                            reader.readText()
+                        }
                     }
-                } ?: throw IllegalStateException("Could not resolve open stream access for: $uri")
+                }
 
                 Result.success(jsonString)
             } catch (e: Exception) {
-                Timber.tag(TAG).e(e, "importActivitiesFromUri() -> Error during import")
+                Timber.tag(TAG).e(e, "importActivitiesFromUri() -> Error during import for URI: $uri")
                 Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Copies a file from a given Uri to the app's internal cache directory.
+     * This is useful to avoid SecurityException when accessing URIs from SAF later or in background threads.
+     * @param uri The source Uri
+     * @param fileName The name of the file in cache
+     * @return The File in cache, or null if it fails
+     */
+    suspend fun copyUriToCache(uri: Uri, fileName: String): File? {
+        Timber.tag(TAG).d("copyUriToCache() -> URI: $uri, fileName: $fileName")
+        return withContext(Dispatchers.IO) {
+            try {
+                val cacheFile = File(context.cacheDir, fileName)
+                val resolver = context.contentResolver
+
+                // Fix: Using openFileDescriptor as a workaround for some devices (like Samsung)
+                resolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                    FileInputStream(pfd.fileDescriptor).use { inputStream ->
+                        cacheFile.outputStream().use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                } ?: return@withContext null
+
+                cacheFile
+            } catch (e: Exception) {
+                Timber.tag(TAG).e(e, "copyUriToCache() -> Error copying URI: $uri to cache")
+                null
             }
         }
     }

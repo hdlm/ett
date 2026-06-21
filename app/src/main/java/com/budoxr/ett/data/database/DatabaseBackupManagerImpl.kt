@@ -9,8 +9,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.room.RoomDatabase
 import com.budoxr.ett.commons.utils.FileUtils
-import com.budoxr.ett.data.database.entities.ActivityEntity
-import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.ActivityWithTimers
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -19,7 +17,6 @@ import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import timber.log.Timber
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
@@ -117,19 +114,10 @@ class DatabaseBackupManagerImpl(
         try {
             Timber.tag(TAG).d("importFromCsv() -> URI: $uri")
 
-            val targetFile = File(context.cacheDir, CSV_FILE)
+            val targetFile = fileUtils.copyUriToCache(uri, CSV_FILE)
+                ?: throw FileNotFoundException("Could not copy URI: $uri to cache.")
 
-            // Using openFileDescriptor as a workaround for some Samsung devices/MTP issues
-            // where openInputStream might fail with SecurityException even if URI permissions were granted.
-            context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
-                FileInputStream(pfd.fileDescriptor).use { inputStream ->
-                    FileOutputStream(targetFile).use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                }
-            } ?: throw FileNotFoundException("Could not open file descriptor for URI: $uri")
-
-            val data =  fileUtils.readCsvContent(csvFile = targetFile)
+            val data = fileUtils.readCsvContent(csvFile = targetFile)
 
             Timber.tag(TAG).i("importFromCsv() -> Success! File copied to cache as $CSV_FILE")
             Result.success(data)
@@ -161,10 +149,23 @@ class DatabaseBackupManagerImpl(
 
     }
 
-    override suspend fun importFromJson(uri: Uri): Result<List<ActivityWithTimers>> {
-        return fileUtils.importActivitiesFromUri(uri).mapCatching { jsonString ->
-            activitiesAdapter.fromJson(jsonString) ?: throw IOException("Failed to parse JSON")
+    override suspend fun importFromJson(uri: Uri): Result<List<ActivityWithTimers>> = withContext(Dispatchers.IO) {
+        try {
+            Timber.tag(TAG).d("importFromJson() -> URI: $uri")
+
+            val targetFle = fileUtils.copyUriToCache(uri, JSON_FILE)
+                ?: throw FileNotFoundException("Could not copy URI: $uri to cache.")
+
+            val jsonString = fileUtils.readJsonContent(jsonFile = targetFle)
+            val data = activitiesAdapter.fromJson(jsonString) ?: throw IOException("Failed to parse JSON")
+            Result.success(data)
+
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "importFromJson() -> Error during import")
+            Result.failure(e)
         }
+
+
     }
 
 

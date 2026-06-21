@@ -65,7 +65,7 @@ fun ManageBackupScreen(
 
     val manageBackupUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val csvFilePath by viewModel.csvFilePath.collectAsStateWithLifecycle()
-    val jsonFilePath by viewModel.csvFilePath.collectAsStateWithLifecycle()
+    val jsonFilePath by viewModel.jsonFilePath.collectAsStateWithLifecycle()
 
     val (typeOperation, isLoading, errorMessage, isSuccess, backupPath) = when (val uiState = manageBackupUiState) {
         is ManageBackupUiState.Ready -> quintupleOf(uiState.typeOperation, uiState.isLoading, null, false, null)
@@ -90,6 +90,7 @@ fun ManageBackupScreen(
         onStartImportCsvClick = { viewModel.startImportCsv() },
         onJsonFileSelected = { viewModel.selectJsonFile(it) },
         onStartExportJsonClick = { viewModel.startExportJson() },
+        onStartImportJsonClick = { viewModel.startImportJson() }
     )
 }
 
@@ -121,7 +122,8 @@ private fun ManageBackupScreenContent(
     onCsvFileSelected: (Uri) -> Unit,
     onStartImportCsvClick: onDismissType,
     onJsonFileSelected: (Uri) -> Unit,
-    onStartExportJsonClick: onDismissType
+    onStartExportJsonClick: onDismissType,
+    onStartImportJsonClick: onDismissType
 ) {
     Scaffold(
         modifier = Modifier.systemBarsPadding(),
@@ -182,14 +184,17 @@ private fun ManageBackupScreenContent(
                     isLoading = isLoading,
                     errorMessage = errorMessage,
                     isSuccess = isSuccess,
-                    jsonFilePath = jsonFilePath,
-                    onJsonFileSelected = onJsonFileSelected,
                     onStartExportJsonClick = onStartExportJsonClick
                 )
 
-                TypeOperation.ImportFromJson -> {
-                    //TODO import from JSON
-                }
+                TypeOperation.ImportFromJson -> ManageBackupScreenImportJson(
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    isSuccess = isSuccess,
+                    jsonFilePath = jsonFilePath,
+                    onJsonFileSelected = onJsonFileSelected,
+                    onStartImportJsonClick = onStartImportJsonClick
+                )
 
             }
         }
@@ -449,8 +454,6 @@ private fun ManageBackupScreenExportJson(
     @StringRes
     errorMessage: Int? = null,
     isSuccess: Boolean,
-    jsonFilePath: Uri?,
-    onJsonFileSelected: (Uri) -> Unit,
     onStartExportJsonClick: onDismissType,
 ) {
     Column(
@@ -517,6 +520,98 @@ private fun ManageBackupScreenExportJson(
 }
 
 
+@Composable
+private fun ManageBackupScreenImportJson(
+    isLoading: Boolean,
+    @StringRes
+    errorMessage: Int? = null,
+    isSuccess: Boolean,
+    jsonFilePath: Uri?,
+    onJsonFileSelected: (Uri) -> Unit,
+    onStartImportJsonClick: onDismissType
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ett_logo),
+            contentDescription = stringResource(id = R.string.content_description_ett_logo),
+            modifier = Modifier.size(120.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(id = R.string.label_start_import_csv),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            JsonFilePickerButton(
+                label = stringResource(id = R.string.label_select_json_file),
+                onFileSelected = onJsonFileSelected,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            jsonFilePath?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = it.toString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ButtonConfirm(
+                label = stringResource(id = R.string.label_import_json),
+                isEnabled = jsonFilePath != null,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = onStartImportJsonClick
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (isSuccess) {
+            Text(
+                text = stringResource(id = R.string.message_restore_done),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        errorMessage?.let {
+            Text(
+                text = stringResource(it),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun ManageBackupScreenBackupPreview() {
@@ -540,7 +635,8 @@ fun ManageBackupScreenBackupPreview() {
             onCsvFileSelected = {},
             onStartImportCsvClick = {},
             onJsonFileSelected = {},
-            onStartExportJsonClick = {}
+            onStartExportJsonClick = {},
+            onStartImportJsonClick = {}
         )
     }
 }
