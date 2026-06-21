@@ -9,7 +9,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.compose.ui.graphics.Color
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -23,5 +22,5 @@ data class ActivityEntity(
     @property:Json(name = "activity_id")
     @ColumnInfo(name = "activity_id") val activityId: Long? = null,
     val name: String,
-    val color: Color? = null,
+    val color: String? = null,
 )

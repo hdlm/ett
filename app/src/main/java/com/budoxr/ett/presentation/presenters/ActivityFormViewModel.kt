@@ -55,7 +55,7 @@ class ActivityFormViewModel(
                         _formState.update {
                             it.copy(
                                 name = activity.name,
-                                color = activity.color!!.toColorName(),
+                                color = activity.color ?: "gray",
                                 isValid = activity.name.isNotBlank()
                             )
                         }
@@ -132,7 +132,7 @@ class ActivityFormViewModel(
             val activityEntity = ActivityEntity(
                 activityId = if (activityId > 0) activityId else null,
                 name = form.name.uppercase(getDefault()),
-                color = form.color.toColor()
+                color = form.color
             )
             Timber.tag(TAG).i("Saving activity in the database")
             activityInsertUseCase.invoke(activityEntity)

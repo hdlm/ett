@@ -8,7 +8,6 @@ package com.budoxr.ett.di
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.budoxr.ett.commons.utils.ColorAdapter
 import com.budoxr.ett.commons.utils.CsvHelper
 import com.budoxr.ett.commons.utils.FileUtils
 import com.budoxr.ett.commons.utils.Utility
@@ -56,7 +55,6 @@ object Modules {
         factory { Utility(androidContext()) }
         single<Moshi> { 
             Moshi.Builder()
-                .add(ColorAdapter())
                 .build() 
         }
     }

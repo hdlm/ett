@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -170,7 +169,7 @@ fun MonitorScreenRowItemPreview() {
     val activity = ActivityEntity(
         activityId = 1,
         name = "DRIBBLI",
-        color = Color(-34757177461702656)
+        color = "blue"
     )
     val item = TimerTrackingEntity(
         timerTrackingId = 1,

@@ -7,6 +7,7 @@ package com.budoxr.ett.presentation.presenters
 
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
+import com.budoxr.ett.commons.toColor
 import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.data.database.entities.relations.ActivityTotalTimeQuery
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
@@ -91,7 +92,7 @@ class ProgressChartViewModel(
                                 key = activity.activity.activityId!!,
                                 value = activity.totalElapsedTime.toFloat(),
                                 label = activity.activity.name,
-                                color = activity.activity.color!!
+                                color = activity.activity.color?.toColor() ?: com.budoxr.ett.ui.theme.gray
                             )
                         }
 

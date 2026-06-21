@@ -5,18 +5,8 @@
  */
 package com.budoxr.ett.data.database.converters
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.room.TypeConverter
-
 class ColorConverters {
-    @TypeConverter
-    fun fromColor(color: Color?): Int? {
-        return color?.toArgb()
-    }
-
-    @TypeConverter
-    fun toColor(colorValue: Int?): Color? {
-        return colorValue?.let { Color(it) }
-    }
+    // No converters needed for String? types as Room handles them natively.
+    // If you plan to use androidx.compose.ui.graphics.Color in your Entities,
+    // add converters between Color and String/Long here.
 }

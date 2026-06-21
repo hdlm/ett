@@ -38,7 +38,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -314,17 +313,17 @@ fun ActivityScreenPreview() {
     val actv1 = ActivityEntity(
         activityId = 1,
         name = "Activity One",
-        color = Color(-34757177461702656L)
+        color = "blue"
     )
     val actv2 = ActivityEntity(
         activityId = 2,
         name = "Activity Two",
-        color = Color(-34757177461702656L)
+        color = "orange"
     )
     val actv3 = ActivityEntity(
         activityId = 3,
         name = "Activity Three",
-        color = Color(-34757177461702656L)
+        color = "green"
     )
     val activities = listOf(actv1, actv2, actv3)
 
