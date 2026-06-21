@@ -131,6 +131,11 @@ dependencies {
     implementation(libs.timber.log)
     implementation(libs.coroutines.android)
 
+    // --- Json library
+    implementation(libs.moshi.core)
+    ksp(libs.moshi.codegen)
+
+
     // --- Unit Testing (JVM) ---
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)
