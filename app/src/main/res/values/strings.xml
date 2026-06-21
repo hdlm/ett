@@ -84,20 +84,27 @@
     <string name="label_make_backup">Make Backup</string>
     <string name="label_restore_backup">Restore Backup</string>
     <string name="label_import_csv">Import from .CSV</string>
+    <string name="label_export_json">Import from .CSV</string>
 
     <!-- ManageBackupScreen -->
     <string name="title_manage_backup_make">Make Backup</string>
     <string name="title_manage_backup_restore">Restore Backup</string>
     <string name="title_manage_backup_cvs_import">Import from .CSV</string>
+    <string name="title_manage_backup_json_export">Export to JSON</string>
+    <string name="title_manage_backup_json_import">Import from JSON</string>
     <string name="label_start_backup">Start the Backup</string>
     <string name="label_start_restore">Start the Restore</string>
     <string name="label_start_import_csv">Start the Import</string>
+    <string name="label_start_export">Start the Export</string>
     <string name="label_select_csv_file">Select CSV File</string>
+    <string name="label_select_json_file">Select JSON File</string>
     <string name="message_backup_done">The backup has been successfully completed.</string>
     <string name="message_backup_failed">The backup has been failed.</string>
     <string name="message_restore_done">The database has been successfully restored.</string>
     <string name="message_restore_failed">The restore has been failed.</string>
     <string name="message_import_done">The data has been successfully imported.</string>
     <string name="message_import_failed">The import has been failed.</string>
+    <string name="message_export_done">The data has been successfully exported.</string>
+    <string name="message_export_failed">The export has been failed.</string>
 
 </resources>

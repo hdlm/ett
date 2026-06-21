@@ -84,18 +84,27 @@
     <string name="label_make_backup">Realizar el Backup</string>
     <string name="label_restore_backup">Restaurar el Backup</string>
     <string name="label_import_csv">Importar desde .CSV</string>
+    <string name="label_export_json">Exportar a .JSON</string>
 
     <!-- ManageBackupScreen -->
     <string name="title_manage_backup_make">Realizar Backup</string>
     <string name="title_manage_backup_restore">Restaurar Backup</string>
-    <string name="title_manage_backup_cvs_import">Import from .CSV</string>
+    <string name="title_manage_backup_cvs_import">Importar desde .CSV</string>
+    <string name="title_manage_backup_json_export">Exportar a JSON</string>
+    <string name="title_manage_backup_json_import">Import from JSON</string>
     <string name="label_start_backup">Comenzar el Respaldo</string>
     <string name="label_start_restore">Comenzar la Restauración</string>
     <string name="label_start_import_csv">Comenzar la Importación</string>
+    <string name="label_start_export">Comenzar la Exportación</string>
     <string name="label_select_csv_file">Seleccionar el archivo CSV</string>
+    <string name="label_select_json_file">Seleccionar el archivo JSON</string>
     <string name="message_backup_done">El respaldo fue completado satisfactoriamente.</string>
     <string name="message_backup_failed">El respaldo ha fallado.</string>
     <string name="message_restore_done">La restauración fue completada satisfactoriamente.</string>
     <string name="message_restore_failed">La restauración ha fallado.</string>
+    <string name="message_import_done">Los datos fueron importados satisfactoriamente.</string>
+    <string name="message_import_failed">La importación ha fallado.</string>
+    <string name="message_export_done">Los datos fueron exportados satisfactoriamente.</string>
+    <string name="message_export_failed">La exportación ha fallado.</string>
 
 </resources>

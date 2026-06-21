@@ -6,6 +6,9 @@
 package com.budoxr.ett.data.database
 
 import android.net.Uri
+import com.budoxr.ett.data.database.entities.ActivityEntity
+import com.budoxr.ett.data.database.entities.TimerTrackingEntity
+import com.budoxr.ett.data.database.entities.relations.ActivityWithTimers
 import java.io.File
 
 interface DatabaseBackupManager {
@@ -23,5 +26,15 @@ interface DatabaseBackupManager {
      * Imports data from a CSV file into the database.
      */
     suspend fun importFromCsv(uri: Uri): Result<String>
+
+    /**
+     * Exports data from the database to a CSV file.
+     */
+    suspend fun exportToJson(activities: Set<ActivityWithTimers>): Result<Unit>
+
+    /**
+     * Imports data from a JSON file into the database.
+     */
+    suspend fun importFromJson(uri: Uri): Result<List<ActivityWithTimers>>
 
 }

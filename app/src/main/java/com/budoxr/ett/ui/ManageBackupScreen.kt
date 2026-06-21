@@ -48,6 +48,7 @@ import com.budoxr.ett.presentation.presenters.TypeOperation
 import com.budoxr.ett.ui.components.ButtonConfirm
 import com.budoxr.ett.ui.components.CsvFilePickerButton
 import com.budoxr.ett.ui.components.GlobalTopBar
+import com.budoxr.ett.ui.components.JsonFilePickerButton
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.navigation.Screens
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
@@ -64,6 +65,7 @@ fun ManageBackupScreen(
 
     val manageBackupUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val csvFilePath by viewModel.csvFilePath.collectAsStateWithLifecycle()
+    val jsonFilePath by viewModel.csvFilePath.collectAsStateWithLifecycle()
 
     val (typeOperation, isLoading, errorMessage, isSuccess, backupPath) = when (val uiState = manageBackupUiState) {
         is ManageBackupUiState.Ready -> quintupleOf(uiState.typeOperation, uiState.isLoading, null, false, null)
@@ -79,12 +81,15 @@ fun ManageBackupScreen(
         isSuccess = isSuccess,
         backupPath = backupPath,
         csvFilePath = csvFilePath,
+        jsonFilePath = jsonFilePath,
         isDarkTheme = isDarkTheme,
         onBackButtonClick = onBackButtonClick,
         onStartBackupClick = { viewModel.startBackup() },
         onStartRestoreClick = { viewModel.startRestore() },
         onCsvFileSelected = { viewModel.selectCsvFile(it) },
         onStartImportCsvClick = { viewModel.startImportCsv() },
+        onJsonFileSelected = { viewModel.selectJsonFile(it) },
+        onStartExportJsonClick = { viewModel.startExportJson() },
     )
 }
 
@@ -108,12 +113,15 @@ private fun ManageBackupScreenContent(
     isSuccess: Boolean,
     backupPath: String?,
     csvFilePath: Uri?,
+    jsonFilePath: Uri?,
     isDarkTheme: Boolean,
     onBackButtonClick: onDismissType,
     onStartBackupClick: onDismissType,
     onStartRestoreClick: onDismissType,
     onCsvFileSelected: (Uri) -> Unit,
-    onStartImportCsvClick: onDismissType
+    onStartImportCsvClick: onDismissType,
+    onJsonFileSelected: (Uri) -> Unit,
+    onStartExportJsonClick: onDismissType
 ) {
     Scaffold(
         modifier = Modifier.systemBarsPadding(),
@@ -127,6 +135,8 @@ private fun ManageBackupScreenContent(
                     TypeOperation.Backup -> stringResource(R.string.title_manage_backup_make)
                     TypeOperation.Restore -> stringResource(R.string.title_manage_backup_restore)
                     TypeOperation.ImportFromCsv -> stringResource(R.string.title_manage_backup_cvs_import)
+                    TypeOperation.ExportToJson -> stringResource(R.string.title_manage_backup_json_export)
+                    TypeOperation.ImportFromJson -> stringResource(R.string.title_manage_backup_json_import)
                 },
                 actionIcon = null,
                 onActionButtonClick = {}
@@ -167,6 +177,20 @@ private fun ManageBackupScreenContent(
                     onCsvFileSelected = onCsvFileSelected,
                     onStartImportCsvClick = onStartImportCsvClick
                 )
+
+                TypeOperation.ExportToJson -> ManageBackupScreenExportJson(
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    isSuccess = isSuccess,
+                    jsonFilePath = jsonFilePath,
+                    onJsonFileSelected = onJsonFileSelected,
+                    onStartExportJsonClick = onStartExportJsonClick
+                )
+
+                TypeOperation.ImportFromJson -> {
+                    //TODO import from JSON
+                }
+
             }
         }
     }
@@ -418,6 +442,81 @@ private fun ManageBackupScreenImportCsv(
     }
 }
 
+
+@Composable
+private fun ManageBackupScreenExportJson(
+    isLoading: Boolean,
+    @StringRes
+    errorMessage: Int? = null,
+    isSuccess: Boolean,
+    jsonFilePath: Uri?,
+    onJsonFileSelected: (Uri) -> Unit,
+    onStartExportJsonClick: onDismissType,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ett_logo),
+            contentDescription = stringResource(id = R.string.content_description_ett_logo),
+            modifier = Modifier.size(120.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(id = R.string.label_start_export),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            ButtonConfirm(
+                label = stringResource(id = R.string.label_export_json),
+                isEnabled = true,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = onStartExportJsonClick
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (isSuccess) {
+            Text(
+                text = stringResource(id = R.string.message_export_done),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        errorMessage?.let {
+            Text(
+                text = stringResource(it),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun ManageBackupScreenBackupPreview() {
@@ -433,12 +532,15 @@ fun ManageBackupScreenBackupPreview() {
             isSuccess = true,
             backupPath = "/storage/emulated/0/Android/data/com.budoxr.ett/files/Download/ett_backup.db",
             csvFilePath = null,
+            jsonFilePath = null,
             isDarkTheme = false,
             onBackButtonClick = {},
             onStartBackupClick = {},
             onStartRestoreClick = {},
             onCsvFileSelected = {},
-            onStartImportCsvClick = {}
+            onStartImportCsvClick = {},
+            onJsonFileSelected = {},
+            onStartExportJsonClick = {}
         )
     }
 }

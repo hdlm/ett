@@ -9,6 +9,11 @@ import android.content.Context
 import android.net.Uri
 import androidx.room.RoomDatabase
 import com.budoxr.ett.commons.utils.FileUtils
+import com.budoxr.ett.data.database.entities.ActivityEntity
+import com.budoxr.ett.data.database.entities.TimerTrackingEntity
+import com.budoxr.ett.data.database.entities.relations.ActivityWithTimers
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
@@ -17,13 +22,20 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.io.IOException
 
 class DatabaseBackupManagerImpl(
     private val context: Context,
     private val roomDatabase: RoomDatabase,
     private val databaseName: String,
     private val fileUtils: FileUtils,
+    private val moshi: Moshi
 ) : DatabaseBackupManager, KoinComponent {
+
+    private val activitiesAdapter by lazy {
+        val type = Types.newParameterizedType(List::class.java, ActivityWithTimers::class.java)
+        moshi.adapter<List<ActivityWithTimers>>(type)
+    }
 
     /**
      * Safely backs up the Room SQLite database file to a specified destination file.
@@ -127,14 +139,38 @@ class DatabaseBackupManagerImpl(
         }
     }
 
+    /**
+     * Converts a List of ActivityWithTimers into a clean, formatted JSON string.
+     */
+    override suspend fun exportToJson(activities: Set<ActivityWithTimers>): Result<Unit> {
+        Timber.tag(TAG).d("exportToJson() called.")
 
+        return withContext(Dispatchers.Default) {
+            try {
+                // Optional: Use indent("  ") if you need a pretty-printed, readable JSON structure
+                val jsonString = activitiesAdapter.indent("  ").toJson(activities.toList())
+                fileUtils.saveJsonToPublicDownloads(JSON_FILE, jsonString)
+                Result.success(Unit)
 
+            } catch (e: IOException) {
+                Result.failure(e)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
 
+    }
 
+    override suspend fun importFromJson(uri: Uri): Result<List<ActivityWithTimers>> {
+        return fileUtils.importActivitiesFromUri(uri).mapCatching { jsonString ->
+            activitiesAdapter.fromJson(jsonString) ?: throw IOException("Failed to parse JSON")
+        }
+    }
 
 
     companion object {
         private const val TAG = "che.DatabaseBackupManager"
-        const val CSV_FILE = "data.csv"
+        const val CSV_FILE = "ett_data.csv"
+        const val JSON_FILE = "ett_data.json"
     }
 }

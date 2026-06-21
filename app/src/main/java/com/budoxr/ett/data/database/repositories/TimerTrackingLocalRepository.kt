@@ -7,6 +7,7 @@ package com.budoxr.ett.data.database.repositories
 
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.ActivityTotalTimeQuery
+import com.budoxr.ett.data.database.entities.relations.ActivityWithTimers
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +19,8 @@ interface TimerTrackingLocalRepository {
     fun observeById(id: Long): Flow<TimerTrackingEntity?>
     suspend fun getAllTimers(): List<TimersWithActivity>
     fun observeAllTimers(): Flow<List<TimersWithActivity>>
+
+    suspend fun getAllActivitiesWithTimers(): List<ActivityWithTimers>
 
     suspend fun getAllVisibleTimers(): List<TimersWithActivity>
     fun observeAllVisibleTimers(): Flow<List<TimersWithActivity>>

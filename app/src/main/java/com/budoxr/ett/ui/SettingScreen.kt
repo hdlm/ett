@@ -121,6 +121,30 @@ fun SettingContent(
             )
 
             ButtonConfirm(
+                modifier = Modifier
+                    .padding(bottom = lineSpacing),
+                label = stringResource(R.string.title_manage_backup_json_export),
+                isEnabled = true,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = { navigateToManageBackup(TypeOperation.ExportToJson.value) },
+            )
+
+            ButtonConfirm(
+                modifier = Modifier
+                    .padding(bottom = lineSpacing),
+                label = stringResource(R.string.title_manage_backup_json_import),
+                isEnabled = true,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = { navigateToManageBackup(TypeOperation.ImportFromJson.value) },
+            )
+
+            ButtonConfirm(
                 modifier = Modifier,
                 label = stringResource(R.string.title_about_screen),
                 isEnabled = true,

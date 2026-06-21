@@ -7,7 +7,14 @@ package com.budoxr.ett.commons.utils
 
 import android.content.Context
 import android.content.Intent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withTimeout
 import org.koin.core.component.KoinComponent
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 class Utility(private val context: Context): KoinComponent {
     /**
@@ -36,6 +43,19 @@ class Utility(private val context: Context): KoinComponent {
         } finally {
             android.os.Process.killProcess(android.os.Process.myPid())
             System.exit(0)
+        }
+    }
+
+    @Throws(Exception::class)
+    suspend fun <T> performAsyncOperation(
+        scope: CoroutineScope,
+        timeout: Long,
+        timeUnit: TimeUnit,
+        dispatcher: CoroutineDispatcher,
+        operation: suspend() -> T
+    ): Deferred<T> = scope.async(dispatcher) {
+        withTimeout(timeUnit.toMillis(timeout).milliseconds) {
+            operation()
         }
     }
 }

@@ -21,7 +21,7 @@ import com.budoxr.ett.R
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
 
 @Composable
-fun CsvFilePickerButton(
+fun JsonFilePickerButton(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     onFileSelected: (Uri) -> Unit,
@@ -57,11 +57,9 @@ fun CsvFilePickerButton(
         buttonImg = null,
         onConfirmClick = {
             val mimeTypes = arrayOf(
-                "text/csv",
-                "text/comma-separated-values",
-                "application/csv",
+                "text/json",
+                "application/json",
                 "text/plain",
-                "application/vnd.ms-excel"
             )
             filePickerLauncher.launch(mimeTypes)
         },
@@ -71,13 +69,13 @@ fun CsvFilePickerButton(
 
 @Composable
 @Preview(showBackground = true)
-fun CsvFilePickerButtonPreview() {
-    val label = "Select a CSV File"
+fun JsonFilePickerButtonPreview() {
+    val label = "Select a JSON File"
     val isDarkTheme = false
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
         Surface( modifier = Modifier.padding(8.dp)) {
-            CsvFilePickerButton(
+            JsonFilePickerButton(
                 modifier = Modifier,
                 label = label,
                 isEnabled = true,

@@ -13,6 +13,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.ActivityTotalTimeQuery
+import com.budoxr.ett.data.database.entities.relations.ActivityWithTimers
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import kotlinx.coroutines.flow.Flow
@@ -38,6 +39,10 @@ interface TimerTrackingDao {
     @Transaction
     @Query("SELECT * FROM timer_tracking_activities")
     fun observeTimersWithActivities(): Flow<List<TimersWithActivity>>
+
+    @Transaction
+    @Query("SELECT * FROM activities")
+    suspend fun getActivitiesWithTimers(): List<ActivityWithTimers>
 
     @Transaction
     @Query("SELECT * FROM timer_tracking_activities WHERE visible = 1")

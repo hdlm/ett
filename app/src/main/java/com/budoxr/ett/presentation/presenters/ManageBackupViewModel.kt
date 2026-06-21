@@ -9,13 +9,16 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.R
+import com.budoxr.ett.commons.CommonValues
 import com.budoxr.ett.commons.utils.CsvHelper
 import com.budoxr.ett.commons.utils.FileUtils
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.DatabaseBackupManager
+import com.budoxr.ett.presentation.usecase.ActivitiesWithTimersUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,10 +26,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class ManageBackupViewModel(
     private val typeOperation: Int,
     private val databaseBackupManager: DatabaseBackupManager,
+    private val activitiesWithTimersUseCase: ActivitiesWithTimersUseCase,
     private val activityInfoUseCase: ActivityInfoUseCase,
     private val activityInsertUseCase: ActivityInsertUseCase,
     private val timerTrackingUseCase: TimerTrackingInsertUseCase,
@@ -37,6 +42,9 @@ class ManageBackupViewModel(
 
     private val _csvFilePath = MutableStateFlow<Uri?>(null)
     val csvFilePath: StateFlow<Uri?> = _csvFilePath.asStateFlow()
+
+    private val _jsonFilePath = MutableStateFlow<Uri?>(null)
+    val jsonFilePath: StateFlow<Uri?> = _jsonFilePath.asStateFlow()
 
     private val _uiState = MutableStateFlow<ManageBackupUiState>(ManageBackupUiState.Ready(TypeOperation.fromValue(typeOperation)))
     val uiState: StateFlow<ManageBackupUiState>
@@ -123,6 +131,12 @@ class ManageBackupViewModel(
         _csvFilePath.value = uri
     }
 
+
+    fun selectJsonFile(uri: Uri) {
+        Timber.tag(TAG).d("selectJsonFile() -> called with uri: $uri")
+        _jsonFilePath.value = uri
+    }
+
     fun startImportCsv() {
         Timber.tag(TAG).d("startImportCsv() -> called.")
         viewModelScope.launch {
@@ -165,7 +179,42 @@ class ManageBackupViewModel(
         }
     }
 
+    fun startExportJson() {
+        Timber.tag(TAG).d("startExportJson() -> called.")
+        viewModelScope.launch {
+            val currentType = TypeOperation.ExportToJson
 
+            _uiState.value = ManageBackupUiState.Ready(typeOperation = currentType, isLoading = true)
+
+            val activities = utility.performAsyncOperation(
+                scope = this,
+                timeout = CommonValues.WAIT_DEFERRED,
+                timeUnit = TimeUnit.SECONDS,
+                dispatcher = Dispatchers.IO
+            ) {
+                activitiesWithTimersUseCase.invoke()
+            }.await().toSortedSet(compareBy { it.activity.name })
+
+            databaseBackupManager.exportToJson(
+                activities = activities
+            ).fold(
+                onSuccess = { 
+                    _uiState.value = ManageBackupUiState.Success(
+                        typeOperation = currentType
+                    )
+                    _jsonFilePath.value = null 
+                },
+                onFailure = { error ->
+                    Timber.tag(TAG).e(error, "startExportJson() -> Export failed.")
+                    _uiState.value = ManageBackupUiState.Success(
+                        typeOperation = currentType,
+                        errorMessage = R.string.message_export_failed
+                    )
+                }
+            )  
+        }
+        
+    }
 
 
     companion object {
@@ -195,7 +244,9 @@ sealed interface ManageBackupUiState {
 enum class TypeOperation(val value: Int) {
     Backup(0),
     Restore(1),
-    ImportFromCsv(2);
+    ImportFromCsv(2),
+    ExportToJson(3),
+    ImportFromJson(4);
 
     companion object {
         fun fromValue(value: Int): TypeOperation =

@@ -5,8 +5,14 @@
  */
 package com.budoxr.ett.commons.utils
 
+import android.content.ContentValues
 import android.content.Context
+import android.net.Uri
+import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import timber.log.Timber
 import java.io.BufferedReader
@@ -14,6 +20,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
@@ -27,7 +34,6 @@ enum class CsvEncoding(val charset: Charset) {
 
 
 class FileUtils(private val context: Context) : KoinComponent {
-
     /**
      * The method is responsible to detect the encoding of the specific file
      * @param inputStream  file to be analyzed
@@ -79,6 +85,71 @@ class FileUtils(private val context: Context) : KoinComponent {
                 .use(BufferedReader::readText)
         } catch (e: IOException) {
             throw IOException("Error reading the file: '${csvFile.name}' from the cache's directory: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Saves a JSON string directly into the public 'Download' folder using the MediaStore API.
+     * @param fileName The desired name of the file (e.g., "activities_backup.json")
+     * @param jsonString The serialized JSON payload.
+     */
+    @Throws(FileNotFoundException::class, IOException::class)
+    suspend fun saveJsonToPublicDownloads(fileName: String, jsonString: String): Unit {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                val resolver = context.contentResolver
+
+                // Define metadata details for the file collection record
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "application/json")
+
+                    // On Android 10 (API 29) and above, explicitly target the standard Download folder path
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    }
+                }
+
+                // Query the external volume storage directory
+                val collectionUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI
+                } else {
+                    // Fallback configuration for legacy API levels
+                    MediaStore.Files.getContentUri("external")
+                }
+
+                // Insert record allocation slot into system index
+                val fileUri = resolver.insert(collectionUri, contentValues)
+                    ?: throw IOException("Failed to create MediaStore entry in Downloads.")
+
+                // Stream our byte contents straight to the allocated location uri
+                resolver.openOutputStream(fileUri)?.use { outputStream ->
+                    outputStream.write(jsonString.toByteArray(Charsets.UTF_8))
+                } ?: throw IOException("Failed to open output stream for URI: $fileUri")
+            }
+        }
+    }
+
+    /**
+     * Reads a JSON backup file from a given Content Uri and returns the raw JSON string.
+     */
+    suspend fun importActivitiesFromUri(uri: Uri): Result<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val resolver = context.contentResolver
+
+                // Safely open the stream and wrap inside a reader
+                val jsonString = resolver.openInputStream(uri)?.use { inputStream ->
+                    BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
+                        reader.readText()
+                    }
+                } ?: throw IllegalStateException("Could not resolve open stream access for: $uri")
+
+                Result.success(jsonString)
+            } catch (e: Exception) {
+                Timber.tag(TAG).e(e, "importActivitiesFromUri() -> Error during import")
+                Result.failure(e)
+            }
         }
     }
 

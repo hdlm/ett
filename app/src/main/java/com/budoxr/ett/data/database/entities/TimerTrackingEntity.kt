@@ -10,6 +10,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 @Entity(
     tableName = "timer_tracking_activities",
@@ -26,15 +28,21 @@ import androidx.room.PrimaryKey
         Index("activity_id")
     ]
 )
+@JsonClass(generateAdapter = true)
 data class TimerTrackingEntity(
     @PrimaryKey(autoGenerate = true)
+    @property:Json(name = "timer_tracking_id")
     @ColumnInfo(name = "timer_tracking_id") val timerTrackingId: Long? = null,
+    @property:Json(name = "start_time")
     @ColumnInfo(name = "start_time") val startTime: String,
+    @property:Json(name = "end_time")
     @ColumnInfo(name = "end_time") val endTime: String? = null,
+    @property:Json(name = "elapsed_time")
     @ColumnInfo(name = "elapsed_time") val elapsedTime: Long = 0,
     val visible: Boolean = true,
     val done: Boolean = false,
     /** foreign key */
+    @property:Json(name = "activity_id")
     @ColumnInfo(name = "activity_id") val activityId: Long,
 
 )

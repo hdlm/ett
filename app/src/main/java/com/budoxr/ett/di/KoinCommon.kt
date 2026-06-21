@@ -8,6 +8,7 @@ package com.budoxr.ett.di
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.budoxr.ett.commons.utils.ColorAdapter
 import com.budoxr.ett.commons.utils.CsvHelper
 import com.budoxr.ett.commons.utils.FileUtils
 import com.budoxr.ett.commons.utils.Utility
@@ -24,6 +25,7 @@ import com.budoxr.ett.presentation.presenters.ActivityViewModel
 import com.budoxr.ett.presentation.presenters.ManageBackupViewModel
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
 import com.budoxr.ett.presentation.presenters.ProgressChartViewModel
+import com.budoxr.ett.presentation.usecase.ActivitiesWithTimersUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeByRangeInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeDailyInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityElapsedTimeMonthlyInfoUseCase
@@ -39,6 +41,7 @@ import com.budoxr.ett.presentation.usecase.TimerTrackingWeeklyInfoUseCase
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import com.squareup.moshi.Moshi
 
 object Modules {
     val appModule = module {
@@ -46,11 +49,16 @@ object Modules {
         viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
         viewModel { ProgressChartViewModel(get(), get(), get(), get(), get(), get()) }
-        viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get(), get(), get(), get(), get(), get(), get(), get()) }
 
         factory { FileUtils(androidContext()) }
         factory { CsvHelper() }
         factory { Utility(androidContext()) }
+        single<Moshi> { 
+            Moshi.Builder()
+                .add(ColorAdapter())
+                .build() 
+        }
     }
 
     fun provideDataBase(context: Context): AppDatabase =
@@ -78,6 +86,7 @@ object Modules {
         factory<ActivityLocalRepository> { ActivityLocalRepositoryImpl() }
         factory { ActivityInsertUseCase() }
         factory { ActivityInfoUseCase() }
+        factory { ActivitiesWithTimersUseCase(get()) }
         factory { ActivityElapsedTimeDailyInfoUseCase(get()) }
         factory { ActivityElapsedTimeYesterdayInfoUseCase(get()) }
         factory { ActivityElapsedTimeWeeklyInfoUseCase(get()) }
@@ -92,6 +101,7 @@ object Modules {
                 roomDatabase = get(), 
                 databaseName = "ett.db",
                 fileUtils = get(),
+                moshi = get()
             )
         }
         
