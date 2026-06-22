@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -78,6 +79,7 @@ import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.components.MonitorScreenRowHistoricalItem
 import com.budoxr.ett.ui.components.MonitorScreenRowItem
+import com.budoxr.ett.ui.components.SearchField
 import com.budoxr.ett.ui.components.SingleChoiceSegmentedButton
 import com.budoxr.ett.ui.components.TimerTrackingBottomSheet
 import com.budoxr.ett.ui.navigation.Screens
@@ -298,69 +300,97 @@ fun MonitorScreenReady(
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = floatingActionButton
     ) { innerPadding ->
+        val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
+        val lineSpacing1x = dimensionResource(id = R.dimen.line_spacing_1)
 
-        if (uiState.selectedView == 0) {
-            MonitorScreenContent(
+        Column(modifier = Modifier.padding(innerPadding)) {
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                monitorState = monitorState,
-                search = uiState.monitorFormState!!.search,
-                viewOptions = viewOptions,
-                formatLastThreeDigits = formatLastThreeDigits
-            )
-
-            if (uiState.bottomSheetHandle.bottomSheetExpanded) {
-                if (uiState.bottomSheetHandle.showActivity) {
-                    ActivitySelectionBottomSheet(
-                        sheetState = sheetState,
-                        // Function to handle dismissal (swipes, back button, or manual)
-                        onDismiss = {
-                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    onDismissBottomSheet.invoke()
-                                }
-                            }
-                        },
-                        placeholderActivities = if (uiState.monitorFormState.search.isNotEmpty()) uiState.activities.filter { it.name.contains(uiState.monitorFormState.search, ignoreCase = true) } else uiState.activities,
-                        onActivitySelected = { id ->
-                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    onDismissBottomSheet.invoke()
-                                }
-                            }
-                            monitorState.onNewTimerClick.invoke(id)
-                        },
-                        search = uiState.monitorFormState.search,
-                        onSearchChange = monitorState.onSearchChange
-                    )
-                } else {
-                    TimerTrackingBottomSheet(
-                        sheetState = sheetState,
-                        onDismiss = {
-                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    onDismissBottomSheet.invoke()
-                                }
-                            }
-                        },
-                        timerTrackingSelected = timerTrackingSelected!!,
-                        showActivityList = uiState.bottomSheetHandle.showActivitiesInTimerTracking,
-                        activities = uiState.activities.map { it.toModel() },
-                        onClick = monitorState.onSaveTimerTracking,
-                        onActivityClick = monitorState.onActivityClick
+                    .padding(horizontal = horizontalMargin)
+                    .padding(top = 12.dp)
+            ) {
+                SearchField(
+                    value = uiState.monitorFormState!!.search,
+                    onValueChange = monitorState.onSearchChange,
+                    placeholder = stringResource(R.string.label_search_field_placeholder),
+                    modifier = Modifier
+                )
+                Spacer(modifier = Modifier.padding(vertical = lineSpacing1x))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    SingleChoiceSegmentedButton(
+                        modifier = Modifier,
+                        options = viewOptions.toList(),
+                        onChangeSelection = monitorState.onSelectedView,
+                        selectedOptionIndex = uiState.selectedView
                     )
                 }
             }
-        } else {
-            MonitorScreenHistoricalContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                monitorState = monitorState,
-                viewOptions = viewOptions,
-                formatLastThreeDigits = formatLastThreeDigits
-            )
+
+            if (uiState.selectedView == 0) {
+                MonitorScreenContent(
+                    modifier = Modifier.weight(1f),
+                    monitorState = monitorState,
+                    formatLastThreeDigits = formatLastThreeDigits
+                )
+            } else {
+                MonitorScreenHistoricalContent(
+                    modifier = Modifier.weight(1f),
+                    monitorState = monitorState,
+                    search = uiState.monitorFormState!!.search,
+                    formatLastThreeDigits = formatLastThreeDigits
+                )
+            }
+        }
+
+        if (uiState.selectedView == 0 && uiState.bottomSheetHandle.bottomSheetExpanded) {
+            if (uiState.bottomSheetHandle.showActivity) {
+                ActivitySelectionBottomSheet(
+                    sheetState = sheetState,
+                    // Function to handle dismissal (swipes, back button, or manual)
+                    onDismiss = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                onDismissBottomSheet.invoke()
+                            }
+                        }
+                    },
+                    placeholderActivities = if (uiState.monitorFormState!!.search.isNotEmpty()) uiState.activities.filter {
+                        it.name.contains(
+                            uiState.monitorFormState.search,
+                            ignoreCase = true
+                        )
+                    } else uiState.activities,
+                    onActivitySelected = { id ->
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                onDismissBottomSheet.invoke()
+                            }
+                        }
+                        monitorState.onNewTimerClick.invoke(id)
+                    },
+                    search = uiState.monitorFormState.search,
+                    onSearchChange = monitorState.onSearchChange
+                )
+            } else {
+                TimerTrackingBottomSheet(
+                    sheetState = sheetState,
+                    onDismiss = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                onDismissBottomSheet.invoke()
+                            }
+                        }
+                    },
+                    timerTrackingSelected = timerTrackingSelected!!,
+                    showActivityList = uiState.bottomSheetHandle.showActivitiesInTimerTracking,
+                    activities = uiState.activities.map { it.toModel() },
+                    onClick = monitorState.onSaveTimerTracking,
+                    onActivityClick = monitorState.onActivityClick
+                )
+            }
         }
     }
     
@@ -370,8 +400,6 @@ fun MonitorScreenReady(
 fun MonitorScreenContent(
     modifier: Modifier,
     monitorState: MonitorState,
-    search: String,
-    viewOptions: Array<String>,
     formatLastThreeDigits: (Long) -> String,
 ) {
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
@@ -390,19 +418,6 @@ fun MonitorScreenContent(
             contentPadding = PaddingValues(start = horizontalMargin, end = horizontalMargin, top = 12.dp, bottom = 56.dp ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item {
-                Row(modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    SingleChoiceSegmentedButton(
-                        modifier = Modifier,
-                        options = viewOptions.toList(),
-                        onChangeSelection =  monitorState.onSelectedView,
-                        selectedOptionIndex = 0
-                    )
-                }
-            }
-
             items(monitorState.activeTimers) { timer ->
                 MonitorScreenRowItem(
                     monitorState = monitorState,
@@ -445,11 +460,11 @@ fun MonitorScreenContent(
 fun MonitorScreenHistoricalContent(
     modifier: Modifier,
     monitorState: MonitorState,
-    viewOptions: Array<String>,
+    search: String,
     formatLastThreeDigits: (Long) -> String
 ) {
     val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
-    val lineSpacing = dimensionResource(id = R.dimen.line_spacing_1)
+    val lineSpacing1x = dimensionResource(id = R.dimen.line_spacing_1)
     val iconSize = dimensionResource(id = R.dimen.icon_huge_size)
 
     val pullToRefreshState = rememberPullToRefreshState()
@@ -475,20 +490,8 @@ fun MonitorScreenHistoricalContent(
             contentPadding = PaddingValues(start = horizontalMargin, end = horizontalMargin, top = 12.dp, bottom = 56.dp ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item {
-                Row(modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    SingleChoiceSegmentedButton(
-                        modifier = Modifier,
-                        options = viewOptions.toList(),
-                        onChangeSelection =  monitorState.onSelectedView,
-                        selectedOptionIndex = 1
-                    )
-                }
-            }
-
-            grouped.forEach { groupData ->
+            val groupingFilter = grouped.filter { it.groupKey.contains(search, ignoreCase = true) }
+            groupingFilter.forEach { groupData ->
                 stickyHeader {
                     Text(
                         text = groupData.groupKey,
@@ -497,7 +500,7 @@ fun MonitorScreenHistoricalContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surface)
-                            .padding(horizontal = horizontalMargin, vertical = lineSpacing)
+                            .padding(horizontal = horizontalMargin, vertical = lineSpacing1x)
                     )
                 }
 
@@ -526,7 +529,7 @@ fun MonitorScreenHistoricalContent(
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = horizontalMargin, top = lineSpacing, bottom = lineSpacing)
+                            .padding(start = horizontalMargin, top = lineSpacing1x, bottom = lineSpacing1x)
                     )
 
                 }
@@ -568,8 +571,6 @@ fun MonitorScreenContentPreview() {
     val utility =  Utility(LocalContext.current)
     val isDarkTheme = false
 
-    val viewOptions: Array<String> = stringArrayResource(id = R.array.monitor_views_array)
-
     val timer1 = TimerTrackingEntity(
         timerTrackingId = 1,
         startTime = "02:00:00",
@@ -608,15 +609,26 @@ fun MonitorScreenContentPreview() {
         onSaveTimerTracking = { _ -> },
         onActivityClick = { _ -> },
     )
+    val selectedView = 1
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
-        MonitorScreenContent(
-            modifier = Modifier.fillMaxSize(),
-            monitorState = monitorState,
-            search = "",
-            viewOptions = viewOptions,
-            formatLastThreeDigits = utility::formatLastThreeDigits
-        )
+
+        if (selectedView == 0) {
+            MonitorScreenContent(
+                modifier = Modifier.fillMaxSize(),
+                monitorState = monitorState,
+                formatLastThreeDigits = utility::formatLastThreeDigits
+            )
+        } else {
+
+            MonitorScreenHistoricalContent(
+                modifier = Modifier.fillMaxSize(),
+                monitorState = monitorState,
+                search = "",
+                formatLastThreeDigits = utility::formatLastThreeDigits
+            )
+        }
+
     }
 
 

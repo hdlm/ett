@@ -19,7 +19,7 @@
     <string name="content_description_start_timer">Iniciar Temporizador</string>
     <string-array name="monitor_views_array">
         <item name="actual">Currents</item>
-        <item name="histórico">Historicals</item>
+        <item name="histórico">Históricos</item>
     </string-array>
 
 
