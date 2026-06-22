@@ -11,7 +11,7 @@ navigationCompose = "2.9.8"
 constraintLayoutCompose = "1.1.1"
 
 # DI & Persistence
-koinVersion = "4.2.1"
+koinVersion = "4.2.2"
 roomVersion = "2.8.4"
 datastoreVersion = "1.2.1"
 

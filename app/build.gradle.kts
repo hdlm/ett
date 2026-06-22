@@ -19,8 +19,8 @@ android {
     defaultConfig {
         applicationId = "com.budoxr.ett"
         minSdk = AndroidSdk.MIN
-        versionCode = 2
-        versionName = "0.2"
+        versionCode = 3
+        versionName = "0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -166,7 +166,9 @@ tasks.register("pipelineRelease") {
     description = "Assemble, Generates and signs the release App Bundle."
     dependsOn("assembleRelease", "bundleRelease")
 
-    println("Bundle Path: .\\app\\build\\outputs\\bundle\\release")
+    doLast {
+        println("Bundle Path: .\\app\\build\\outputs\\bundle\\release")
+    }
 }
 
 tasks.register("generateAndSignAppBundleRelease") {
