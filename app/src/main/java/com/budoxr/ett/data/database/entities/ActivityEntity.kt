@@ -23,4 +23,6 @@ data class ActivityEntity(
     @ColumnInfo(name = "activity_id") val activityId: Long? = null,
     val name: String,
     val color: String? = null,
+    @property:Json(name = "group_activities_id")
+    @ColumnInfo(name = "group_activities_id") val groupActivityId: Long? = null,
 )

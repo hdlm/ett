@@ -66,10 +66,12 @@ object Modules {
             context.applicationContext,
             AppDatabase::class.java,
             "ett.db"
-        ).fallbackToDestructiveMigration(false).build()
+        ).addMigrations(AppDatabase.MIGRATION_1_2)
+            .fallbackToDestructiveMigration(false).build()
 
     fun provideActivityDao(db: AppDatabase) = db.activityDao()
     fun provideTimeTrackingDao(db: AppDatabase) = db.timeTrackingDao()
+    fun provideGroupActivitiesDao(db: AppDatabase) = db.groupActivitiesDao()
 
     val databaseModule = module {
         single { UserPreferencesRepository(androidContext()) }
@@ -82,6 +84,7 @@ object Modules {
         
         single { provideActivityDao(get()) }
         single { provideTimeTrackingDao(get()) }
+        single { provideGroupActivitiesDao(get()) }
 
         factory<ActivityLocalRepository> { ActivityLocalRepositoryImpl() }
         factory<GroupActivityLocalRepository> { GroupActivityRepositoryImpl(get()) }
