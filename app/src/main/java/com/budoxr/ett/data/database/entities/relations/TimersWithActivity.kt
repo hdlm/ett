@@ -9,7 +9,9 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class TimersWithActivity(
     @Embedded
     val timerTracking: TimerTrackingEntity,

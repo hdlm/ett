@@ -8,7 +8,9 @@ package com.budoxr.ett.data.database.entities.relations
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class TimerTrackingQuery(
     @Embedded
     val timerTracking: TimerTrackingEntity,

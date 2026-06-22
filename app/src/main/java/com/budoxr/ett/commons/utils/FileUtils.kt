@@ -19,6 +19,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -209,6 +210,37 @@ class FileUtils(private val context: Context) : KoinComponent {
                 null
             }
         }
+    }
+
+    /**
+     * The method save a json data to a file into the cache directory
+     * It is useful to use the data as a dummy data later
+     *
+     * @param data String  Json string
+     * @param filename String
+     * @return the Uri of the file
+     */
+    @Throws(FileNotFoundException::class, IOException::class)
+    fun writeDataToCacheFile(data: String, filename: String): Uri {
+        val outputDir = context.cacheDir
+        if (!outputDir.exists()) {
+            outputDir.mkdirs() // should succeed
+        }
+        val outputFile = File(outputDir, filename)
+        var out: FileOutputStream? = null
+        try {
+            out = FileOutputStream(outputFile)
+            out.write(data.toByteArray())
+        } finally {
+            out?.let {
+                try {
+                    it.close()
+                } catch (ex: IOException) {
+                    throw IOException("Error closing the output stream: ${ex.message}")
+                }
+            }
+        }
+        return Uri.fromFile(outputFile)
     }
 
     companion object {

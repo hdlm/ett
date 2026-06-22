@@ -11,6 +11,8 @@ import androidx.room.RoomDatabase
 import com.budoxr.ett.commons.utils.CsvHelper
 import com.budoxr.ett.commons.utils.FileUtils
 import com.budoxr.ett.commons.utils.Utility
+import com.budoxr.ett.data.adapters.TimerTrackingQueryAdapter
+import com.budoxr.ett.data.adapters.TimersWithActivityAdapter
 import com.budoxr.ett.data.database.AppDatabase
 import com.budoxr.ett.data.database.DatabaseBackupManager
 import com.budoxr.ett.data.database.DatabaseBackupManagerImpl
@@ -21,6 +23,7 @@ import com.budoxr.ett.data.database.repositories.GroupActivityRepositoryImpl
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepository
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepositoryImpl
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
+import com.budoxr.ett.data.dummies.DummyRepository
 import com.budoxr.ett.presentation.presenters.ActivityFormViewModel
 import com.budoxr.ett.presentation.presenters.ActivityViewModel
 import com.budoxr.ett.presentation.presenters.ManageBackupViewModel
@@ -47,7 +50,7 @@ import com.squareup.moshi.Moshi
 object Modules {
     val appModule = module {
         viewModel { (activityId: Long) -> ActivityFormViewModel(activityId, get(), get()) }
-        viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
         viewModel { ProgressChartViewModel(get(), get(), get(), get(), get(), get()) }
         viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get(), get(), get(), get(), get(), get(), get(), get()) }
@@ -55,6 +58,10 @@ object Modules {
         factory { FileUtils(androidContext()) }
         factory { CsvHelper() }
         factory { Utility(androidContext()) }
+        factory { TimersWithActivityAdapter(get()) }
+        factory { TimerTrackingQueryAdapter(get()) }
+        factory { DummyRepository(get(), get()) }
+
         single<Moshi> { 
             Moshi.Builder()
                 .build() 

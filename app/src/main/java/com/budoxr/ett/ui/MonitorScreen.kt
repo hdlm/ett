@@ -5,6 +5,7 @@
  */
 package com.budoxr.ett.ui
 
+import com.budoxr.ett.BuildConfig
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -65,9 +66,12 @@ import com.budoxr.ett.commons.onLongType
 import com.budoxr.ett.commons.onStringType
 import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.commons.utils.Utility
+import com.budoxr.ett.data.adapters.TimerTrackingQueryAdapter
+import com.budoxr.ett.data.adapters.TimersWithActivityAdapter
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
+import com.budoxr.ett.data.dummies.DummyRepository
 import com.budoxr.ett.data.mapper.toModel
 import com.budoxr.ett.presentation.domain.ActivityModel
 import com.budoxr.ett.presentation.domain.TimerTrackingModel
@@ -84,6 +88,7 @@ import com.budoxr.ett.ui.components.SingleChoiceSegmentedButton
 import com.budoxr.ett.ui.components.TimerTrackingBottomSheet
 import com.budoxr.ett.ui.navigation.Screens
 import com.budoxr.ett.ui.theme.EasyTimeTrackingTheme
+import com.squareup.moshi.Moshi
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
@@ -146,6 +151,15 @@ fun MonitorScreen(
             }
 
             val noneFloatingActionButton: onDismissComposableType = {}
+
+            if (BuildConfig.SAVE_DATA_TO_JSON) {
+                Timber.tag(TAG).d("save \'timers\' to Json")
+                uiState.historicalTimers
+                viewModel.exportToJson(
+                    activeTimer = uiState.activeTimers,
+                    historicalTimer = uiState.historicalTimers
+                )
+            }
 
             MonitorScreenReady(
                 navController = navController,
@@ -568,28 +582,16 @@ fun MonitorScreenHistoricalContent(
 @Preview(showBackground = true)
 fun MonitorScreenContentPreview() {
     val navController = rememberNavController()
-    val utility =  Utility(LocalContext.current)
     val isDarkTheme = false
-
-    val timer1 = TimerTrackingEntity(
-        timerTrackingId = 1,
-        startTime = "02:00:00",
-        endTime = "02:10:00",
-        elapsedTime = 10L,
-        visible = true,
-        done = false,
-        activityId = 1,
+    val context = LocalContext.current
+    val utility =  Utility(context)
+    val moshi = Moshi.Builder().build()
+    val dummyRepository = DummyRepository(
+        timersWithActivityAdapter = TimersWithActivityAdapter(moshi),
+        timerTrackingQueryAdapter = TimerTrackingQueryAdapter(moshi)
     )
-    val timer2 = TimerTrackingEntity(
-        timerTrackingId = 2,
-        startTime = "02:20:00",
-        endTime = "02:50:00",
-        elapsedTime = 30L,
-        visible = true,
-        done = false,
-        activityId = 2,
-    )
-    val timers = listOf(timer1, timer2)
+    val activeTimers = dummyRepository.allTimersWithActivity()
+    val historicalTimers = dummyRepository.allTimerTrackingQuery()
 
     val monitorState = MonitorState(
         navController = navController,
@@ -598,8 +600,8 @@ fun MonitorScreenContentPreview() {
         onRefresh = {},
         onSearchChange = {},
         onNewTimerClick = {},
-        activeTimers = emptyList(),
-        historicalTimers = emptyList(),
+        activeTimers = activeTimers,
+        historicalTimers = historicalTimers,
         onStartClick = { _ -> },
         onStopClick = { _ -> },
         onDeleteClick = { _ -> },
@@ -610,24 +612,78 @@ fun MonitorScreenContentPreview() {
         onActivityClick = { _ -> },
     )
     val selectedView = 1
+    val search = ""
+
+    val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
+    val lineSpacing1x = dimensionResource(id = R.dimen.line_spacing_1)
+    val viewOptions: Array<String> = stringArrayResource(id = R.array.monitor_views_array)
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
 
-        if (selectedView == 0) {
-            MonitorScreenContent(
-                modifier = Modifier.fillMaxSize(),
-                monitorState = monitorState,
-                formatLastThreeDigits = utility::formatLastThreeDigits
-            )
-        } else {
+        Scaffold(
+            modifier = Modifier.systemBarsPadding(),
+            topBar = {
+                GlobalTopBar(
+                    isDarkTheme = monitorState.isDarkTheme,
+                    navIcon = Screens.MonitorScreen.icon,
+                    onBackButtonClick = monitorState.onBackButtonClick,
+                    titleIcon = null,
+                    title = stringResource(Screens.MonitorScreen.titleResId),
+                    actionIcon = null,
+                    onActionButtonClick = {},
+                )
+            },
+            bottomBar = { MainBottomBar(monitorState.navController) },
+            floatingActionButtonPosition = FabPosition.End,
+            floatingActionButton = {}
+        ) { innerPadding ->
 
-            MonitorScreenHistoricalContent(
-                modifier = Modifier.fillMaxSize(),
-                monitorState = monitorState,
-                search = "",
-                formatLastThreeDigits = utility::formatLastThreeDigits
-            )
+            Column(modifier = Modifier.padding(innerPadding)) {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = horizontalMargin)
+                        .padding(top = 12.dp)
+                ) {
+                    SearchField(
+                        value = search,
+                        onValueChange = monitorState.onSearchChange,
+                        placeholder = stringResource(R.string.label_search_field_placeholder),
+                        modifier = Modifier
+                    )
+                    Spacer(modifier = Modifier.padding(vertical = lineSpacing1x))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        SingleChoiceSegmentedButton(
+                            modifier = Modifier,
+                            options = viewOptions.toList(),
+                            onChangeSelection = monitorState.onSelectedView,
+                            selectedOptionIndex = selectedView
+                        )
+                    }
+                }
+
+                if (selectedView == 0) {
+                    MonitorScreenContent(
+                        modifier = Modifier.fillMaxSize(),
+                        monitorState = monitorState,
+                        formatLastThreeDigits = utility::formatLastThreeDigits
+                    )
+                } else {
+                    MonitorScreenHistoricalContent(
+                        modifier = Modifier.fillMaxSize(),
+                        monitorState = monitorState,
+                        search = "",
+                        formatLastThreeDigits = utility::formatLastThreeDigits
+                    )
+                }
+
+            }
+
         }
+
+
 
     }
 

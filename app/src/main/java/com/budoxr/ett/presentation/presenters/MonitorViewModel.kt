@@ -8,6 +8,7 @@ package com.budoxr.ett.presentation.presenters
 import android.database.sqlite.SQLiteException
 import androidx.lifecycle.viewModelScope
 import com.budoxr.ett.commons.CommonValues
+import com.budoxr.ett.commons.utils.FileUtils
 import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.commons.utils.combine
@@ -27,6 +28,8 @@ import com.budoxr.ett.presentation.usecase.TimerTrackingInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.ui.navigation.Screens
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -49,7 +52,9 @@ class MonitorViewModel(
     private val timerTrackingDeleteUseCase: TimerTrackingDeleteUseCase,
     private val activityInfoUseCase: ActivityInfoUseCase,
     private val userPreferencesRepository: UserPreferencesRepository,
-    private val utility: Utility
+    private val utility: Utility,
+    private val fileUtils: FileUtils,
+    private val moshi: Moshi
 ) : KoinViewModel() {
 
     private val _activities = activityInfoUseCase().stateIn(
@@ -308,6 +313,30 @@ class MonitorViewModel(
     }
 
     fun formatLastThreeDigits(value: Long): String = utility.formatLastThreeDigits(value)
+
+    /**
+     * The method export the _Timers_ to a JSON file
+     * with the purpose of use later as a Dummy data.
+     */
+    fun exportToJson(
+        activeTimer: List<TimersWithActivity>,
+        historicalTimer: List<TimerTrackingQuery>
+    ) {
+        Timber.tag(TAG).d("exportToJson() -> called")
+        val filename = Pair("active_timer.json", "historical.json")
+
+        val activeTimerType = Types.newParameterizedType(List::class.java, TimersWithActivity::class.java)
+        val historicalTimerType = Types.newParameterizedType(List::class.java, TimerTrackingQuery::class.java)
+
+        val activeTimerAdapter = moshi.adapter<List<TimersWithActivity>>(activeTimerType)
+        val historicalTimerAdapter = moshi.adapter<List<TimerTrackingQuery>>(historicalTimerType)
+
+        val activeTimerJson = activeTimerAdapter.toJson(activeTimer)
+        val historicalTimerJson = historicalTimerAdapter.toJson(historicalTimer)
+
+        fileUtils.writeDataToCacheFile(data = activeTimerJson, filename = filename.first)
+        fileUtils.writeDataToCacheFile(data = historicalTimerJson, filename = filename.second)
+    }
 
     data class BottomSheetHandle(
         val bottomSheetExpanded: Boolean = false,
