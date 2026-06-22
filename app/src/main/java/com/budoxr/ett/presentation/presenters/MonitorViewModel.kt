@@ -13,6 +13,8 @@ import com.budoxr.ett.commons.utils.TimeUtils
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.commons.utils.combine
 import com.budoxr.ett.commons.utils.toTimestamp
+import com.budoxr.ett.data.adapters.TimerTrackingQueryAdapter
+import com.budoxr.ett.data.adapters.TimersWithActivityAdapter
 import com.budoxr.ett.data.database.entities.ActivityEntity
 import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
@@ -43,6 +45,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import org.koin.core.component.get
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MonitorViewModel(
@@ -325,14 +328,11 @@ class MonitorViewModel(
         Timber.tag(TAG).d("exportToJson() -> called")
         val filename = Pair("active_timer.json", "historical.json")
 
-        val activeTimerType = Types.newParameterizedType(List::class.java, TimersWithActivity::class.java)
-        val historicalTimerType = Types.newParameterizedType(List::class.java, TimerTrackingQuery::class.java)
+        val activeTimerAdapter: TimersWithActivityAdapter = get()
+        val historicalTimerAdapter: TimerTrackingQueryAdapter = get()
 
-        val activeTimerAdapter = moshi.adapter<List<TimersWithActivity>>(activeTimerType)
-        val historicalTimerAdapter = moshi.adapter<List<TimerTrackingQuery>>(historicalTimerType)
-
-        val activeTimerJson = activeTimerAdapter.toJson(activeTimer)
-        val historicalTimerJson = historicalTimerAdapter.toJson(historicalTimer)
+        val activeTimerJson = activeTimerAdapter.adapter.toJson(activeTimer)
+        val historicalTimerJson = historicalTimerAdapter.adapter.toJson(historicalTimer)
 
         fileUtils.writeDataToCacheFile(data = activeTimerJson, filename = filename.first)
         fileUtils.writeDataToCacheFile(data = historicalTimerJson, filename = filename.second)
