@@ -16,6 +16,8 @@ import com.budoxr.ett.data.database.DatabaseBackupManager
 import com.budoxr.ett.data.database.DatabaseBackupManagerImpl
 import com.budoxr.ett.data.database.repositories.ActivityLocalRepository
 import com.budoxr.ett.data.database.repositories.ActivityLocalRepositoryImpl
+import com.budoxr.ett.data.database.repositories.GroupActivityLocalRepository
+import com.budoxr.ett.data.database.repositories.GroupActivityRepositoryImpl
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepository
 import com.budoxr.ett.data.database.repositories.TimerTrackingLocalRepositoryImpl
 import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
@@ -82,6 +84,7 @@ object Modules {
         single { provideTimeTrackingDao(get()) }
 
         factory<ActivityLocalRepository> { ActivityLocalRepositoryImpl() }
+        factory<GroupActivityLocalRepository> { GroupActivityRepositoryImpl(get()) }
         factory { ActivityInsertUseCase() }
         factory { ActivityInfoUseCase() }
         factory { ActivitiesWithTimersUseCase(get()) }
