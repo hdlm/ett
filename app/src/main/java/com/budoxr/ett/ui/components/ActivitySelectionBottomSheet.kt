@@ -58,6 +58,7 @@ fun ActivitySelectionBottomSheet(
     Timber.tag(TAG).i("compose / recompose")
 
     ModalBottomSheet(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
