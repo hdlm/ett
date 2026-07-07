@@ -8,6 +8,12 @@
     <!-- MonitorScreen -->
     <string name="title_monitor_screen">Task Tracking</string>
     <string name="msg_an_error_has_occurred">An error has occurred</string>
+    <string name="title_modify_record">Modify Record</string>
+    <string name="msg_modify_record">Do you want to modify the record?</string>
+    <string name="label_modify_record">Modify</string>
+    <string name="label_modify_cancel_record">Cancel</string>
+    <string name="label_confirm_button_yes">Yes</string>
+    <string name="label_confirm_button_no">No</string>
     <string name="label_retry">Retry</string>
     <string name="msg_no_records">No records found</string>
     <string name="label_select_activity">Select an activity</string>
@@ -53,7 +59,7 @@
     <string name="title_long_progress_bar_chart_screen">Progress Bar Chart</string>
     <string name="label_y_axis">Time (hh:mm)</string>
     <string name="title_date_period_format">Week of %1$s - %2$s</string>
-    <string name="label_confirm">Confirmar</string>
+    <string name="label_confirm">Confirm</string>
     <string name="label_select_date_range">Select date range</string>
     <string-array name="filter_chart_array">
         <item name="today">Today</item>

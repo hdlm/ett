@@ -8,6 +8,12 @@
     <!-- MonitorScreen -->
     <string name="title_monitor_screen">Seguimiento de Tareas</string>
     <string name="msg_an_error_has_occurred">Se ha producido un error</string>
+    <string name="title_modify_record">Modificar Registro</string>
+    <string name="msg_modify_record">¿Desea modificar el registro?</string>
+    <string name="label_modify_record">Modificar</string>
+    <string name="label_modify_cancel_record">Cancelar</string>
+    <string name="label_confirm_button_yes">Si</string>
+    <string name="label_confirm_button_no">No</string>
     <string name="label_retry">Reintentar</string>
     <string name="msg_no_records">No se encontraron registros</string>
     <string name="label_select_activity">Seleccione una actividad</string>
@@ -53,7 +59,7 @@
     <string name="title_long_progress_bar_chart_screen">Gráfico de Avance</string>
     <string name="label_y_axis">Tiempo (hh:mm)</string>
     <string name="title_date_period_format">Semana del %1$s - %2$s</string>
-    <string name="label_confirm">Confirm</string>
+    <string name="label_confirm">Confirmar</string>
     <string name="label_select_date_range">Seleccionar rango de fechas</string>
     <string-array name="filter_chart_array">
         <item name="today">Hoy</item>
