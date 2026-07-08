@@ -115,7 +115,7 @@ class MonitorViewModel(
                     return@combine MonitorScreenUiState.Loading
                 }
                 
-                //TODO hardccode
+                //TODO hardccode to modify a Timer Tracking record
 //                val startTime = "2026-06-08 00:00:01"
 //                val endTime = "2026-06-08 05:36:00"
 //                val elapsedTime = TimeUtils.calculateTimestampDifference(startTime, endTime)
@@ -274,13 +274,19 @@ class MonitorViewModel(
         _bottomSheetHandle.update { _bottomSheetHandle.value.dismissAll() }
     }
 
-    fun showTimerTrackingBottomSheet(timeTrackingId: Long) {
-        Timber.tag(TAG).d("showTimerTracking() -> called, timerTrackingId: $timeTrackingId")
+    fun showConfirmDialog(timeTrackingId: Long) {
+        Timber.tag(TAG).d("showConfirmDialog() -> called, timerTrackingId: $timeTrackingId")
 
         val timerTrackingSelected = _timers.value.find { it.timerTracking.timerTrackingId == timeTrackingId }
         timerTrackingSelected?.let {
             _timerTrackingSelected = it.timerTracking.toModel()
         }
+        _bottomSheetHandle.update { _bottomSheetHandle.value.showConfirmDialog() }
+
+    }
+    fun showTimerTrackingBottomSheet() {
+        Timber.tag(TAG).d("showTimerTrackingBottomSheet() -> called.")
+
         _bottomSheetHandle.update { _bottomSheetHandle.value.showTimerTrackingBottomSheet() }
     }
 
@@ -341,6 +347,7 @@ class MonitorViewModel(
     data class BottomSheetHandle(
         val bottomSheetExpanded: Boolean = false,
         val showActivity: Boolean = false,
+        val showConfirmDialog: Boolean = false,
         val showTimerTracking: Boolean = false,
         val showActivitiesInTimerTracking: Boolean = false,
     ) {
@@ -351,6 +358,14 @@ class MonitorViewModel(
                 bottomSheetExpanded = true
             )
 
+        }
+
+        fun showConfirmDialog(): BottomSheetHandle {
+            val sheetHandle = reset()
+            return sheetHandle.copy(
+                showConfirmDialog = true,
+                bottomSheetExpanded = true
+            )
         }
 
         fun showTimerTrackingBottomSheet(): BottomSheetHandle {
@@ -375,6 +390,7 @@ class MonitorViewModel(
             return copy(
                 bottomSheetExpanded = false,
                 showActivity = false,
+                showConfirmDialog = false,
                 showTimerTracking = false,
                 showActivitiesInTimerTracking = false
             )

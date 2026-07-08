@@ -68,7 +68,6 @@ import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.adapters.TimerTrackingQueryAdapter
 import com.budoxr.ett.data.adapters.TimersWithActivityAdapter
-import com.budoxr.ett.data.database.entities.TimerTrackingEntity
 import com.budoxr.ett.data.database.entities.relations.TimerTrackingQuery
 import com.budoxr.ett.data.database.entities.relations.TimersWithActivity
 import com.budoxr.ett.data.dummies.DummyRepository
@@ -79,6 +78,7 @@ import com.budoxr.ett.presentation.presenters.GroupedSumState
 import com.budoxr.ett.presentation.presenters.MonitorScreenUiState
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
 import com.budoxr.ett.ui.components.ActivitySelectionBottomSheet
+import com.budoxr.ett.ui.components.ConfirmDialog
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.components.MonitorScreenRowHistoricalItem
@@ -107,6 +107,7 @@ data class MonitorState(
     val onStopClick: onLongType,
     val onDeleteClick: onLongType,
     val onHideTimer: onLongType,
+    val onShowTimerTrackingBottomSheet: onDismissType,
     val onSaveTimerTracking: (TimerTrackingModel) -> Unit,
     val onActivityClick: (ActivityModel) -> Unit,
     val onBackButtonClick: onDismissType,
@@ -173,7 +174,8 @@ fun MonitorScreen(
                 onStartClick = viewModel::startTimer,
                 onStopClick = viewModel::stopTimer,
                 onDeleteClick = viewModel::deleteTimer,
-                onHideTimer = viewModel::showTimerTrackingBottomSheet,
+                onHideTimer = viewModel::showConfirmDialog,
+                onShowTimerTrackingBottomSheet = viewModel::showTimerTrackingBottomSheet,
                 onSaveTimerTracking = viewModel::saveTimerTracking,
                 onActivityClick = viewModel::showActivitiesInTimerTrackingBottomSheet,
                 onBackButtonClick = onBackButtonClick,
@@ -264,6 +266,7 @@ fun MonitorScreenReady(
     onStopClick: onLongType,
     onDeleteClick: onLongType,
     onHideTimer: onLongType,
+    onShowTimerTrackingBottomSheet: onDismissType,
     onSaveTimerTracking: (TimerTrackingModel) -> Unit,
     onActivityClick: (ActivityModel) -> Unit,
     onBackButtonClick: onDismissType,
@@ -286,6 +289,7 @@ fun MonitorScreenReady(
         onStopClick = onStopClick,
         onDeleteClick = onDeleteClick,
         onHideTimer = onHideTimer,
+        onShowTimerTrackingBottomSheet = onShowTimerTrackingBottomSheet,
         onSaveTimerTracking = onSaveTimerTracking,
         onActivityClick = onActivityClick,
         onBackButtonClick = onBackButtonClick,
@@ -388,6 +392,22 @@ fun MonitorScreenReady(
                     search = uiState.monitorFormState.search,
                     onSearchChange = monitorState.onSearchChange
                 )
+            } else if (uiState.bottomSheetHandle.showConfirmDialog) {
+                ConfirmDialog(
+                    title = stringResource(R.string.title_modify_record),
+                    message = stringResource(R.string.msg_modify_record),
+                    labelButtonConfirm = stringResource(R.string.label_confirm_button_yes),
+                    labelButtonDismiss = stringResource(R.string.label_confirm_button_no),
+                    onDismiss = {
+                        val newTimerTracking = timerTrackingSelected!!.copy(
+                            visible = false
+                        )
+                        monitorState.onSaveTimerTracking.invoke(newTimerTracking)
+                        onDismissBottomSheet.invoke()
+                    },
+                    onConfirm = onShowTimerTrackingBottomSheet
+                )
+
             } else {
                 TimerTrackingBottomSheet(
                     sheetState = sheetState,
@@ -606,6 +626,7 @@ fun MonitorScreenContentPreview() {
         onStopClick = { _ -> },
         onDeleteClick = { _ -> },
         onHideTimer = { _ -> },
+        onShowTimerTrackingBottomSheet = {},
         onBackButtonClick = {},
         onSelectedView = { _ -> },
         onSaveTimerTracking = { _ -> },

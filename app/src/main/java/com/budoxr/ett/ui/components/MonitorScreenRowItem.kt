@@ -161,6 +161,7 @@ fun MonitorScreenRowItemPreview() {
         onStopClick = { _ -> },
         onDeleteClick = { _ -> },
         onHideTimer = { _ -> },
+        onShowTimerTrackingBottomSheet = {},
         onBackButtonClick = {},
         onSelectedView = { _ -> },
         onSaveTimerTracking = { _ -> },
