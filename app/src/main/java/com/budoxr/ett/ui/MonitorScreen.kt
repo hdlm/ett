@@ -5,7 +5,6 @@
  */
 package com.budoxr.ett.ui
 
-import com.budoxr.ett.BuildConfig
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,14 +24,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -42,7 +45,10 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.budoxr.ett.BuildConfig
 import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissComposableType
 import com.budoxr.ett.commons.onDismissType
@@ -75,10 +82,13 @@ import com.budoxr.ett.data.mapper.toModel
 import com.budoxr.ett.presentation.domain.ActivityModel
 import com.budoxr.ett.presentation.domain.TimerTrackingModel
 import com.budoxr.ett.presentation.presenters.GroupedSumState
+import com.budoxr.ett.presentation.presenters.MonitorFormState
 import com.budoxr.ett.presentation.presenters.MonitorScreenUiState
 import com.budoxr.ett.presentation.presenters.MonitorViewModel
+import com.budoxr.ett.ui.components.ActivityFilterBottomSheet
 import com.budoxr.ett.ui.components.ActivitySelectionBottomSheet
 import com.budoxr.ett.ui.components.ConfirmDialog
+import com.budoxr.ett.ui.components.DateRangePickerBottomSheet
 import com.budoxr.ett.ui.components.GlobalTopBar
 import com.budoxr.ett.ui.components.MainBottomBar
 import com.budoxr.ett.ui.components.MonitorScreenRowHistoricalItem
@@ -112,6 +122,10 @@ data class MonitorState(
     val onActivityClick: (ActivityModel) -> Unit,
     val onBackButtonClick: onDismissType,
     val onSelectedView: onIntType,
+    val onActivityFilterClick: onDismissType,
+    val onDateRangeFilterClick: onDismissType,
+    val onExportCsvClick: onDismissType,
+    val onClearFiltersClick: onDismissType,
 )
 
 @Composable
@@ -119,6 +133,7 @@ fun MonitorScreen(
     isDarkTheme: Boolean,
     navController: NavHostController,
     onBackButtonClick: onDismissType,
+    navigateToCsvReportScreen: onDismissType,
     viewModel: MonitorViewModel = koinViewModel()
 ) {
     Timber.tag(TAG).i("compose / recompose")
@@ -181,8 +196,14 @@ fun MonitorScreen(
                 onBackButtonClick = onBackButtonClick,
                 onSelectedView = viewModel::changeView,
                 onDismissBottomSheet = viewModel::dismissBottomSheet,
+                onActivityFilterClick = viewModel::toggleActivityFilterBottomSheet,
+                onDateRangeFilterClick = viewModel::toggleDateRangePickerBottomSheet,
+                onUpdateFilterActivities = viewModel::updateFilterActivities,
+                onUpdateFilterDateRange = viewModel::updateFilterDateRange,
+                onClearFiltersClick = viewModel::clearFilters,
                 floatingActionButton = if (uiState.selectedView == 0) floatingActionButton else noneFloatingActionButton,
                 formatLastThreeDigits = viewModel::formatLastThreeDigits,
+                navigateToCsvReportScreen = navigateToCsvReportScreen
             )
 
         }
@@ -272,8 +293,14 @@ fun MonitorScreenReady(
     onBackButtonClick: onDismissType,
     onSelectedView: onIntType,
     onDismissBottomSheet: onDismissType,
+    onActivityFilterClick: onDismissType,
+    onDateRangeFilterClick: onDismissType,
+    onUpdateFilterActivities: (Set<Long>) -> Unit,
+    onUpdateFilterDateRange: (Pair<String, String>) -> Unit,
+    onClearFiltersClick: onDismissType,
     floatingActionButton: onDismissComposableType,
-    formatLastThreeDigits: (Long) -> String
+    formatLastThreeDigits: (Long) -> String,
+    navigateToCsvReportScreen: onDismissType
 ) {
 
     val monitorState = MonitorState(
@@ -294,6 +321,10 @@ fun MonitorScreenReady(
         onActivityClick = onActivityClick,
         onBackButtonClick = onBackButtonClick,
         onSelectedView = onSelectedView,
+        onActivityFilterClick = onActivityFilterClick,
+        onDateRangeFilterClick = onDateRangeFilterClick,
+        onExportCsvClick = navigateToCsvReportScreen,
+        onClearFiltersClick = onClearFiltersClick,
     )
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -312,6 +343,50 @@ fun MonitorScreenReady(
                 title = stringResource(Screens.MonitorScreen.titleResId),
                 actionIcon = null,
                 onActionButtonClick = {},
+                actions = {
+                    var showMenu by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(onClick = { showMenu = !showMenu }) {
+                            Icon(
+                                imageVector = Icons.Default.FilterList,
+                                contentDescription = stringResource(R.string.label_select_activities)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.label_activity)) },
+                                onClick = {
+                                    showMenu = false
+                                    monitorState.onActivityFilterClick()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.label_select_date_range)) },
+                                onClick = {
+                                    showMenu = false
+                                    monitorState.onDateRangeFilterClick()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.label_export_csv)) },
+                                onClick = {
+                                    showMenu = false
+                                    monitorState.onExportCsvClick()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.label_clear_all)) },
+                                onClick = {
+                                    showMenu = false
+                                    monitorState.onClearFiltersClick()
+                                }
+                            )
+                        }
+                    }
+                }
             )
         },
         bottomBar = { MainBottomBar(monitorState.navController) },
@@ -363,7 +438,7 @@ fun MonitorScreenReady(
             }
         }
 
-        if (uiState.selectedView == 0 && uiState.bottomSheetHandle.bottomSheetExpanded) {
+        if (uiState.bottomSheetHandle.bottomSheetExpanded) {
             if (uiState.bottomSheetHandle.showActivity) {
                 ActivitySelectionBottomSheet(
                     sheetState = sheetState,
@@ -407,7 +482,29 @@ fun MonitorScreenReady(
                     },
                     onConfirm = onShowTimerTrackingBottomSheet
                 )
-
+            } else if (uiState.bottomSheetHandle.showActivityFilter) {
+                ActivityFilterBottomSheet(
+                    sheetState = sheetState,
+                    onDismiss = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                onDismissBottomSheet.invoke()
+                            }
+                        }
+                    },
+                    activities = uiState.activities,
+                    selectedActivities = uiState.monitorFormState?.filterSelectedActivities ?: emptySet(),
+                    onActivitiesSelected = onUpdateFilterActivities,
+                    search = uiState.monitorFormState?.search ?: "",
+                    onSearchChange = monitorState.onSearchChange
+                )
+            } else if (uiState.bottomSheetHandle.showDateRangePicker) {
+                DateRangePickerBottomSheet(
+                    onDismiss = {
+                        onDismissBottomSheet.invoke()
+                    },
+                    onRangeSelected = onUpdateFilterDateRange
+                )
             } else {
                 TimerTrackingBottomSheet(
                     sheetState = sheetState,
@@ -503,15 +600,17 @@ fun MonitorScreenHistoricalContent(
 
     val pullToRefreshState = rememberPullToRefreshState()
 
-    val grouped = monitorState.historicalTimers.groupBy { it.nameActivity  }
-        .map { (nameActivity, timers) ->
-            val totalSum = timers.sumOf { it.timerTracking.elapsedTime }
-            GroupedSumState(
-                groupKey = nameActivity,
-                items = timers,
-                totalSum = totalSum
-            )
-        }
+    val grouped = remember(monitorState.historicalTimers) {
+        monitorState.historicalTimers.groupBy { it.nameActivity }
+            .map { (nameActivity, timers) ->
+                val totalSum = timers.sumOf { it.timerTracking.elapsedTime }
+                GroupedSumState(
+                    groupKey = nameActivity,
+                    items = timers,
+                    totalSum = totalSum
+                )
+            }
+    }
 
     PullToRefreshBox(
         state = pullToRefreshState,          // Le pasa el estado del gesto
@@ -613,98 +712,46 @@ fun MonitorScreenContentPreview() {
     val activeTimers = dummyRepository.allTimersWithActivity()
     val historicalTimers = dummyRepository.allTimerTrackingQuery()
 
-    val monitorState = MonitorState(
-        navController = navController,
-        isDarkTheme = isDarkTheme,
-        isRefreshing = false,
-        onRefresh = {},
-        onSearchChange = {},
-        onNewTimerClick = {},
-        activeTimers = activeTimers,
-        historicalTimers = historicalTimers,
-        onStartClick = { _ -> },
-        onStopClick = { _ -> },
-        onDeleteClick = { _ -> },
-        onHideTimer = { _ -> },
-        onShowTimerTrackingBottomSheet = {},
-        onBackButtonClick = {},
-        onSelectedView = { _ -> },
-        onSaveTimerTracking = { _ -> },
-        onActivityClick = { _ -> },
-    )
-    val selectedView = 1
+    val selectedView = 1 // Historical
     val search = ""
-
-    val horizontalMargin = dimensionResource(id = R.dimen.margin_horizontal)
-    val lineSpacing1x = dimensionResource(id = R.dimen.line_spacing_1)
-    val viewOptions: Array<String> = stringArrayResource(id = R.array.monitor_views_array)
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
 
-        Scaffold(
-            modifier = Modifier.systemBarsPadding(),
-            topBar = {
-                GlobalTopBar(
-                    isDarkTheme = monitorState.isDarkTheme,
-                    navIcon = Screens.MonitorScreen.icon,
-                    onBackButtonClick = monitorState.onBackButtonClick,
-                    titleIcon = null,
-                    title = stringResource(Screens.MonitorScreen.titleResId),
-                    actionIcon = null,
-                    onActionButtonClick = {},
-                )
-            },
-            bottomBar = { MainBottomBar(monitorState.navController) },
-            floatingActionButtonPosition = FabPosition.End,
-            floatingActionButton = {}
-        ) { innerPadding ->
-
-            Column(modifier = Modifier.padding(innerPadding)) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = horizontalMargin)
-                        .padding(top = 12.dp)
-                ) {
-                    SearchField(
-                        value = search,
-                        onValueChange = monitorState.onSearchChange,
-                        placeholder = stringResource(R.string.label_search_field_placeholder),
-                        modifier = Modifier
-                    )
-                    Spacer(modifier = Modifier.padding(vertical = lineSpacing1x))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        SingleChoiceSegmentedButton(
-                            modifier = Modifier,
-                            options = viewOptions.toList(),
-                            onChangeSelection = monitorState.onSelectedView,
-                            selectedOptionIndex = selectedView
-                        )
-                    }
-                }
-
-                if (selectedView == 0) {
-                    MonitorScreenContent(
-                        modifier = Modifier.fillMaxSize(),
-                        monitorState = monitorState,
-                        formatLastThreeDigits = utility::formatLastThreeDigits
-                    )
-                } else {
-                    MonitorScreenHistoricalContent(
-                        modifier = Modifier.fillMaxSize(),
-                        monitorState = monitorState,
-                        search = "",
-                        formatLastThreeDigits = utility::formatLastThreeDigits
-                    )
-                }
-
-            }
-
-        }
-
-
+        MonitorScreenReady(
+            navController = navController,
+            uiState = MonitorScreenUiState.Ready(
+                monitorFormState = MonitorFormState(search = search),
+                activities = emptyList(),
+                activeTimers = activeTimers,
+                historicalTimers = historicalTimers,
+                selectedView = selectedView,
+                bottomSheetHandle = MonitorViewModel.BottomSheetHandle()
+            ),
+            timerTrackingSelected = null,
+            isDarkTheme = isDarkTheme,
+            isRefreshing = false,
+            onRefresh = {},
+            onSearchChange = {},
+            onNewTimerClick = {},
+            onStartClick = {},
+            onStopClick = {},
+            onDeleteClick = {},
+            onHideTimer = {},
+            onShowTimerTrackingBottomSheet = {},
+            onSaveTimerTracking = {},
+            onActivityClick = {},
+            onBackButtonClick = {},
+            onSelectedView = {},
+            onDismissBottomSheet = {},
+            onActivityFilterClick = {},
+            onDateRangeFilterClick = {},
+            onUpdateFilterActivities = {},
+            onUpdateFilterDateRange = {},
+            onClearFiltersClick = {},
+            floatingActionButton = {},
+            formatLastThreeDigits = utility::formatLastThreeDigits,
+            navigateToCsvReportScreen = {}
+        )
 
     }
 

@@ -11,6 +11,8 @@ import androidx.room.RoomDatabase
 import com.budoxr.ett.commons.utils.CsvHelper
 import com.budoxr.ett.commons.utils.FileUtils
 import com.budoxr.ett.commons.utils.Utility
+import com.budoxr.ett.data.adapters.ActivityFilterAdapter
+import com.budoxr.ett.data.adapters.DateRangeFilterAdapter
 import com.budoxr.ett.data.adapters.TimerTrackingQueryAdapter
 import com.budoxr.ett.data.adapters.TimersWithActivityAdapter
 import com.budoxr.ett.data.database.AppDatabase
@@ -50,16 +52,18 @@ import com.squareup.moshi.Moshi
 object Modules {
     val appModule = module {
         viewModel { (activityId: Long) -> ActivityFormViewModel(activityId, get(), get()) }
-        viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { MonitorViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
         viewModel { ActivityViewModel(get(), get() ) }
         viewModel { ProgressChartViewModel(get(), get(), get(), get(), get(), get()) }
-        viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get(), get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { (typeOperation: Int) -> ManageBackupViewModel(typeOperation, get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 
         factory { FileUtils(androidContext()) }
         factory { CsvHelper() }
         factory { Utility(androidContext()) }
         factory { TimersWithActivityAdapter(get()) }
         factory { TimerTrackingQueryAdapter(get()) }
+        factory { ActivityFilterAdapter(get()) }
+        factory { DateRangeFilterAdapter(get()) }
         factory { DummyRepository(get(), get()) }
 
         single<Moshi> { 
@@ -81,7 +85,7 @@ object Modules {
     fun provideGroupActivitiesDao(db: AppDatabase) = db.groupActivitiesDao()
 
     val databaseModule = module {
-        single { UserPreferencesRepository(androidContext()) }
+        single { UserPreferencesRepository(androidContext(), get(), get()) }
         
         // Provide AppDatabase singleton
         single { provideDataBase(androidContext()) }

@@ -17,6 +17,9 @@
     <string name="label_retry">Retry</string>
     <string name="msg_no_records">No records found</string>
     <string name="label_select_activity">Select an activity</string>
+    <string name="label_select_activities">Filter by Activities</string>
+    <string name="label_select_all">Select All</string>
+    <string name="label_clear_all">Clear All</string>
     <string name="label_save_timer">Save Timer</string>
     <string name="label_activity">Activity</string>
     <string name="label_start_timer">Start Timer</string>
@@ -90,7 +93,8 @@
     <string name="label_make_backup">Make Backup</string>
     <string name="label_restore_backup">Restore Backup</string>
     <string name="label_import_csv">Import from .CSV</string>
-    <string name="label_export_json">Export from .JSON</string>
+    <string name="label_export_json">Export to .JSON</string>
+    <string name="label_export_csv">Export to .CSV</string>
     <string name="label_import_json">Import from .JSON</string>
 
     <!-- ManageBackupScreen -->
@@ -99,6 +103,7 @@
     <string name="title_manage_backup_cvs_import">Import from .CSV</string>
     <string name="title_manage_backup_json_export">Export to JSON</string>
     <string name="title_manage_backup_json_import">Import from JSON</string>
+    <string name="title_manage_backup_csv_export">Generate Report</string>
     <string name="label_start_backup">Start the Backup</string>
     <string name="label_start_restore">Start the Restore</string>
     <string name="label_start_import_csv">Start the Import</string>

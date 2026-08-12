@@ -90,6 +90,7 @@ fun ManageBackupScreen(
         onStartImportCsvClick = { viewModel.startImportCsv() },
         onJsonFileSelected = { viewModel.selectJsonFile(it) },
         onStartExportJsonClick = { viewModel.startExportJson() },
+        onStartExportCsvClick = { viewModel.startExportCsv() },
         onStartImportJsonClick = { viewModel.startImportJson() }
     )
 }
@@ -123,6 +124,7 @@ private fun ManageBackupScreenContent(
     onStartImportCsvClick: onDismissType,
     onJsonFileSelected: (Uri) -> Unit,
     onStartExportJsonClick: onDismissType,
+    onStartExportCsvClick: onDismissType,
     onStartImportJsonClick: onDismissType
 ) {
     Scaffold(
@@ -139,6 +141,7 @@ private fun ManageBackupScreenContent(
                     TypeOperation.ImportFromCsv -> stringResource(R.string.title_manage_backup_cvs_import)
                     TypeOperation.ExportToJson -> stringResource(R.string.title_manage_backup_json_export)
                     TypeOperation.ImportFromJson -> stringResource(R.string.title_manage_backup_json_import)
+                    TypeOperation.ExportToCsv -> stringResource(R.string.title_manage_backup_csv_export)
                 },
                 actionIcon = null,
                 onActionButtonClick = {}
@@ -194,6 +197,13 @@ private fun ManageBackupScreenContent(
                     jsonFilePath = jsonFilePath,
                     onJsonFileSelected = onJsonFileSelected,
                     onStartImportJsonClick = onStartImportJsonClick
+                )
+                
+                TypeOperation.ExportToCsv -> ManageBackupScreenExportCsv(
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    isSuccess = isSuccess,
+                    onStartExportCsvClick = onStartExportCsvClick
                 )
 
             }
@@ -612,6 +622,78 @@ private fun ManageBackupScreenImportJson(
 }
 
 
+@Composable
+private fun ManageBackupScreenExportCsv(
+    isLoading: Boolean,
+    @StringRes
+    errorMessage: Int? = null,
+    isSuccess: Boolean,
+    onStartExportCsvClick: onDismissType,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ett_logo),
+            contentDescription = stringResource(id = R.string.content_description_ett_logo),
+            modifier = Modifier.size(120.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(id = R.string.label_start_export),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            ButtonConfirm(
+                label = stringResource(id = R.string.label_export_csv),
+                isEnabled = true,
+                showTopBorderLine = false,
+                buttonIcon = null,
+                buttonVector = null,
+                buttonImg = null,
+                onConfirmClick = onStartExportCsvClick
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (isSuccess) {
+            Text(
+                text = stringResource(id = R.string.message_export_done),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        errorMessage?.let {
+            Text(
+                text = stringResource(it),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun ManageBackupScreenBackupPreview() {
@@ -636,6 +718,7 @@ fun ManageBackupScreenBackupPreview() {
             onStartImportCsvClick = {},
             onJsonFileSelected = {},
             onStartExportJsonClick = {},
+            onStartExportCsvClick = {},
             onStartImportJsonClick = {}
         )
     }

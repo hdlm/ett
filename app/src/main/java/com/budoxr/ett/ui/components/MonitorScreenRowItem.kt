@@ -165,7 +165,11 @@ fun MonitorScreenRowItemPreview() {
         onBackButtonClick = {},
         onSelectedView = { _ -> },
         onSaveTimerTracking = { _ -> },
-        onActivityClick = { _ -> }
+        onActivityClick = { _ -> },
+        onActivityFilterClick = {},
+        onDateRangeFilterClick = {},
+        onExportCsvClick = {},
+        onClearFiltersClick = {},
     )
 
     val activity = ActivityEntity(

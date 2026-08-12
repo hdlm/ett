@@ -13,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.budoxr.ett.R
 import com.budoxr.ett.commons.onDismissType
 import com.budoxr.ett.commons.onIntType
 import com.budoxr.ett.commons.onLongType
@@ -42,6 +43,12 @@ fun AppNavigation(
     }
     val navigateToActivity: onDismissType = {
         val destination = Screens.ActivityScreen.baseRoute
+        navController.navigate(destination)
+    }
+
+    val navigateToCsvReportScreen: onDismissType = {
+        val screenName = Screens.ManageBackupScreen.baseRoute
+        val destination = "${screenName}/5"
         navController.navigate(destination)
     }
 
@@ -85,6 +92,7 @@ fun AppNavigation(
             MonitorScreen(
                 isDarkTheme = isDarkTheme,
                 navController = navController,
+                navigateToCsvReportScreen = navigateToCsvReportScreen,
                 onBackButtonClick = onBackButtonClick,
             )
         }

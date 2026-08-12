@@ -9,6 +9,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.room.RoomDatabase
 import com.budoxr.ett.commons.utils.FileUtils
+import com.budoxr.ett.commons.utils.TimeUtils.toTimestampFormat
 import com.budoxr.ett.data.database.entities.relations.ActivityWithTimers
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -127,9 +128,6 @@ class DatabaseBackupManagerImpl(
         }
     }
 
-    /**
-     * Converts a List of ActivityWithTimers into a clean, formatted JSON string.
-     */
     override suspend fun exportToJson(activities: Set<ActivityWithTimers>): Result<Unit> {
         Timber.tag(TAG).d("exportToJson() called.")
 
@@ -148,6 +146,29 @@ class DatabaseBackupManagerImpl(
         }
 
     }
+
+    override suspend fun exportToCsv(activities: Set<ActivityWithTimers>): Result<Unit> {
+        Timber.tag(TAG).d("exportToCsv() called.")
+        val totalElapsedTimeByActivity: MutableList<Pair<String, Long>> = mutableListOf()
+        activities.forEach { item ->
+            val totalElapsedTime = item.timers.sumOf { it.elapsedTime }
+            val name = item.activity.name
+            totalElapsedTimeByActivity.add(Pair(name, totalElapsedTime))
+        }
+        return withContext(Dispatchers.Default) {
+            try {
+                fileUtils.saveCsvToPublicDownloads(CSV_FILE, totalElapsedTimeByActivity)
+                Result.success(Unit)
+
+            } catch (e: IOException) {
+                Result.failure(e)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
+    }
+
 
     override suspend fun importFromJson(uri: Uri): Result<List<ActivityWithTimers>> = withContext(Dispatchers.IO) {
         try {

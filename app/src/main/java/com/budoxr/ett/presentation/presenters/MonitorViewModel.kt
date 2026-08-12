@@ -30,8 +30,6 @@ import com.budoxr.ett.presentation.usecase.TimerTrackingInfoUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingInsertUseCase
 import com.budoxr.ett.presentation.usecase.TimerTrackingVisibleInfoUseCase
 import com.budoxr.ett.ui.navigation.Screens
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -40,6 +38,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -56,8 +55,7 @@ class MonitorViewModel(
     private val activityInfoUseCase: ActivityInfoUseCase,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val utility: Utility,
-    private val fileUtils: FileUtils,
-    private val moshi: Moshi
+    private val fileUtils: FileUtils
 ) : KoinViewModel() {
 
     private val _activities = activityInfoUseCase().stateIn(
@@ -91,6 +89,18 @@ class MonitorViewModel(
         // Save the last screen only once upon initialization
         saveLastScreen()
 
+        // Load persisted filters
+        viewModelScope.launch {
+            val activities = userPreferencesRepository.activityFilter.first()
+            val dateRange = userPreferencesRepository.dateRangeFilter.first()
+            _formState.update {
+                it.copy(
+                    filterSelectedActivities = activities.toSet(),
+                    filterDateRange = dateRange
+                )
+            }
+        }
+
         viewModelScope.launch {
             combine(
                 _activities,
@@ -102,39 +112,37 @@ class MonitorViewModel(
                 },
                 _selectedView,
                 _bottomSheetHandle,
+                _formState,
                 refreshing
             ) { activities,
                 timers,
                 historical,
                 selectedView,
                 bottomSheetHandle,
+                monitorFormState,
                 refreshing ->
 
                 if (refreshing) {
                     Timber.tag(TAG).d("refreshing: $refreshing")
                     return@combine MonitorScreenUiState.Loading
                 }
-                
-                //TODO hardccode to modify a Timer Tracking record
-//                val startTime = "2026-06-08 00:00:01"
-//                val endTime = "2026-06-08 05:36:00"
-//                val elapsedTime = TimeUtils.calculateTimestampDifference(startTime, endTime)
-//                val fixTimer = TimerTrackingModel(
-//                    timerTrackingId = 259,
-//                    startTime = startTime,
-//                    endTime = endTime,
-//                    elapsedTime = elapsedTime,
-//                    visible = true,
-//                    done = true,
-//                    activityId = 5
-//                )
-//                timerTrackingInsertUseCase.invoke(fixTimer.toEntity())
-                
-                
-                
 
                 _timers.value = timers
                 _historical.value = historical
+
+                var filteredHistorical = historical
+                if (monitorFormState.filterSelectedActivities.isNotEmpty()) {
+                    filteredHistorical = filteredHistorical.filter {
+                        monitorFormState.filterSelectedActivities.contains(it.timerTracking.activityId)
+                    }
+                }
+                if (monitorFormState.filterDateRange != null) {
+                    val (start, end) = monitorFormState.filterDateRange
+                    filteredHistorical = filteredHistorical.filter {
+                        val timerDate = it.timerTracking.startTime.substringBefore(' ')
+                        timerDate >= start && timerDate <= end
+                    }
+                }
 
                 // get only the activities that are not active
                 val activeActivityIds = timers
@@ -146,9 +154,10 @@ class MonitorViewModel(
                 MonitorScreenUiState.Ready(
                     activities = availableActivities,
                     activeTimers = timers,
-                    historicalTimers = historical,
+                    historicalTimers = filteredHistorical,
                     selectedView = selectedView,
-                    bottomSheetHandle = bottomSheetHandle
+                    bottomSheetHandle = bottomSheetHandle,
+                    monitorFormState = monitorFormState
                 )
 
             }.catch { throwable ->
@@ -303,6 +312,37 @@ class MonitorViewModel(
         }
     }
 
+    fun toggleActivityFilterBottomSheet() {
+        _bottomSheetHandle.update { _bottomSheetHandle.value.showActivityFilterBottomSheet() }
+    }
+
+    fun toggleDateRangePickerBottomSheet() {
+        _bottomSheetHandle.update { _bottomSheetHandle.value.showDateRangePickerBottomSheet() }
+    }
+
+    fun updateFilterActivities(activities: Set<Long>) {
+        _formState.update { it.copy(filterSelectedActivities = activities) }
+        viewModelScope.launch(Dispatchers.IO) {
+            userPreferencesRepository.saveActivityFilter(activities.toLongArray())
+        }
+    }
+
+    fun updateFilterDateRange(range: Pair<String, String>) {
+        _formState.update { it.copy(filterDateRange = range) }
+        viewModelScope.launch(Dispatchers.IO) {
+            userPreferencesRepository.saveDateRangeFilter(range)
+        }
+        dismissBottomSheet()
+    }
+
+    fun clearFilters() {
+        _formState.update { it.copy(filterSelectedActivities = emptySet(), filterDateRange = null) }
+        viewModelScope.launch(Dispatchers.IO) {
+            userPreferencesRepository.saveActivityFilter(longArrayOf())
+            userPreferencesRepository.saveDateRangeFilter(null)
+        }
+    }
+
 
     fun saveTimerTracking(timerTracking: TimerTrackingModel) {
         Timber.tag(TAG)
@@ -350,6 +390,8 @@ class MonitorViewModel(
         val showConfirmDialog: Boolean = false,
         val showTimerTracking: Boolean = false,
         val showActivitiesInTimerTracking: Boolean = false,
+        val showActivityFilter: Boolean = false,
+        val showDateRangePicker: Boolean = false,
     ) {
         fun showActivityBottomSheet(): BottomSheetHandle {
             val sheetHandle = reset()
@@ -386,13 +428,31 @@ class MonitorViewModel(
             )
         }
 
+        fun showActivityFilterBottomSheet(): BottomSheetHandle {
+            val sheetHandle = reset()
+            return sheetHandle.copy(
+                showActivityFilter = true,
+                bottomSheetExpanded = true
+            )
+        }
+
+        fun showDateRangePickerBottomSheet(): BottomSheetHandle {
+            val sheetHandle = reset()
+            return sheetHandle.copy(
+                showDateRangePicker = true,
+                bottomSheetExpanded = true
+            )
+        }
+
         private fun reset(): BottomSheetHandle {
             return copy(
                 bottomSheetExpanded = false,
                 showActivity = false,
                 showConfirmDialog = false,
                 showTimerTracking = false,
-                showActivitiesInTimerTracking = false
+                showActivitiesInTimerTracking = false,
+                showActivityFilter = false,
+                showDateRangePicker = false
             )
         }
 
@@ -432,4 +492,6 @@ data class GroupedSumState(
 
 data class MonitorFormState(
     val search: String = "",
+    val filterSelectedActivities: Set<Long> = emptySet(),
+    val filterDateRange: Pair<String, String>? = null,
 )

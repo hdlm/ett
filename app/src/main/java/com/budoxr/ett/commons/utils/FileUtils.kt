@@ -116,7 +116,7 @@ class FileUtils(private val context: Context) : KoinComponent {
      * @param jsonString The serialized JSON payload.
      */
     @Throws(FileNotFoundException::class, IOException::class)
-    suspend fun saveJsonToPublicDownloads(fileName: String, jsonString: String): Unit {
+    suspend fun saveJsonToPublicDownloads(fileName: String, jsonString: String) {
         return withContext(Dispatchers.IO) {
             runCatching {
                 val resolver = context.contentResolver
@@ -148,9 +148,53 @@ class FileUtils(private val context: Context) : KoinComponent {
                 resolver.openOutputStream(fileUri)?.use { outputStream ->
                     outputStream.write(jsonString.toByteArray(Charsets.UTF_8))
                 } ?: throw IOException("Failed to open output stream for URI: $fileUri")
+            }.onFailure { e ->
+                Timber.tag(TAG).e(e, "saveJsonToPublicDownloads() -> Error saving Json file.")
             }
         }
     }
+
+
+    @Throws(FileNotFoundException::class, IOException::class)
+    suspend fun saveCsvToPublicDownloads(fileName: String, csvContent: List<Pair<String, Long>>) {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                val resolver = context.contentResolver
+
+                val csvString = "ACTIVITY,SECONDS\n" +
+                        csvContent.joinToString(separator = "\n") { "${it.first},${it.second}" }
+
+                // Define metadata details for the file collection record
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    }
+                }
+
+                // Query the external volume storage directory
+                val collectionUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI
+                } else {
+                    // Fallback configuration for legacy API levels
+                    MediaStore.Files.getContentUri("external")
+                }
+
+                // Insert record allocation slot into system index
+                val fileUri = resolver.insert(collectionUri, contentValues)
+                    ?: throw IOException("Failed to create MediaStore entry in Downloads.")
+
+                // Stream our byte contents straight to the allocated location uri
+                resolver.openOutputStream(fileUri)?.use { outputStream ->
+                    outputStream.write(csvString.toByteArray(Charsets.UTF_8))
+                } ?: throw IOException("Failed to open output stream for URI: $fileUri")
+            }.onFailure { e ->
+                Timber.tag(TAG).e(e, "saveCsvToPublicDownloads() -> Error saving CSV file.")
+            }
+        }
+    }
+
 
     /**
      * Reads a JSON backup file from a given Content Uri and returns the raw JSON string.

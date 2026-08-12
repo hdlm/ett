@@ -17,6 +17,9 @@
     <string name="label_retry">Reintentar</string>
     <string name="msg_no_records">No se encontraron registros</string>
     <string name="label_select_activity">Seleccione una actividad</string>
+    <string name="label_select_activities">Filtrar por Actividades</string>
+    <string name="label_select_all">Seleccionar todo</string>
+    <string name="label_clear_all">Borrar todo</string>
     <string name="label_save_timer">Guardar Temporizador</string>
     <string name="label_activity">Actividad</string>
     <string name="label_adjust_timer">Ajustar Tiempo</string>
@@ -91,7 +94,8 @@
     <string name="label_restore_backup">Restaurar el Backup</string>
     <string name="label_import_csv">Importar desde .CSV</string>
     <string name="label_export_json">Exportar a .JSON</string>
-    <string name="label_import_json">Imporar desde .JSON</string>
+    <string name="label_export_csv">Exportar a .CSV</string>
+    <string name="label_import_json">Importar desde .JSON</string>
 
     <!-- ManageBackupScreen -->
     <string name="title_manage_backup_make">Realizar Backup</string>
@@ -99,6 +103,7 @@
     <string name="title_manage_backup_cvs_import">Importar desde .CSV</string>
     <string name="title_manage_backup_json_export">Exportar a JSON</string>
     <string name="title_manage_backup_json_import">Import from JSON</string>
+    <string name="title_manage_backup_csv_export">Generar Reporte</string>
     <string name="label_start_backup">Comenzar el Respaldo</string>
     <string name="label_start_restore">Comenzar la Restauración</string>
     <string name="label_start_import_csv">Comenzar la Importación</string>

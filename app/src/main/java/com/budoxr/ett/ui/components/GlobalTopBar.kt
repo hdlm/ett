@@ -5,6 +5,7 @@
  */
 package com.budoxr.ett.ui.components
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,6 +31,16 @@ fun GlobalTopBar(
     title: String,
     actionIcon: ImageVector?,
     onActionButtonClick: onDismissType,
+    actions: @Composable RowScope.() -> Unit = {
+        if (actionIcon != null) {
+            IconButton(onClick = onActionButtonClick) {
+                Icon(
+                    imageVector = actionIcon,
+                    contentDescription = stringResource(id = R.string.content_description_icon)
+                )
+            }
+        }
+    },
 ) {
     CenterAlignedTopAppBar(
         navigationIcon = {
@@ -78,16 +89,7 @@ fun GlobalTopBar(
 //            )
             //#endregion
         },
-        actions = {
-            if (actionIcon != null) {
-                IconButton(onClick = onActionButtonClick) {
-                    Icon(
-                        imageVector = actionIcon,
-                        contentDescription = stringResource(id = R.string.content_description_icon)
-                    )
-                }
-            }
-        },
+        actions = actions,
 //        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
 //            containerColor = MaterialTheme.colorScheme.background,
 //            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

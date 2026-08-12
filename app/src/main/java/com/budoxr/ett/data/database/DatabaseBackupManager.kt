@@ -28,9 +28,15 @@ interface DatabaseBackupManager {
     suspend fun importFromCsv(uri: Uri): Result<String>
 
     /**
-     * Exports data from the database to a CSV file.
+     * Exports data from the database to a JSON file.
      */
     suspend fun exportToJson(activities: Set<ActivityWithTimers>): Result<Unit>
+
+    /**
+     * Exports data from the database to a CSV file.
+     */
+    suspend fun exportToCsv(activities: Set<ActivityWithTimers>): Result<Unit>
+
 
     /**
      * Imports data from a JSON file into the database.

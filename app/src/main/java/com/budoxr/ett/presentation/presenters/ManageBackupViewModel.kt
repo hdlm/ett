@@ -15,6 +15,7 @@ import com.budoxr.ett.commons.utils.FileUtils
 import com.budoxr.ett.commons.utils.Utility
 import com.budoxr.ett.data.database.DatabaseBackupManager
 import com.budoxr.ett.data.database.entities.ActivityEntity
+import com.budoxr.ett.data.datastore.repositories.UserPreferencesRepository
 import com.budoxr.ett.presentation.usecase.ActivitiesWithTimersUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInfoUseCase
 import com.budoxr.ett.presentation.usecase.ActivityInsertUseCase
@@ -24,6 +25,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
@@ -39,6 +41,7 @@ class ManageBackupViewModel(
     private val fileUtils: FileUtils,
     private val utility: Utility,
     private val cvsHelper: CsvHelper,
+    private val userPreferencesRepository: UserPreferencesRepository,
     ) : KoinViewModel() {
 
     private val _csvFilePath = MutableStateFlow<Uri?>(null)
@@ -217,6 +220,65 @@ class ManageBackupViewModel(
         
     }
 
+    fun startExportCsv() {
+        Timber.tag(TAG).d("startExportCsv() -> called.")
+        viewModelScope.launch {
+            val currentType = TypeOperation.ExportToCsv
+
+            _uiState.value = ManageBackupUiState.Ready(typeOperation = currentType, isLoading = true)
+
+            try {
+                val activityFilter = userPreferencesRepository.activityFilter.first().toSet()
+                val dateRangeFilter = userPreferencesRepository.dateRangeFilter.first()
+
+                var activities = utility.performAsyncOperation(
+                    scope = this,
+                    timeout = CommonValues.WAIT_DEFERRED,
+                    timeUnit = TimeUnit.SECONDS,
+                    dispatcher = Dispatchers.IO
+                ) {
+                    activitiesWithTimersUseCase.invoke()
+                }.await()
+
+                if (activityFilter.isNotEmpty()) {
+                    activities = activities.filter { it.activity.activityId in activityFilter }
+                }
+
+                if (dateRangeFilter != null) {
+                    val (start, end) = dateRangeFilter
+                    activities = activities.map { act ->
+                        act.copy(timers = act.timers.filter { it.startTime.substringBefore(' ') in start..end })
+                    }.filter { it.timers.isNotEmpty() }
+                }
+
+                val finalActivities = activities.toSortedSet(compareBy { it.activity.name })
+
+                databaseBackupManager.exportToCsv(
+                    activities = finalActivities
+                ).fold(
+                    onSuccess = {
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType
+                        )
+                    },
+                    onFailure = { error ->
+                        Timber.tag(TAG).e(error, "startExportCsv() -> Export failed.")
+                        _uiState.value = ManageBackupUiState.Success(
+                            typeOperation = currentType,
+                            errorMessage = R.string.message_export_failed
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                Timber.tag(TAG).e(e, "startExportCsv() -> Error during export.")
+                _uiState.value = ManageBackupUiState.Success(
+                    typeOperation = currentType,
+                    errorMessage = R.string.message_export_failed
+                )
+            }
+        }
+    }
+
     fun startImportJson() {
         Timber.tag(TAG).d("startImportJson() -> called.")
         viewModelScope.launch {
@@ -304,7 +366,8 @@ enum class TypeOperation(val value: Int) {
     Restore(1),
     ImportFromCsv(2),
     ExportToJson(3),
-    ImportFromJson(4);
+    ImportFromJson(4),
+    ExportToCsv(5);
 
     companion object {
         fun fromValue(value: Int): TypeOperation =
