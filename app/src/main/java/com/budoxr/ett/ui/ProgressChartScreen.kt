@@ -10,14 +10,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -182,7 +178,6 @@ fun WeeklyBarChartScreenReady(
     }
 
     Scaffold(
-        modifier = Modifier.systemBarsPadding(),
         topBar = {
             GlobalTopBar(
                 isDarkTheme = isDarkTheme,
@@ -264,8 +259,7 @@ fun WeeklyBarChartScreenPreview() {
     )
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
-        Surface( modifier = Modifier.fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing),
+        Surface( modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
             Column {

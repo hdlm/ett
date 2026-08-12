@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -64,7 +63,6 @@ fun SettingContent(
 
 
     Scaffold(
-        modifier = Modifier.systemBarsPadding(),
         topBar = {
             GlobalTopBar(
                 isDarkTheme = isDarkTheme,

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
@@ -54,13 +53,11 @@ fun MainBottomBar(
     )
 
     currentRoute?.let {
-        BottomAppBar {
-            BottomNavigationBar(
-                navController = navController,
-                items = navigationItems,
-                selectedRoute = it
-            )
-        }
+        BottomNavigationBar(
+            navController = navController,
+            items = navigationItems,
+            selectedRoute = it
+        )
     }
 }
 
@@ -136,7 +133,7 @@ private fun BottomNavigationBarPreview() {
 
     EasyTimeTrackingTheme(darkTheme = isDarkTheme, dynamicColor = false) {
 
-        Scaffold( modifier = Modifier.systemBarsPadding(),
+        Scaffold(
             topBar = {
                 GlobalTopBar(
                     isDarkTheme = isDarkTheme,
